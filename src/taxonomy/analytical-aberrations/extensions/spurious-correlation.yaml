@@ -1,0 +1,35 @@
+id: spurious-correlation
+name: Spurious Correlation
+domain: Analytical Aberrations
+severity: warning
+description: >
+  Two variables correlate strongly by coincidence rather than any real relationship —
+  common when both simply trend over time, or when a strong correlation is
+  cherry-picked from many candidate pairs. Treating such a coincidence as meaningful
+  invents relationships that don't exist and won't hold up. This extends the domain's
+  analysis-distortion theme but is not a specific sub-pitfall in the book.
+detection_strategy: >
+  In code and prose, flag strong correlations reported between variables with no
+  plausible mechanism — especially two time series that both trend (up or down) over
+  the same period, or a high-correlation pair surfaced from a large search of many
+  variables. Be suspicious of correlations presented without de-trending, without a
+  mechanism, or without out-of-sample confirmation. Watch for "r = 0.99 between
+  [unrelated things]."
+example_bad: >
+  An analyst notices that US cheese consumption and a particular cause of death both
+  rose over a decade, reports their 0.95 correlation as a finding, and speculates
+  about a link — when both merely trended upward over time with no real connection.
+example_good: >
+  The analyst de-trends or differences the series before correlating, requires a
+  plausible mechanism, and confirms any candidate relationship on independent data —
+  recognizing that two trending series will correlate by construction and that one
+  strong pair out of many is expected by chance.
+remediation: >
+  Treat a bare correlation as weak evidence. De-trend time series before correlating,
+  demand a plausible mechanism, correct for how many pairs were examined, and confirm
+  on out-of-sample data. A coincidental correlation with no mechanism and no
+  replication is not a finding.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 5: Analytical Aberrations (domain extension — not a specific sub-pitfall example in the book)"
+  - "Yule, G.U. (1926), 'Why Do We Sometimes Get Nonsense-Correlations between Time-Series?', J. Royal Statistical Society; Tyler Vigen, Spurious Correlations (Hachette, 2015)"
+  - "https://www.avoidingdatapitfalls.com"
