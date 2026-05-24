@@ -42,7 +42,7 @@ Have an idea? [Open a feature request](https://github.com/bjonesdataliteracy/dat
 
 This is the part I'm most excited about. The pitfall taxonomy is the brain of datapitfalls, and it grows through community knowledge.
 
-A **pitfall rule** is a structured, machine-readable description of one specific way data work can go wrong. Every rule lives in one of the seven audit domains:
+A **pitfall rule** is a structured, machine-readable description of one specific way data work can go wrong. Every rule lives in one of the eight audit domains:
 
 1. Epistemic Errors
 2. Technical Trespasses
@@ -51,6 +51,7 @@ A **pitfall rule** is a structured, machine-readable description of one specific
 5. Analytical Aberrations
 6. Graphical Gaffes
 7. Design Dangers
+8. Biased Baseline
 
 Each rule has a defined shape — `id`, `name`, `domain`, `severity`, `description`, `detection_strategy`, `example_bad`, `example_good`, `remediation`, and `references`. The full specification, with worked examples, lives in [docs/PITFALL_TAXONOMY.md](docs/PITFALL_TAXONOMY.md). **Please read that document before proposing a rule** — it'll show you exactly what a good rule looks like.
 

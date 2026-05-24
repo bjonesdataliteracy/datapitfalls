@@ -1,8 +1,8 @@
 # Pitfall Taxonomy Specification
 
-The pitfall taxonomy is the heart of datapitfalls. It's a structured, machine-readable catalog of the ways data work goes wrong, organized around the seven audit domains from *Avoiding Data Pitfalls*. This document specifies the format every pitfall rule follows, so the catalog stays consistent as it grows — including through [community contributions](../CONTRIBUTING.md).
+The pitfall taxonomy is the heart of datapitfalls. It's a structured, machine-readable catalog of the ways data work goes wrong, organized around the eight audit domains from *Avoiding Data Pitfalls*. This document specifies the format every pitfall rule follows, so the catalog stays consistent as it grows — including through [community contributions](../CONTRIBUTING.md).
 
-## The seven audit domains
+## The eight audit domains
 
 Every pitfall rule belongs to exactly one domain:
 
@@ -13,6 +13,7 @@ Every pitfall rule belongs to exactly one domain:
 5. **Analytical Aberrations** — distortions introduced during analysis
 6. **Graphical Gaffes** — charts that mislead
 7. **Design Dangers** — presentation that fails the audience
+8. **Biased Baseline** — whose voices and contributions are represented, and whose are missing
 
 ## Rule fields
 
@@ -22,7 +23,7 @@ Each pitfall rule is an object with the following fields:
 | -------------------- | --------------------------------- | --------------------------------------------------------------------------- |
 | `id`                 | string (kebab-case)               | Unique, stable identifier for the rule (e.g. `truncated-y-axis`).           |
 | `name`               | string                            | Human-readable name (e.g. "Truncated Y-Axis").                              |
-| `domain`             | enum (one of the 7 domains)       | The audit domain this pitfall belongs to.                                   |
+| `domain`             | enum (one of the 8 domains)       | The audit domain this pitfall belongs to.                                   |
 | `severity`           | enum (`info` / `warning` / `error`) | Default severity when this pitfall is detected.                           |
 | `description`        | string                            | What the pitfall is and why it misleads.                                    |
 | `detection_strategy` | string                            | How the tool should look for this pitfall across the relevant input modes.  |

@@ -1,0 +1,34 @@
+id: the-unheard-voice
+name: The Unheard Voice
+domain: Biased Baseline
+severity: info
+description: >
+  Whose voices, sources, and contributions are represented in the data work — and
+  whose are missing — goes unexamined, so perspectives that have historically been
+  undervalued or ignored are left out, and their contributions are under-credited or
+  misattributed. The result is a biased baseline: the data, sources, examples, and
+  narrative over-represent dominant groups and quietly erase others.
+detection_strategy: >
+  In prose, sources, and data, flag a body of work whose cited sources, quoted
+  experts, examples, or training data draw from a narrow, non-representative set of
+  voices (e.g. all-male quote lists, single-demographic expert panels), contributions
+  attributed to a later or better-known figure while the originator is omitted, and
+  datasets or samples that exclude or undercount historically marginalized groups. Be
+  suspicious when no one has asked whose perspective is missing or who deserves credit.
+example_bad: >
+  A book's nine chapter epigraphs are all quotes from men, with not one woman — and
+  its discussion of the box plot credits only Tukey, omitting Mary Eleanor Spear,
+  whose 1952 "range-bar" was its precursor.
+example_good: >
+  The author audits representation before publishing — deliberately sourcing quotes
+  and examples from a diverse range of voices and crediting originators like Spear
+  alongside Tukey — so the work reflects contributions in proportion to their value,
+  not the demographic of the contributor.
+remediation: >
+  Deliberately check whose voices and contributions are represented and whose are
+  missing before finalizing data work. Seek out and amplify historically undervalued
+  or ignored voices in your sources, examples, and data; credit originators
+  accurately; and treat representation as a question to ask explicitly, not assume.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 8A: The Unheard Voice"
+  - "https://www.avoidingdatapitfalls.com"
