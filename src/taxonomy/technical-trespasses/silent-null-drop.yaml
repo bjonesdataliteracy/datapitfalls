@@ -1,0 +1,42 @@
+id: silent-null-drop
+name: Silently Dropping Null Records
+domain: Technical Trespasses
+severity: warning
+description: >
+  Records with null or blank values in a field are filtered out — explicitly, or
+  by a function that skips them by default — before computing a proportion, rate,
+  or average, and the result is then read as representative of the whole. This
+  silently assumes the missing records share the distribution of the observed
+  ones. When missingness is not random (e.g. one source or site logs the field and
+  another does not), the surviving subset is biased and the headline numbers are
+  wrong.
+detection_strategy: >
+  In code, flag null filtering ahead of an aggregate that gets generalized —
+  `dropna()`, `WHERE x IS NOT NULL`, `df[df.x.notnull()]`, `COUNT(x)` standing in
+  for `COUNT(*)`, or reliance on functions that skip nulls (`mean()` with default
+  `skipna=True`, SQL `AVG`) — especially when the null share is large. Check
+  whether the analysis ever quantifies the missing fraction or tests whether
+  missingness correlates with another field (source, site, date). In prose, flag
+  "we excluded the blank/unknown rows" with no argument that they were missing at
+  random.
+example_bad: >
+  28.5% of vehicle-color records are null. The analyst runs
+  `df.dropna(subset=['color'])` and reports the color breakdown of the remainder
+  as the demand mix — not realizing almost all the nulls come from a single tow
+  yard, so the surviving rows over-represent the other yard and skew every color's
+  share.
+example_good: >
+  The analyst first measures the null rate and cross-tabs missingness against
+  source, finding the nulls are concentrated at one yard (missing-not-at-random).
+  They scope the analysis to the relevant yard (where only 0.8% is null), state
+  that assumption explicitly, and report coverage ("we have color for 97.3% of
+  records at this yard") instead of silently dropping a quarter of the data.
+remediation: >
+  Before dropping nulls, quantify how much is missing and test whether missingness
+  is associated with source, time, or group. If it is not random, don't filter
+  blindly — segment, impute with a stated model, or scope and caveat the claim to
+  the population actually observed. Always report the share excluded and the
+  assumption that justifies excluding it.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 2A: The Dirty Data Pitfall"
+  - "https://www.avoidingdatapitfalls.com"

@@ -1,0 +1,41 @@
+id: two-digit-year-ambiguity
+name: Ambiguous Two-Digit Year Parsing
+domain: Technical Trespasses
+severity: warning
+description: >
+  Two-digit year values (or other truncated date encodings) are stored without
+  century information, then parsed or aggregated as though they were complete, so
+  the century is guessed wrong or the raw 0–99 codes are treated as real years.
+  Averaging such a column can yield an impossible result — a mean "vehicle year"
+  of 23 — and naive parsing maps "11" to the year 11 or splits a single model
+  year across two centuries. The fingerprint is a year field whose values live in
+  0–99, often in two disconnected clusters.
+detection_strategy: >
+  In code, flag date/year handling that depends on two-digit years without an
+  explicit century-window rule — `%y` format strings, or hand-rolled arithmetic
+  that adds 1900/2000 — and aggregations (`mean`/`min`/`max`/`AVG`) taken over a
+  year column whose values fall in 0–99. In data, look for a "year" field ranging
+  over 0–99, or mixing 0–99 with 1900–2099, and histograms with two separated
+  groups (e.g. 0–17 and 82–99). In plain-English descriptions, watch for averages
+  or trends over dates whose source format is two-digit and therefore ambiguous.
+example_bad: >
+  A `Year` column holds values like 99, 91, 4, and 11 (keyed variously as "'11",
+  "11", "4"). The analyst computes `df['Year'].mean()` and reports a typical
+  towed-vehicle year of 23 — a meaningless figure, because the two-digit codes
+  were averaged as raw integers instead of being resolved to 1999, 1991, 2004,
+  and 2011.
+example_good: >
+  The two-digit codes are mapped to full years with an explicit, documented
+  century window justified by the data's known span (00–17 → 2000–2017, 18–99 →
+  1918–1999), e.g. `year = 2000 + yy if yy <= 17 else 1900 + yy`. The corrected
+  column now averages to a sensible ~2005, and the windowing rule is recorded
+  alongside the data so it can be reviewed.
+remediation: >
+  Never average, sort, or threshold a two-digit year as a raw integer. Resolve the
+  century explicitly with a window rule grounded in the data's real range, parse
+  with full-year formats (`%Y`) at the source where possible, and validate the
+  output range so impossible future years or pre-automobile years are caught.
+  Document the disambiguation so the transformation is reproducible.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 2A: The Dirty Data Pitfall"
+  - "https://www.avoidingdatapitfalls.com"

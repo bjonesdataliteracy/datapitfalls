@@ -1,0 +1,41 @@
+id: join-key-mismatch-row-loss
+name: Join Key Mismatch Drops Rows
+domain: Technical Trespasses
+severity: warning
+description: >
+  Two datasets are joined on a key whose values are represented differently across
+  sources — spelling, punctuation, word order, abbreviations, or an entity present
+  in one source and absent from the other ("St. Kitts & Nevis" vs "St. Kitts and
+  Nevis", "Hong Kong" vs "Hong Kong SAR, China"). An inner join silently drops
+  every unmatched row; a left or outer join keeps the rows but leaves nulls in the
+  joined columns. Either way records vanish or go blank with no error, and
+  downstream totals, rates, and rankings are computed on an incomplete table.
+detection_strategy: >
+  In code, flag joins, merges, and lookups on free-text or name keys with no
+  normalization beforehand — `JOIN ... ON a.country = b.country`,
+  `pd.merge(how='inner')`, Excel `VLOOKUP` — together with the absence of any
+  match-rate or coverage check. Look for missing before/after row-count
+  comparisons, no anti-join to enumerate non-matching keys, and aggregates run
+  straight off the joined table. In prose, flag combining two sources "by name"
+  with no mention of how unmatched names were handled.
+example_bad: >
+  Website traffic (180 country names from Google Analytics) is inner-joined to
+  World Bank population on the country name. 34 of the GA countries have no exact
+  match ("Bahamas" vs "Bahamas, The"; Taiwan absent entirely), so they silently
+  drop out — and 3 of the top 25 countries by "views per 1,000 people" disappear
+  from the result with no warning.
+example_good: >
+  Before joining, the analyst compares the key sets both ways (a Venn / anti-join),
+  finds the 34 non-matching names, normalizes or maps them to a common standard
+  (and adds Taiwan's population by hand), then joins and verifies the post-join row
+  count and match rate. The corrected join retains every intended country and the
+  ranking is complete.
+remediation: >
+  Treat the join key as data to be cleaned: normalize representations (case,
+  punctuation, known aliases) or map to a stable code (e.g. an ISO country code)
+  rather than a display name. Inspect the non-matching rows with an anti-join,
+  compare row counts before and after the join, and report the match rate so
+  silent drops and null fills surface before you analyze the merged table.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 2B: Bad Blends and Joins"
+  - "https://www.avoidingdatapitfalls.com"
