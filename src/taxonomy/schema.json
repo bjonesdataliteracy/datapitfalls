@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://avoidingdatapitfalls.com/schemas/pitfall.schema.json",
+  "title": "Pitfall Rule",
+  "description": "A single pitfall rule in the datapitfalls taxonomy. See docs/PITFALL_TAXONOMY.md for the authoritative spec.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "name",
+    "domain",
+    "severity",
+    "description",
+    "detection_strategy",
+    "example_bad",
+    "example_good",
+    "remediation",
+    "references"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique, stable kebab-case identifier (e.g. truncated-y-axis). Should match the filename.",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable name (e.g. \"Truncated Y-Axis\").",
+      "minLength": 1
+    },
+    "domain": {
+      "type": "string",
+      "description": "The single audit domain this pitfall belongs to.",
+      "enum": [
+        "Epistemic Errors",
+        "Technical Trespasses",
+        "Mathematical Miscues",
+        "Statistical Slip-Ups",
+        "Analytical Aberrations",
+        "Graphical Gaffes",
+        "Design Dangers"
+      ]
+    },
+    "severity": {
+      "type": "string",
+      "description": "Default severity when this pitfall is detected.",
+      "enum": ["info", "warning", "error"]
+    },
+    "description": {
+      "type": "string",
+      "description": "What the pitfall is and why it misleads.",
+      "minLength": 1
+    },
+    "detection_strategy": {
+      "type": "string",
+      "description": "How the tool should look for this pitfall across the relevant input modes.",
+      "minLength": 1
+    },
+    "example_bad": {
+      "type": "string",
+      "description": "A concrete example exhibiting the pitfall.",
+      "minLength": 1
+    },
+    "example_good": {
+      "type": "string",
+      "description": "A corrected version that avoids the pitfall.",
+      "minLength": 1
+    },
+    "remediation": {
+      "type": "string",
+      "description": "Actionable guidance for fixing it.",
+      "minLength": 1
+    },
+    "references": {
+      "type": "array",
+      "description": "Sources: book sections, articles, citations.",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}
