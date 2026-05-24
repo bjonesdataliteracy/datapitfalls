@@ -1,0 +1,36 @@
+id: mean-mistaken-for-typical
+name: Mean Mistaken for Typical
+domain: Statistical Slip-Ups
+severity: warning
+description: >
+  A measure of central tendency — usually the mean — is reported as the "typical"
+  value with no regard for the shape of the distribution. For skewed, multimodal, or
+  heavy-tailed (power-law) data the mean can be unrepresentative of most records: it
+  is pulled toward a long tail, lands in a gap between subgroups, or sits above the
+  majority. Audiences then assume a randomly chosen record is close to the mean when
+  it usually isn't.
+detection_strategy: >
+  In code and prose, flag a mean (or "average") reported as typical/representative
+  with no check of distribution shape — no median/mode beside it, no
+  histogram/quantiles/skewness, no spread. Be suspicious when the mean is quoted for
+  income/salary/wealth/followers/sales (commonly power-law), when the maximum is
+  many times the mean, or when the standard deviation approaches or exceeds the
+  mean. In data, compare mean against median (a large gap implies skew) and look for
+  more than one mode.
+example_bad: >
+  "The average NFL player makes $1.5M per year" is presented as the typical salary,
+  but salary is power-law: 76.6% of players earn below the mean and one
+  quarterback's cap hit (≈$24M) is 16x the average, so "$1.5M" describes almost no
+  one.
+example_good: >
+  The figure is reported with its distribution: "median ≈$0.9M; 77% earn below the
+  $1.5M mean, which is inflated by a few very high earners," ideally with a
+  histogram — so readers see the skew instead of assuming a typical ≈$1.5M player.
+remediation: >
+  Before calling any average "typical," inspect the distribution's shape. Report the
+  median (and the mode where relevant) alongside the mean, show the spread or a
+  histogram, and for skewed/multimodal/heavy-tailed data lead with the median or
+  describe the distribution rather than a single central value.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 4A: Descriptive Debacles"
+  - "https://www.avoidingdatapitfalls.com"

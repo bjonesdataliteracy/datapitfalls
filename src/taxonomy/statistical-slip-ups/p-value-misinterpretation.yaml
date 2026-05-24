@@ -1,0 +1,35 @@
+id: p-value-misinterpretation
+name: P-Value Misinterpretation
+domain: Statistical Slip-Ups
+severity: warning
+description: >
+  The p-value is misread as something it isn't — most commonly as the probability
+  that the null hypothesis is true (or false), or a low p taken as proof of an effect
+  and a high p as proof of no effect. A p-value is only the probability of observing
+  data at least as extreme as seen, assuming the null is true; it proves nothing, and
+  treating it as proof invites Type 1 (false-positive) and Type 2 (false-negative)
+  errors.
+detection_strategy: >
+  In code and prose, flag statements that a low p "proves" the effect, that the null
+  is "X% likely to be true," that a high p means "no effect, proven," or any binary
+  significant/not-significant verdict with no effect size, confidence interval, or
+  power consideration. Watch for `p < 0.05` used as a yes/no proof gate, and "no
+  difference" concluded from an underpowered test.
+example_bad: >
+  An experiment returns p = 0.03 and the analyst declares "proven: the null is false
+  and there's only a 3% chance we're wrong," then runs around waving the printout —
+  conflating the p-value with the probability that the null is true.
+example_good: >
+  The result is stated carefully: "assuming no real effect, data this extreme would
+  occur about 3% of the time; together with the effect size and CI this is
+  suggestive but not proof," and replication or further evidence is sought rather
+  than treating a single p-value as definitive.
+remediation: >
+  Interpret a p-value as evidence about the data under the null, never as the
+  probability the hypothesis is true or as proof. Always pair it with the effect size
+  and a confidence interval, consider statistical power before reading a high p as
+  "no effect," and seek replication rather than a single significant/not-significant
+  verdict.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 4B: Inferential Infernos"
+  - "https://www.avoidingdatapitfalls.com"

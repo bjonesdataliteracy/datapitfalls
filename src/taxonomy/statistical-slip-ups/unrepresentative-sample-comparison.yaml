@@ -1,0 +1,36 @@
+id: unrepresentative-sample-comparison
+name: Unrepresentative Sample Comparison
+domain: Statistical Slip-Ups
+severity: warning
+description: >
+  Aggregate rates or averages are compared across groups whose samples were
+  collected without a consistent (stratified) plan, so the groups differ in
+  composition as well as in the factor of interest. The comparison is then confounded
+  by the mix of subcategories rather than reflecting a true difference — an
+  apples-to-oranges comparison disguised as apples-to-apples.
+detection_strategy: >
+  In code and prose, flag city/region/segment comparisons of an overall rate where
+  the underlying samples have different compositions (different mix of outlet types,
+  demographics, product lines) and no stratification or standardization is applied.
+  Look for pooled rates compared directly without breaking down by the confounding
+  subcategory, and for sampling that wasn't designed to be representative. Compare
+  each group's subcategory mix; large differences signal the trap.
+example_bad: >
+  Overall fish-mislabeling rates are compared across cities to rank "best and worst,"
+  but the sample mix differs sharply — sushi (mislabeled >73%) was 16% of Seattle's
+  samples versus 35% of Southern California's, and Boston sampled no sushi at all —
+  so the ranking mostly reflects how much sushi each city sampled, not how honest its
+  sellers are.
+example_good: >
+  The analyst compares like with like — grocery-to-grocery, sushi-to-sushi — or
+  standardizes each city to a common subcategory mix, and reports only the
+  comparisons the sampling supports, acknowledging that the unstratified overall
+  rates aren't a fair city-to-city comparison.
+remediation: >
+  Compare groups within consistent strata, or directly standardize/weight them to a
+  common composition before comparing aggregate rates. Inspect each group's
+  subcategory mix for imbalance, prefer a stratified sampling plan up front, and draw
+  only the comparisons the sampling design actually supports.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 4C: Slippery Sampling"
+  - "https://www.avoidingdatapitfalls.com"

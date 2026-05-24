@@ -1,0 +1,33 @@
+id: statistical-vs-practical-significance
+name: Statistical vs Practical Significance
+domain: Statistical Slip-Ups
+severity: warning
+description: >
+  A result is statistically significant (low p-value) but the effect is too small to
+  matter, and the significance is reported as if it were importance. With a large
+  enough sample even a trivial difference becomes statistically significant, so a
+  tiny effect can be dressed up as a meaningful finding whenever the magnitude is
+  ignored.
+detection_strategy: >
+  In code and prose, flag significance claims that omit the effect size and its
+  real-world units — a p-value reported with no mean difference, no confidence
+  interval on the magnitude, no comparison to a meaningful threshold. Be especially
+  suspicious with very large samples (where almost anything is significant) and when
+  the headline is "statistically significant" rather than "large enough to act on."
+example_bad: >
+  A clinical trial with thousands of patients reports p < 0.0001 for the drug's
+  effect on lifespan and trumpets a breakthrough — but the actual difference is about
+  two days of additional life, far too small to matter clinically.
+example_good: >
+  The report leads with the effect size and its confidence interval ("≈2 days, 95%
+  CI 1–3 days") and judges it against a clinically meaningful threshold, concluding
+  the effect is statistically detectable but not practically important — keeping
+  significance and importance distinct.
+remediation: >
+  Always report and lead with the effect size (in meaningful units) and its
+  confidence interval, not just the p-value. Decide in advance what magnitude would
+  be practically important, and interpret statistical significance — especially in
+  large samples — separately from real-world significance.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 4B: Inferential Infernos"
+  - "https://www.avoidingdatapitfalls.com"

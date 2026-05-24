@@ -1,0 +1,36 @@
+id: multiple-comparisons
+name: Uncorrected Multiple Comparisons
+domain: Statistical Slip-Ups
+severity: warning
+description: >
+  Many statistical comparisons are run across many variables or subgroups, and the
+  few that come back "significant" are reported while the rest are ignored — with no
+  correction for the number of tests and no replication. With dozens of tests some
+  will cross p < 0.05 by chance alone, so cherry-picking the low p-values
+  manufactures false discoveries (p-hacking).
+detection_strategy: >
+  In code, flag loops or batches that compute p-values across many columns,
+  subgroups, or model specifications, then filter to the significant ones, with no
+  multiple-comparison correction (Bonferroni, Benjamini-Hochberg/FDR) and no
+  holdout/replication. In prose, watch for a single surprising significant result
+  drawn from a large exploratory search ("we tested everything and found X correlates
+  with Y"). Be suspicious when significance is reported without stating how many
+  comparisons were made.
+example_bad: >
+  An analyst computes correlations between an outcome and 40 candidate variables,
+  finds two with p < 0.05, and publishes those as discoveries — never mentioning the
+  38 other tests, or that about two false positives are expected by chance at that
+  threshold.
+example_good: >
+  The analyst pre-registers the key hypotheses or applies a multiple-comparison
+  correction (e.g. Benjamini-Hochberg) across all 40 tests, reports how many
+  comparisons were made, and treats surprising findings as hypotheses to confirm on
+  fresh data before claiming them.
+remediation: >
+  Account for the number of comparisons: correct p-values (Bonferroni or FDR),
+  pre-register primary hypotheses, and report every test run, not just the
+  significant ones. Treat findings from large exploratory searches as provisional
+  until replicated on independent data.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 4B: Inferential Infernos"
+  - "https://www.avoidingdatapitfalls.com"
