@@ -1,0 +1,38 @@
+id: measurement-system-drift
+name: Trends Driven by a Changing Measurement System
+domain: Epistemic Errors
+severity: warning
+description: >
+  A time series shows an apparent trend that is partly or wholly an artifact of
+  changes in how the phenomenon was measured — instrumentation sensitivity,
+  coverage, reporting requirements, or definitions — rather than a real change
+  in the phenomenon. Because the data-reality gap itself shrinks or grows over
+  the period, comparisons across time are not apples-to-apples, and a rise in
+  the data can simply mean we got better at detecting or recording.
+detection_strategy: >
+  Examine long time series of counts or rates that span known changes in
+  instrumentation, coverage, reporting rules, or definitions. Be suspicious when
+  a rising trend is concentrated in the hardest-to-detect cases (small events,
+  borderline diagnoses, minor incidents) and coincides with technological or
+  procedural improvements. Flag any claim that reads a long-run trend as real
+  change without controlling for, or even mentioning, detection capability.
+example_bad: >
+  "Recorded magnitude-6.0+ earthquakes have climbed steadily since 1900, so the
+  planet is becoming far more seismically active." The increase is concentrated
+  in the smallest, hardest-to-detect band and tracks the expansion of seismic
+  instrumentation, not necessarily any real rise in seismic activity.
+example_good: >
+  "Recorded magnitude-6.0+ earthquakes have risen since 1900, but the increase
+  is concentrated in the 6.0–6.9 band and coincides with major improvements in
+  seismograph coverage. We therefore cannot conclude that actual seismic
+  activity increased; the trend may largely reflect better detection."
+remediation: >
+  Before reading a time trend as real, ask whether the measurement system
+  changed over the period. Hold the method constant by restricting to a
+  consistently measured subset (e.g. only the largest earthquakes, which were
+  always detectable), annotate known instrumentation or definition changes on
+  the chart, and scope claims to "recorded" counts when detection capability
+  cannot be held constant.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 1A: The Data-Reality Gap (earthquake example)"
+  - "https://www.avoidingdatapitfalls.com"

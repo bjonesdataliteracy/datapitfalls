@@ -1,0 +1,37 @@
+id: human-keyed-rounding
+name: Rounding Fingerprints in Human-Keyed Data
+domain: Epistemic Errors
+severity: warning
+description: >
+  Values recorded by humans tend to be rounded, fudged, or guesstimated, so they
+  cluster at "round" numbers — multiples of 5 or 10, times reported at the top
+  of the hour or at :05. Treating such data as precise, or reading meaning into
+  the clustering itself, mistakes a fingerprint of the data-entry process for a
+  real pattern in the phenomenon. The same variable measured by an instrument
+  rather than a person typically shows no such heaping.
+detection_strategy: >
+  Inspect distributions at fine resolution for "heaping": conspicuous spikes at
+  values divisible by 5 or 10, time values piling up at :00/:05/:15/:30, or a
+  last-digit distribution that is far from uniform. A histogram that looks smooth
+  at a coarse bin size (e.g. 10) can reveal heaping when re-binned at size 1.
+  Flag any analysis that depends on a precision the human-entry process cannot
+  support, or that interprets the spikes at round values as a real signal.
+example_bad: >
+  "Roster weights cluster sharply at 200, 210, and 220 lbs, so teams must set
+  training targets at those round weights." The clustering is rounding by whoever
+  keyed the roster — a 1-lb histogram shows roughly three in four listed weights
+  are divisible by 5.
+example_good: >
+  "Roster weights show heavy heaping at multiples of 5 and 10 — a fingerprint of
+  human-entered rounding — so we treat them as approximate. By contrast, the
+  precisely measured Combine weights show a near-uniform last-digit distribution,
+  which is what an instrument-based measurement looks like."
+remediation: >
+  Re-examine the distribution at fine resolution (last-digit analysis or 1-unit
+  bins) to expose heaping before trusting precision. Treat heaped values as
+  approximate, avoid over-interpreting spikes at round numbers, and prefer
+  instrument-measured data when the level of precision actually matters to the
+  conclusion.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 1B: All Too Human Data"
+  - "https://www.avoidingdatapitfalls.com"

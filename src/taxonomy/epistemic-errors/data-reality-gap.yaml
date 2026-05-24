@@ -1,0 +1,42 @@
+id: data-reality-gap
+name: Mistaking Data for Reality
+domain: Epistemic Errors
+severity: warning
+description: >
+  Data is never the phenomenon itself — it is a record collected about the
+  phenomenon through a fallible chain of observing, reporting, and recording.
+  The pitfall is forgetting this gap and treating the data as a perfect mirror
+  of reality, so conclusions are stated about the world ("crime fell," "this is
+  where meteorites strike") when the data only supports claims about what was
+  measured and recorded. The gap always exists; the only question is how large
+  it is.
+detection_strategy: >
+  Flag language that equates a measured or reported quantity with the
+  underlying real-world phenomenon — e.g. "crime dropped" instead of "reported
+  crime dropped," or a map of recorded events described as where the events
+  actually occur. Look for counts, maps, or totals presented as complete
+  coverage when they in fact reflect observation/reporting coverage (events are
+  only in the data if someone saw, reported, and faithfully recorded them).
+  Watch for claims that omit who collected the data and how, and for cumulative
+  figures that behave oddly (e.g. counts that can be revised downward) because
+  records are provisional.
+example_bad: >
+  "This map of every recorded meteorite impact shows meteorites overwhelmingly
+  strike land near populated regions, not open ocean." The data reflects where
+  strikes were observed and recorded — near developed, populated areas — not
+  where meteorites are actually more likely to fall.
+example_good: >
+  "This map shows where meteorite strikes have been observed and recorded since
+  antiquity. The concentration over populated regions reflects reporting
+  coverage, not a real tendency for meteorites to avoid the oceans, so we can't
+  read it as a true strike-density map."
+remediation: >
+  Name the measurement process before drawing conclusions: who collected the
+  data, how, and what it could miss. Phrase findings as statements about the
+  recorded data ("reported crime," "counter counts," "recorded strikes") rather
+  than the phenomenon, and explicitly account for the gap when generalizing.
+  Visualizing the data and investigating outliers, shifts, and trends often
+  surfaces where the gap is hiding.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 1A: The Data-Reality Gap"
+  - "https://www.avoidingdatapitfalls.com"

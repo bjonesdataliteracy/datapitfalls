@@ -1,0 +1,35 @@
+id: inductive-overreach
+name: Inductive Leap from Sample to Universal
+domain: Epistemic Errors
+severity: warning
+description: >
+  Generalizing from specific observations in the data — singular statements about
+  what was measured, when, and where — to a universal claim about what is always
+  true, without acknowledging the inductive leap. No quantity of confirming
+  observations proves a universal statement, so treating "it happened in this
+  data" as "it holds in general" overreaches beyond the time, place, and
+  conditions the data actually covers. A common tell is a verb-tense shift from
+  the past ("crossed") to the present or future ("cross," "will cross").
+detection_strategy: >
+  Look for claims that slide from past-tense, scoped observations to present- or
+  future-tense universal generalizations — "X crossed the bridge in April"
+  becoming "X bikes cross the bridge," or "this fund outperformed last year"
+  becoming "this fund is the best investment going forward." Flag conclusions that
+  extend a finding beyond the sampled time, place, or population, and any
+  "past performance predicts future results" reasoning.
+example_bad: >
+  "Eastbound bike crossings exceeded westbound in April 2014, so more cyclists
+  cross the bridge heading east." A single month of recorded counts is generalized
+  into an always-true claim — and later data shows westbound is typically higher.
+example_good: >
+  "Eastbound crossings exceeded westbound in April 2014. That suggests a testable
+  hypothesis — eastbound is usually higher — which I checked against other months
+  and found false: westbound is typically higher, with a summer peak."
+remediation: >
+  Keep singular (observed) and universal (general) statements distinct. State
+  findings in the past tense, scoped to the data at hand. When you do generalize,
+  frame it as an explicit, falsifiable hypothesis and test it against additional
+  data rather than assuming the pattern holds beyond what you measured.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 1D: The Black Swan Pitfall"
+  - "https://www.avoidingdatapitfalls.com"
