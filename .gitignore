@@ -46,3 +46,13 @@ Thumbs.db
 .cache/
 .tmp/
 tmp/
+
+# Private source material — book text, manuscripts, licensed PDFs.
+# Keep "Avoiding Data Pitfalls" content OUT of the public repo. Use these
+# local-only locations for raw source text; only original, distilled taxonomy
+# rules belong in version control.
+private/
+book/
+*.pdf
+*.epub
+*.docx
