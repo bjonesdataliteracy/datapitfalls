@@ -1,0 +1,37 @@
+id: goodharts-law
+name: Goodhart's Law (Metric Gaming)
+domain: Analytical Aberrations
+severity: warning
+description: >
+  When a measure becomes a target, it ceases to be a good measure. Once people are
+  rewarded or judged by a metric, they optimize the metric itself — often at the
+  expense of the underlying goal it was meant to proxy — so the metric stops
+  reflecting reality and starts incentivizing gaming. This extends the metric-gaming
+  caution in Pitfall 5E (Moronic Measures), which the book raises but does not develop
+  as its own pitfall.
+detection_strategy: >
+  In code and prose, flag a single metric used as a hard target or incentive (bonuses,
+  rankings, OKRs, a model's objective) with no guard against gaming — no paired or
+  counter-metric, no check that the proxy still tracks the true outcome once people
+  optimize it. Be suspicious when a metric improves sharply while the real goal
+  doesn't, when behavior visibly reshapes around the measure, or when one
+  easily-influenced number drives rewards.
+example_bad: >
+  A support team is targeted purely on "tickets closed per day"; agents start closing
+  tickets prematurely and splitting issues to pad the count, so the metric soars while
+  actual customer resolution worsens — the measure, now a target, no longer measures
+  support quality.
+example_good: >
+  Performance is judged on a balanced set including an outcome metric (issues resolved
+  and staying resolved, customer satisfaction) alongside activity, with counter-metrics
+  that catch gaming, and the metrics are revisited as behavior adapts — so no single
+  number can be gamed at the goal's expense.
+remediation: >
+  Don't manage by a single proxy target. Pair each metric with a counter-metric,
+  anchor incentives to outcome measures rather than easily-gamed activity, monitor
+  whether the proxy still correlates with the true goal once it's targeted, and revise
+  metrics as people adapt to them.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 5E: Moronic Measures (domain extension — generalizes the metric-gaming caution in the book)"
+  - "Goodhart, C.A.E. (1975); Marilyn Strathern (1997), 'Improving ratings: audit in the British University system,' European Review"
+  - "https://www.avoidingdatapitfalls.com"

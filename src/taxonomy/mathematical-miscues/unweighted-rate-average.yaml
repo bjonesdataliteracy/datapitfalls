@@ -1,0 +1,36 @@
+id: unweighted-rate-average
+name: Unweighted Average of Rates
+domain: Mathematical Miscues
+severity: error
+description: >
+  Rates, ratios, or percentages computed over groups with different denominators
+  are combined by summing them or taking a simple (unweighted) arithmetic mean, as
+  if the groups were equal in size. Because each percentage is a quotient over a
+  different base, the only correct aggregate recombines the underlying numerators
+  and denominators — a population-weighted figure. The naive mean over- or
+  under-states the true overall rate, sometimes dramatically.
+detection_strategy: >
+  In code, flag `mean()`/`AVG()` or `SUM()` taken over a column that is itself a
+  rate/ratio/percentage (values bounded 0–100 or 0–1; names like pct/rate/share/
+  ratio) when group sizes differ and the denominators aren't carried along. Look
+  for region/segment roll-ups of a percentage with no weighting term, and
+  percentages being added together. In prose, watch for "the average of the rates"
+  or summed percents.
+example_bad: >
+  North America's urban-population percentage is computed as the simple mean of the
+  United States, Canada, and Bermuda values ((82.06 + 81.41 + 100.00) / 3 ≈
+  87.93%), giving tiny Bermuda the same weight as the U.S. — or, worse, the three
+  are summed to 263.80%.
+example_good: >
+  The regional figure is rebuilt from the components: estimate each country's urban
+  population (percent × total population), sum those numerators, and divide by the
+  summed populations — yielding ≈81.81%, very close to the U.S. value because the
+  U.S. dominates the region's population.
+remediation: >
+  Never average or sum rates directly across unequal groups. Carry the numerator
+  and denominator through the aggregation and recompute the rate at the target
+  level (a weighted average using each group's denominator as the weight). If the
+  denominators aren't available, obtain them — the rate alone cannot be aggregated.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 3D: Preposterous Percents"
+  - "https://www.avoidingdatapitfalls.com"

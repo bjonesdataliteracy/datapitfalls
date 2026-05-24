@@ -1,0 +1,33 @@
+id: colorblind-unsafe-palette
+name: Colorblind-Unsafe Palette
+domain: Design Dangers
+severity: warning
+description: >
+  A color encoding relies on hue distinctions that color-vision-deficient viewers
+  can't perceive — most notoriously red-green, which is indistinguishable to the most
+  common forms of colorblindness (roughly 1 in 12 men). The encoding works for some of
+  the audience and silently fails for the rest, who can't read the chart's meaning at
+  all.
+detection_strategy: >
+  In code and charts, flag palettes that distinguish categories or good/bad by red
+  versus green, or other hue pairs that collapse under common color-vision
+  deficiencies, with no redundant cue (shape, position, label, lightness). Be
+  suspicious of traffic-light (red/amber/green) status encodings, diverging red-green
+  scales, and any palette not checked against a colorblind simulator. Color should not
+  be the sole channel carrying meaning.
+example_bad: >
+  A status dashboard marks accounts "red" for at-risk and "green" for healthy with no
+  other cue, so a red-green colorblind manager sees two near-identical muddy tones and
+  cannot tell which accounts need attention.
+example_good: >
+  The encoding uses a colorblind-safe palette (e.g. blue/orange) and adds a redundant
+  channel — an icon, label, or position — so the at-risk/healthy distinction is
+  legible to everyone, and the palette is verified with a colorblind simulator.
+remediation: >
+  Choose colorblind-safe palettes (avoid red-green for meaningful distinctions), and
+  never let color be the only channel carrying information — add shape, text,
+  position, or lightness as a redundant cue. Test palettes with a color-vision-
+  deficiency simulator before shipping.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 7A: Confusing Colors"
+  - "https://www.avoidingdatapitfalls.com"

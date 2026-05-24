@@ -1,0 +1,36 @@
+id: truncated-y-axis
+name: Truncated Y-Axis
+domain: Graphical Gaffes
+severity: warning
+description: >
+  A bar or column chart's value axis doesn't start at zero, so the bar lengths no
+  longer encode the values proportionally. Because length is the visual encoding, a
+  truncated baseline exaggerates the differences between bars and can make a small
+  change look dramatic. Line charts and some non-length encodings may legitimately
+  omit zero, so the problem is specific to length-encoded marks. The book mentions
+  axis truncation only in passing; this captures it as a standalone rule.
+detection_strategy: >
+  In code and charts, flag bar/column/area charts whose value axis starts above zero
+  — explicit axis limits or scale domains excluding zero (matplotlib `set_ylim`,
+  ggplot `coord_cartesian`/`ylim`, Vega-Lite `scale: {zero: false}`, an Excel minimum
+  bound). Be suspicious of bar charts where a tiny percentage change fills most of the
+  plot, and of a y-axis minimum set just below the smallest value. Scope the check to
+  length-encoded marks, not line/dot charts where omitting zero can be fine.
+example_bad: >
+  A column chart of quarterly revenue ($1.02M, $1.04M, $1.05M) with a y-axis running
+  $1.00M–$1.06M makes a ~3% change look like a near-tripling, because the truncated
+  baseline stretches tiny differences across the whole plot.
+example_good: >
+  The same bars are drawn with the value axis starting at zero, so their lengths
+  reflect the true proportional differences — or, if the small change is the real
+  story, it's shown with a line chart, a dot plot, or an explicit percentage-change
+  label that doesn't rely on bar length.
+remediation: >
+  Start the value axis at zero for bar/column/area charts so length encodes value
+  honestly. If small differences are the point, switch to an encoding that doesn't
+  rely on length (line, dot plot, or a stated delta) rather than truncating the
+  baseline of bars.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6: Graphical Gaffes (domain extension — the chapter mentions y-axis truncation only in passing, not as a sub-pitfall)"
+  - "Darrell Huff, How to Lie with Statistics (Norton, 1954); Alberto Cairo, How Charts Lie (Norton, 2019)"
+  - "https://www.avoidingdatapitfalls.com"

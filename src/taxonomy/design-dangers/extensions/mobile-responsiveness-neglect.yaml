@@ -1,0 +1,35 @@
+id: mobile-responsiveness-neglect
+name: Mobile Responsiveness Neglect
+domain: Design Dangers
+severity: warning
+description: >
+  A visualization or dashboard is designed only for a large desktop screen and breaks
+  on the small screens where much of the audience actually views it — tiny unreadable
+  labels, controls that fall off-screen or can't be tapped, horizontal scrolling, a
+  dense multi-panel layout crammed onto a phone. Richness that worked on a monitor
+  becomes a confusing, unusable experience on mobile. This extends the chapter's
+  mobile-interaction discussion but isn't developed as its own sub-pitfall.
+detection_strategy: >
+  In code and UI, flag fixed-width dashboards and charts with no responsive layout, no
+  breakpoints, tap targets too small for a finger, text sized for desktop only, and
+  dense multi-panel views never tested at phone width. Be suspicious of visualizations
+  published to a broad web audience with no mobile rendering check, and of
+  interactions (hover-only tooltips) that don't work on touch.
+example_bad: >
+  A four-panel interactive dashboard built at 1400px renders on a phone as a sliver of
+  unreadable text, with hover-only tooltips that touch can't trigger and filters
+  pushed off the edge — most of the mobile audience can't use it at all.
+example_good: >
+  The visualization adapts to screen size — reflowing or simplifying panels for small
+  screens, sizing text and tap targets for touch, and replacing hover-only
+  interactions with tap-friendly ones — so it stays usable from phone to desktop, and
+  it's tested at multiple widths.
+remediation: >
+  Design and test for the screens the audience actually uses: add responsive
+  breakpoints, size text and tap targets for touch, ensure controls and tooltips work
+  without a mouse, and simplify or reflow dense layouts for small screens rather than
+  shrinking them. Verify on real devices.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 7C: Usability Uh-Ohs (domain extension — generalizes the mobile-interaction discussion in the book)"
+  - "Ethan Marcotte, Responsive Web Design (A Book Apart, 2011)"
+  - "https://www.avoidingdatapitfalls.com"

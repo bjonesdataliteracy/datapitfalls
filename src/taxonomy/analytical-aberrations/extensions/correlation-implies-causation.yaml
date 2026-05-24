@@ -1,0 +1,37 @@
+id: correlation-implies-causation
+name: Correlation Implies Causation
+domain: Analytical Aberrations
+severity: warning
+description: >
+  A causal claim is drawn from a merely correlational observation — "X is associated
+  with Y, therefore X causes Y" — when the association could instead be coincidence,
+  reverse causation (Y drives X), or a confounding third variable driving both.
+  Acting on the supposed cause then fails, because the real mechanism was never
+  established. This extends the domain's analysis-distortion theme but is not a
+  specific sub-pitfall in the book.
+detection_strategy: >
+  In code and prose, flag causal language ("drives," "leads to," "because of,"
+  "boosts," "improves") attached to evidence that is only observational/correlational
+  — a correlation coefficient, a regression slope, a before/after with no control —
+  and no experiment, no adjustment for confounders, and no consideration of reverse
+  causation. Be suspicious of recommendations to change X in order to move Y based
+  solely on their historical correlation.
+example_bad: >
+  An analysis finds that customers who use feature X churn less and concludes "feature
+  X reduces churn, so push everyone to use it" — but already-engaged customers (who
+  were never going to churn) are simply the ones who try feature X, so the arrow may
+  run the other way.
+example_good: >
+  The team treats the correlation as a hypothesis and tests it causally — a
+  randomized experiment (some users prompted to use X, some not), or at minimum
+  controlling for engagement and considering reverse causation — before claiming X
+  reduces churn or acting on it.
+remediation: >
+  Don't infer causation from correlation. Establish cause with a randomized
+  experiment where feasible; otherwise control for plausible confounders, weigh
+  reverse causation and coincidence, and use causal-inference methods. State clearly
+  when a relationship is only associational and shouldn't drive interventions.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 5: Analytical Aberrations (domain extension — not a specific sub-pitfall example in the book)"
+  - "Judea Pearl, Causality: Models, Reasoning, and Inference (2nd ed., Cambridge University Press, 2009)"
+  - "https://www.avoidingdatapitfalls.com"

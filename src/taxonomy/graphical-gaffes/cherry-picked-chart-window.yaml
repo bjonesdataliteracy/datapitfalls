@@ -1,0 +1,32 @@
+id: cherry-picked-chart-window
+name: Cherry-Picked Chart Window
+domain: Graphical Gaffes
+severity: warning
+description: >
+  A chart shows a narrow slice of the data — a short time window or restricted range —
+  that creates an impression the full data would contradict or reverse. Whether by
+  oversight or intent, presenting the slice as the story leaves the audience with a
+  conclusion the broader context doesn't support.
+detection_strategy: >
+  In code and charts, flag time series or ranges filtered to a sub-window (a recent N
+  weeks, a clipped axis domain) presented as a trend, with no view of or reference to
+  the longer history. Be suspicious when the chosen window's slope or message reverses
+  if extended, when start/end points look hand-picked, or when no rationale is given
+  for the range. Compare the windowed view against the full series.
+example_bad: >
+  A 40-week window of reported narcotics cases trends sharply upward and is used to
+  claim narcotics crime is rising — but the full 8-year series shows that window was a
+  local bump within an overall decline, so the chart leaves the opposite of the true
+  impression.
+example_good: >
+  The trend is shown over the full available period (with the window of interest
+  highlighted if needed), so the audience sees the recent movement in the context of
+  the long-run trend and isn't misled by a cherry-picked slice.
+remediation: >
+  Show data over a range justified by the question, and check whether the message
+  survives when the window is extended. Disclose why a particular window was chosen,
+  highlight rather than crop the broader context, and stay alert that a short slice
+  can reverse a long-run trend.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6A: Challenging Charts"
+  - "https://www.avoidingdatapitfalls.com"

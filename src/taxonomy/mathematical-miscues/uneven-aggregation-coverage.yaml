@@ -1,0 +1,36 @@
+id: uneven-aggregation-coverage
+name: Uneven Aggregation Coverage
+domain: Mathematical Miscues
+severity: warning
+description: >
+  Records are grouped into categories that are then compared, but the categories
+  aggregate different amounts of underlying data, so the comparison is not
+  apples-to-apples. The classic case: rolling several years of data up by calendar
+  month, where some months happen to include one more year of observations than
+  others — making those months look artificially higher and shuffling the ranking
+  of the "biggest" categories.
+detection_strategy: >
+  In code, flag cross-category aggregations (`GROUP BY month`, `GROUP BY weekday`,
+  category totals) that pool multiple periods without normalizing for how many
+  sub-periods each category actually contains — no count of contributing
+  years/periods per bucket, no per-period average. In data, look for category
+  buckets backed by unequal numbers of records or unequal time spans. Be suspicious
+  when ranking categories by a raw total that secretly depends on uneven coverage.
+example_bad: >
+  Eighteen years of wildlife-strike data (ending Jul 31, 2017) are summed by
+  calendar month. January–July each pool 18 years while August–December pool only
+  17, so July tops the chart — but after dropping the partial 2017, August is
+  actually the true peak month.
+example_good: >
+  The analyst equalizes coverage before comparing — restricting to complete years,
+  or averaging strikes per month-year rather than summing raw totals — so each
+  month reflects the same number of contributing periods and the ranking (August
+  highest) is accurate.
+remediation: >
+  When comparing aggregated categories, verify each bucket draws on the same number
+  of underlying periods/records. Normalize to a per-period rate or average, or trim
+  the data to a span with equal coverage, before ranking or comparing category
+  totals.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 3A: Aggravating Aggregations"
+  - "https://www.avoidingdatapitfalls.com"

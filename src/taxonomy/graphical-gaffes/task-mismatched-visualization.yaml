@@ -1,0 +1,33 @@
+id: task-mismatched-visualization
+name: Task-Mismatched Visualization
+domain: Graphical Gaffes
+severity: warning
+description: >
+  A chart is technically fine but doesn't help the user accomplish their actual task,
+  because the wrong variable is mapped to an axis (or the wrong encoding/aggregation
+  is chosen) for the question at hand. The chart-type debate misses the point; what
+  matters is whether the user can get their job done with the view.
+detection_strategy: >
+  In prose, specs, and code, flag visualizations built without a clear statement of
+  the user's task and the question it must answer — dashboards reused for a purpose
+  they weren't designed for, an axis showing distance when the task needs time,
+  summaries at the wrong grain. Be suspicious when no one has defined user, task,
+  data, and performance requirements, or when answering the real question requires
+  mental math the chart should have done.
+example_bad: >
+  A hiker needs to know how long it takes to reach a summit, but the fitness dashboard
+  plots elevation against distance with no time axis — so "two hours to the top" can't
+  be read off directly, and pace varies up versus down, defeating back-of-envelope
+  estimates.
+example_good: >
+  A chart is added with time on the x-axis (altitude or cumulative distance on the
+  y-axis), making the ascent time directly readable — the encoding is chosen to fit
+  the specific question rather than defaulting to whatever the tool produced.
+remediation: >
+  Start from the user and their task: define who will use the view, what question it
+  must answer, the relevant data, and the performance needs, then choose the encoding
+  (especially which variable goes on each axis) that lets them read the answer
+  directly. Validate the chart against real usage, not a chart-chooser checklist.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6A: Challenging Charts"
+  - "https://www.avoidingdatapitfalls.com"

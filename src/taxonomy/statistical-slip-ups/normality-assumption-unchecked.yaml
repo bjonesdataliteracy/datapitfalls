@@ -1,0 +1,35 @@
+id: normality-assumption-unchecked
+name: Unchecked Normality Assumption
+domain: Statistical Slip-Ups
+severity: warning
+description: >
+  Tools that assume a normal (Gaussian) distribution — the standard deviation as the
+  headline measure of spread, the 68–95–99.7 rule, Z-scores, control/spec limits,
+  Six Sigma capability — are applied to data that isn't normal. For skewed or
+  power-law data the SD can exceed the mean and "σ from the mean" becomes
+  meaningless, badly mis-estimating how often extreme values occur.
+detection_strategy: >
+  In code, flag use of `std()`, Z-scores, ±kσ thresholds, normal-based control/spec
+  limits, or `scipy.stats.norm` probabilities with no normality check (histogram,
+  Q-Q plot, skewness/kurtosis, Shapiro-Wilk). Be suspicious when SD ≥ mean, when the
+  measure is a known power-law quantity (income, sales, followers, file sizes), or
+  when outliers far exceed what a normal model predicts. In prose, watch for "within
+  N standard deviations" claims about non-normal data.
+example_bad: >
+  Analysts summarize NFL salary as mean ± SD and reason in σ, but the SD ($2.25M) is
+  larger than the mean ($1.49M) and the top earner sits >10σ out — the height
+  equivalent of 8'4". A normal model calls that impossible, yet there he is: the
+  data is power-law, not Gaussian.
+example_good: >
+  The distribution is checked first (histogram/Q-Q plot); recognizing it is
+  power-law, the analysts describe it with quantiles, a log scale, or tail
+  statistics (Pareto share) instead of mean ± SD, and avoid Z-score/σ claims that
+  assume normality.
+remediation: >
+  Verify the distribution before applying normal-theory tools. Use a histogram or
+  Q-Q plot and a normality test; for non-normal data prefer robust or quantile
+  summaries, log transforms, or distribution-appropriate models, and don't quote
+  σ-based probabilities (68-95-99.7, Z-scores, Six Sigma) for data that isn't normal.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 4A: Descriptive Debacles"
+  - "https://www.avoidingdatapitfalls.com"

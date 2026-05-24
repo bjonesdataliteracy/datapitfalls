@@ -1,0 +1,37 @@
+id: regression-to-the-mean
+name: Regression to the Mean
+domain: Statistical Slip-Ups
+severity: warning
+description: >
+  Extreme measurements tend to be followed by less extreme ones simply because of
+  chance variation, not because of any intervention. When the highest- or
+  lowest-scoring units are selected and then re-measured (or "treated"), their
+  movement toward the average is mistaken for a real effect of the selection or
+  treatment. This extends the domain's sampling-variance theme but is a distinct
+  named phenomenon not covered in the book.
+detection_strategy: >
+  In code and prose, flag before/after comparisons where units were chosen because
+  they were extreme (worst-performing schools, top salespeople, sickest patients) and
+  their later move toward average is credited to an intervention, with no control
+  group. Be suspicious of "the bottom group improved after we acted" or "the top
+  group declined" claims, and of selecting on the same noisy metric used to judge the
+  outcome.
+example_bad: >
+  The worst-performing 10% of stores are given a new training program; next quarter
+  their sales rise and the program is declared a success — but the worst performers
+  were partly unlucky and would have drifted back toward average anyway, with or
+  without training.
+example_good: >
+  The evaluation uses a randomized control group (some low performers get the
+  program, some don't), or models the expected regression, so the program's effect is
+  measured against what would have happened by chance alone — separating real impact
+  from regression to the mean.
+remediation: >
+  When units are selected for being extreme, expect regression toward the mean on
+  re-measurement and don't credit it to an intervention. Use a control group or a
+  proper baseline model, and avoid selecting and evaluating on the same noisy
+  measure.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 4: Statistical Slip-Ups (domain extension — not a specific sub-pitfall example in the book)"
+  - "Galton, F. (1886), 'Regression Towards Mediocrity in Hereditary Stature,' J. Anthropological Institute; Kahneman, Thinking, Fast and Slow (2011)"
+  - "https://www.avoidingdatapitfalls.com"

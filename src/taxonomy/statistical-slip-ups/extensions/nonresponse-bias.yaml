@@ -1,0 +1,34 @@
+id: nonresponse-bias
+name: Nonresponse Bias
+domain: Statistical Slip-Ups
+severity: warning
+description: >
+  Conclusions are drawn from the subset of a sample that actually responded (or could
+  be reached), as if it represented the whole target population. When non-responders
+  differ systematically from responders, the results are biased — often badly — no
+  matter how large the responding set. This extends the domain's sampling theme; the
+  chapter gestures at survey nonresponse but doesn't formally cover this bias.
+detection_strategy: >
+  In code and prose, flag survey/poll/feedback conclusions generalized to a
+  population without reporting the response rate or comparing responders to
+  non-responders — no mention of who didn't answer, no weighting or adjustment. Be
+  suspicious of customer-satisfaction, NPS, or opinion results with low or unstated
+  response rates, and of treating "everyone who replied" as "everyone."
+example_bad: >
+  A company emails a satisfaction survey, 8% reply, 92% of those are happy, and it
+  announces "92% of customers are satisfied" — even though dissatisfied customers may
+  have already churned or ignored the email, so the responders skew positive.
+example_good: >
+  The company reports the response rate, compares responders to the full customer
+  base on known attributes, weights or adjusts for the difference (or follows up with
+  a sample of non-responders), and frames the result as "92% of the 8% who
+  responded," caveating the generalization.
+remediation: >
+  Always report the response rate and consider how non-responders might differ from
+  responders. Compare responders to the known population, weight or adjust for
+  nonresponse, follow up with a subsample of non-responders, and scope claims to what
+  the responding sample can actually support.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 4: Statistical Slip-Ups (domain extension — not a specific sub-pitfall example in the book)"
+  - "Literary Digest 1936 U.S. presidential poll (nonresponse and frame bias); Groves et al., Survey Methodology (2nd ed., Wiley, 2009)"
+  - "https://www.avoidingdatapitfalls.com"

@@ -1,0 +1,32 @@
+id: insufficient-precision-comparison
+name: Insufficient Precision for Comparison
+domain: Graphical Gaffes
+severity: warning
+description: >
+  A chart is asked to convey a fine distinction (one value just edges out another)
+  using an encoding that can't show it precisely. Encodings without a common baseline
+  — pies, bubbles, treemaps, disconnected marks — let the audience see "roughly equal"
+  but not which is larger, so the intended point doesn't land without labels.
+detection_strategy: >
+  In prose and charts, flag a claim about a small or close difference paired with an
+  encoding that lacks a shared baseline or precise scale (area/angle encodings, packed
+  bubbles, side-by-side pies) and no data labels. Be suspicious when the message
+  hinges on which of two near-equal values is larger but the chart can only show
+  approximate magnitude. Length on a common baseline (bars) or explicit labels are
+  needed for precise comparison.
+example_bad: >
+  To show that assault just barely outpaced narcotics from 2010–2017, the analyst uses
+  pies, bubbles, and treemaps — none of which share a baseline — so the audience can
+  see the two are close but cannot tell which is larger without labels.
+example_good: >
+  A bar chart with a common baseline (optionally with value labels and gridlines) is
+  used, so the slightly longer assault bar makes the precise comparison immediately
+  clear — the encoding affords the precision the message requires.
+remediation: >
+  When the message depends on a precise or close comparison, use a position/length
+  encoding with a common baseline (bar chart), and add data labels or gridlines if
+  even finer precision is needed. Reserve area/angle encodings for cases where
+  approximate magnitude is enough.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6A: Challenging Charts"
+  - "https://www.avoidingdatapitfalls.com"

@@ -1,0 +1,37 @@
+id: inconsistent-color-encoding
+name: Inconsistent Color Encoding
+domain: Design Dangers
+severity: warning
+description: >
+  Across a multi-view dashboard, the same color (or the same hue at a given
+  saturation) is used to mean different things — encoding one variable in one chart
+  and an unrelated variable in another, or serving as two separate sequential scales
+  for different measures. Viewers infer a connection between marks that share a color
+  when none exists, or read the wrong legend, and are misled.
+detection_strategy: >
+  In code and charts, flag dashboards where a color palette or hue is reused across
+  views that encode different fields — the same categorical colors applied to two
+  different dimensions, or two sequential legends built on the same hue for different
+  measures/aggregations. Be suspicious when two charts sit side by side with
+  overlapping colors that mean different things, when there are multiple color
+  legends, or when color is applied redundantly (a bar chart already encoding
+  magnitude by length also colored by the same measure).
+example_bad: >
+  A marathon dashboard places a finish-time histogram next to a finisher-origin
+  treemap that share a palette, so the same red encodes both "Chicago/Portland" and
+  "4–5 hour finishers" — implying a link that doesn't exist; elsewhere one turquoise
+  sequential scale means county road-miles in a map and road-type miles in a bar chart
+  at once.
+example_good: >
+  Each variable gets its own distinct, non-overlapping color treatment (or the
+  conflicting charts are separated), and redundant color is removed — e.g. the bar
+  chart, which already encodes magnitude by length, drops its color scale so the
+  dashboard's one sequential hue means only one thing.
+remediation: >
+  Make every color mean exactly one thing across the whole dashboard. Don't reuse a
+  hue or palette for unrelated variables or as two different scales; remove redundant
+  color encodings, and if two charts genuinely need different color meanings, separate
+  them or use clearly distinct schemes.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 7A: Confusing Colors"
+  - "https://www.avoidingdatapitfalls.com"

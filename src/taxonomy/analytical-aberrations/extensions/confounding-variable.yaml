@@ -1,0 +1,36 @@
+id: confounding-variable
+name: Uncontrolled Confounding Variable
+domain: Analytical Aberrations
+severity: warning
+description: >
+  A comparison or model attributes an effect to one variable while ignoring a lurking
+  third variable that influences both the supposed cause and the outcome. The
+  uncontrolled confounder produces a real but non-causal association, so the
+  conclusion — and any action based on it — is wrong. Closely related to Simpson's
+  paradox, where a confounder can even reverse the apparent direction of an effect.
+  This extends the domain's analysis-distortion theme but is not a specific
+  sub-pitfall in the book.
+detection_strategy: >
+  In code and prose, flag group comparisons or regressions that estimate an effect
+  with no adjustment for obvious confounders — observational comparisons of outcomes
+  between groups that differ in other ways, a regression of Y on X omitting variables
+  known to affect both, no randomization and no covariate control. Be suspicious when
+  the groups being compared aren't otherwise comparable, or when a plausible common
+  cause goes unmentioned.
+example_bad: >
+  A study reports that coffee drinkers have higher rates of a disease and implies
+  coffee is harmful — but coffee drinkers also smoke more, and smoking (the
+  confounder) drives the disease; with smoking uncontrolled, coffee takes the blame.
+example_good: >
+  The analysis controls for the confounder — stratifying or adjusting for smoking, or
+  randomizing — and finds the coffee association largely disappears, so it reports the
+  adjusted effect and names the confounder rather than the naive association.
+remediation: >
+  Identify plausible common causes before drawing conclusions, and control for them by
+  randomization, stratification, matching, or regression adjustment. Compare only
+  groups that are otherwise comparable, report which confounders were accounted for,
+  and treat unadjusted observational effects as provisional.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 5: Analytical Aberrations (domain extension — not a specific sub-pitfall example in the book)"
+  - "Judea Pearl, Causality (2nd ed., Cambridge University Press, 2009); R.A. Fisher, The Design of Experiments (1935)"
+  - "https://www.avoidingdatapitfalls.com"

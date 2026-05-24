@@ -38,7 +38,8 @@
         "Statistical Slip-Ups",
         "Analytical Aberrations",
         "Graphical Gaffes",
-        "Design Dangers"
+        "Design Dangers",
+        "Biased Baseline"
       ]
     },
     "severity": {

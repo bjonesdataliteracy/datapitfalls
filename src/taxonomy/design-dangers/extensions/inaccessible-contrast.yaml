@@ -1,0 +1,34 @@
+id: inaccessible-contrast
+name: Inaccessible Contrast
+domain: Design Dangers
+severity: warning
+description: >
+  Text or marks are rendered with too little contrast against their background — light
+  gray on white, thin colored text, faint labels — so they're hard or impossible to
+  read for users with low vision, on poor displays, or in bright light. The chart may
+  look sleek to the designer but excludes part of the audience. This extends the
+  domain's accessibility theme but is not a specific sub-pitfall example in the book.
+detection_strategy: >
+  In code, charts, and CSS, flag foreground/background color pairs whose contrast
+  ratio falls below accessibility thresholds (WCAG 2.1 AA: 4.5:1 for normal text, 3:1
+  for large text and meaningful graphics), light-gray-on-white body text, thin or
+  low-weight colored text, and axis labels/annotations in faint tones. Be suspicious
+  of palettes chosen for looks with no contrast check, and of color on small text.
+  Verify ratios with a contrast checker.
+example_bad: >
+  A dashboard renders axis labels and footnotes in #BBBBBB light gray on a white
+  background (about a 1.9:1 contrast ratio), so low-vision users and anyone on a glary
+  laptop screen outdoors simply can't read the numbers.
+example_good: >
+  The same labels are darkened to meet at least WCAG AA (4.5:1 for normal text) — e.g.
+  dark gray on white — and contrast is verified with a checker, so the text is legible
+  across vision levels, displays, and lighting.
+remediation: >
+  Check every text/background and meaningful mark/background pair against WCAG contrast
+  minimums (4.5:1 normal text, 3:1 large text and graphical objects), and darken or
+  adjust until they pass. Don't trade legibility for a low-contrast aesthetic; verify
+  with a contrast tool.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 7: Design Dangers (domain extension — not a specific sub-pitfall example in the book)"
+  - "W3C Web Content Accessibility Guidelines (WCAG) 2.1, Success Criterion 1.4.3 Contrast (Minimum)"
+  - "https://www.avoidingdatapitfalls.com"

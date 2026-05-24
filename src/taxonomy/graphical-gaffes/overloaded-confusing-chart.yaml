@@ -1,0 +1,34 @@
+id: overloaded-confusing-chart
+name: Overloaded Confusing Chart
+domain: Graphical Gaffes
+severity: warning
+description: >
+  A chart crams in so much that the audience can't extract the intended message — too
+  many overlapping series ("spaghetti"), a color palette recycled across more
+  categories than it has colors, and the series of interest left in a low-salience
+  default. The viewer doesn't walk away with the wrong idea; they walk away with no
+  idea, and give up.
+detection_strategy: >
+  In code and charts, flag many overlapping series in one view (a dozen-plus lines),
+  categorical color scales applied to more categories than the palette has distinct
+  colors (so hues repeat), the key series left a default low-contrast color, and
+  charts that require interaction (hover/click) to read in a static context. Be
+  suspicious of legends longer than the palette and of no visual hierarchy
+  distinguishing the focus series.
+example_bad: >
+  A line chart shows 24 crime categories at once; the 20-color palette recycles hues
+  so two lines share a color, the "shoplifting" series of interest is a faint default
+  beige lost in the tangle, and you must hover to tell which line is which.
+example_good: >
+  The focus series (shoplifting) is given a bold, unique color while the rest are
+  de-emphasized with transparency or gray, the number of fully-colored series is kept
+  within the palette, and the chart reads clearly in static form without requiring
+  interaction.
+remediation: >
+  Reduce what's in the view and build a visual hierarchy: emphasize the focus series
+  with a distinct color, mute or aggregate the rest, and keep the number of
+  distinctly-colored categories within the palette's size. Ensure the chart conveys
+  its point statically, without relying on hover or click.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6A: Challenging Charts"
+  - "https://www.avoidingdatapitfalls.com"

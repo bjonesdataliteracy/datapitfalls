@@ -1,0 +1,40 @@
+id: silent-type-coercion
+name: Silent Type Coercion
+domain: Technical Trespasses
+severity: warning
+description: >
+  A value's data type is implicitly converted on load or during processing,
+  changing its meaning without raising an error — leading zeros stripped when an
+  identifier is read as an integer (ZIP "02134" → 2134), numeric-looking strings
+  auto-cast, dates or booleans inferred from ambiguous text, or large IDs losing
+  precision as floats. The data looks fine until a join, sort, or format silently
+  breaks. The book's two-digit-year case is one instance; this generalizes the
+  failure mode to any implicit coercion.
+detection_strategy: >
+  Flag readers and casts that infer types implicitly — `pd.read_csv` without
+  `dtype`/`converters`, spreadsheet import with auto-detection, bare `int()`/
+  `float()` over identifier columns. Look for code that treats codes/IDs (ZIP,
+  FIPS, SKU, phone, account or order numbers) as numeric, joins or comparisons that
+  fail because one side became numeric, and large integer IDs stored as float. In
+  data, watch for identifier columns missing leading zeros or collapsed to a
+  uniform numeric width.
+example_bad: >
+  A CSV of addresses is loaded with `pd.read_csv('addresses.csv')`. Pandas infers
+  the `zip` column as int64, so "02134" becomes 2134 and every New England ZIP
+  loses its leading zero. A later join to a ZIP reference table on the string key
+  silently matches nothing for those rows.
+example_good: >
+  Identifier columns are read as strings with explicit types —
+  `pd.read_csv('addresses.csv', dtype={'zip': str})` (or `converters`) — so
+  "02134" stays "02134". Columns that are codes, not quantities, are typed as text
+  up front, and the join key's type is asserted equal on both sides before merging.
+remediation: >
+  Declare types explicitly at every boundary instead of relying on inference. Treat
+  identifiers (ZIP, FIPS, SKU, phone, account, order IDs) as strings, never
+  numbers; pin dtypes on import; and verify that join keys share a type before
+  merging. Validate that identifier widths and leading zeros survive the round
+  trip.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 2: Technical Trespasses (domain extension — generalizes the two-digit-year example in Pitfall 2A)"
+  - "Ziemann, Eren & El-Osta (2016), 'Gene name errors are widespread in the scientific literature,' Genome Biology 17:177 — spreadsheet auto-coercion of identifiers"
+  - "https://www.avoidingdatapitfalls.com"

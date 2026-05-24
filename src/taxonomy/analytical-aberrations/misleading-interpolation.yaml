@@ -1,0 +1,36 @@
+id: misleading-interpolation
+name: Misleading Interpolation
+domain: Analytical Aberrations
+severity: warning
+description: >
+  Sparse data points are connected (or averaged) with straight lines, implying a
+  smooth path between them and fabricating intermediate values that were never
+  measured. A low sampling rate — or a two-point slopegraph — can hide dramatic real
+  variation that occurred between the sampled moments, telling a true-but-woefully-
+  incomplete story.
+detection_strategy: >
+  In code and charts, flag visualizations or analyses that connect widely spaced
+  samples as if continuous — a slopegraph or line between just two time points, a
+  series plotted at coarse aggregation (yearly) when finer data exists, linear
+  interpolation/resampling that invents between-sample values. In prose, watch for
+  "increased from A to B" conclusions over a long span with no look at what happened
+  in between. Ask whether the sampling rate is fine enough to capture the variation
+  of interest.
+example_bad: >
+  A slopegraph connects each country's life expectancy in 1960 to its value in 2015,
+  concluding "all countries increased" — hiding that Cambodia's fell below 20 in
+  1977-78, Iraq's stagnated after the mid-1990s, and Iceland's was far noisier than
+  Canada's.
+example_good: >
+  The full annual series is plotted between the endpoints, revealing the wars,
+  stagnations, and year-to-year noise the two-point view erased — and the sampling
+  rate is chosen fine enough to capture the variation that matters before drawing
+  conclusions.
+remediation: >
+  Choose a sampling/aggregation rate fine enough to capture the variation relevant to
+  the question, and don't treat lines between sparse points as real data. Before
+  concluding from endpoints, inspect the intermediate values, and be explicit that
+  interpolated points are fabricated, not measured.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 5C: Ill-Advised Interpolations"
+  - "https://www.avoidingdatapitfalls.com"

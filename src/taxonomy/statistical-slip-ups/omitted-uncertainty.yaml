@@ -1,0 +1,34 @@
+id: omitted-uncertainty
+name: Omitted Uncertainty
+domain: Statistical Slip-Ups
+severity: warning
+description: >
+  Point estimates — rates, proportions, averages, rankings — are presented with no
+  expression of uncertainty (confidence interval, error bar, margin of error), so
+  readers treat noisy estimates as exact. Without uncertainty, small-sample estimates
+  look as solid as large-sample ones, and differences that fall well within the
+  margin of error are read as real.
+detection_strategy: >
+  In code, flag charts and tables of estimated rates or means built without
+  confidence intervals or error bars — bar charts of proportions with no CI, rankings
+  with no margin, `mean()` reported with no interval — especially when per-cell
+  sample sizes are small or vary widely. In prose, watch for precise-sounding rates
+  or "best/worst" rankings with no margin of error and no mention of sample size.
+example_bad: >
+  Mislabeling rates per city are plotted as plain bars and used to crown the "best"
+  and "worst" cities, even though several rest on a dozen or fewer samples per
+  category — so differences that sit within the binomial confidence interval are
+  presented as a definitive ranking.
+example_good: >
+  Each rate is shown with its binomial confidence interval (error bars), cells with
+  too few samples to support an estimate are dropped or flagged, and only differences
+  whose intervals separate are described as real — so the chart distinguishes signal
+  from noise.
+remediation: >
+  Attach uncertainty to every estimate: confidence intervals or error bars on rates
+  and means, margins of error on rankings. Suppress or caveat estimates from samples
+  too small to support them, and call a difference real only when its intervals don't
+  overlap (or a proper test confirms it).
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 4C: Slippery Sampling"
+  - "https://www.avoidingdatapitfalls.com"

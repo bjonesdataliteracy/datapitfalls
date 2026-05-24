@@ -1,0 +1,35 @@
+id: untested-significance-claim
+name: Untested Significance Claim
+domain: Statistical Slip-Ups
+severity: warning
+description: >
+  A difference between groups (in means, rates, conversion, and the like) is
+  declared real or meaningful purely because the observed numbers differ, with no
+  test of whether the gap could arise from chance given the sample sizes and
+  variation. Random samples differ even when the underlying groups don't, so an
+  untested difference may be nothing but noise.
+detection_strategy: >
+  In code and prose, flag conclusions that "group A beats B" or "the treatment
+  worked" drawn straight from a difference in sample means or rates with no
+  hypothesis test, confidence interval, or uncertainty estimate — no
+  t-test/ANOVA/chi-square/CI anywhere. Be suspicious of A/B results, before/after
+  comparisons, or leaderboard rankings reported as decisive from raw point estimates
+  alone, especially with small or unstated sample sizes.
+example_bad: >
+  A qualification run shows the new component's parts averaging 2% higher on a test
+  than the old, and the team concludes the change "improved performance" — without
+  testing whether a 2% gap is within the normal run-to-run variation for that sample
+  size.
+example_good: >
+  The team runs an appropriate hypothesis test (or computes confidence intervals)
+  accounting for sample size and variability, and claims a real effect only if the
+  difference is unlikely under chance — otherwise reporting "no significant
+  difference detected," with the observed effect and its uncertainty.
+remediation: >
+  Don't infer a real difference from raw numbers alone. Quantify uncertainty — run a
+  suitable significance test or compute confidence intervals that account for sample
+  size and variation — and report the effect with its uncertainty rather than
+  treating any gap as decisive.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 4B: Inferential Infernos"
+  - "https://www.avoidingdatapitfalls.com"

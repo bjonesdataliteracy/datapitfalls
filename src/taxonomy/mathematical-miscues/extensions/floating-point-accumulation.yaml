@@ -1,0 +1,35 @@
+id: floating-point-accumulation
+name: Floating-Point Accumulation Error
+domain: Mathematical Miscues
+severity: warning
+description: >
+  Repeated floating-point arithmetic accumulates small representation errors, so
+  sums of many values, running totals, or money stored as binary floating point
+  drift from the exact result, and exact-equality comparisons (`==`) between
+  computed floats fail unexpectedly. Individually tiny, the errors can matter for
+  currency, reconciliations, or any value compared for exact equality. It extends
+  the domain's calculation-error theme but is not a specific example in the book.
+detection_strategy: >
+  In code, flag money or high-precision quantities stored as float/double rather
+  than decimal or integer minor-units, summation over many floats where an exact
+  total is required, and `==`/`!=` comparisons between computed floating-point
+  values instead of a tolerance. Look for totals that fail to reconcile by a
+  fraction of a cent, or conditionals that hinge on exact float equality.
+example_bad: >
+  A ledger stores amounts as 64-bit floats and checks `if balance == 0.0` after
+  summing thousands of transactions; accumulated rounding leaves balance at 1e-11,
+  the check fails, and a "non-zero balance" alert fires on an account that is
+  actually settled.
+example_good: >
+  Money is stored as integer cents or a Decimal type, sums are taken in that exact
+  representation, and comparisons use a tolerance (`abs(balance) < 0.005`) rather
+  than exact equality — so the settled account reconciles to zero.
+remediation: >
+  Use a decimal or integer (minor-unit) representation for money and other exact
+  quantities, not binary floating point. When floats are unavoidable, compare with
+  an explicit tolerance rather than `==`, and be mindful of error accumulation in
+  long summations.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 3: Mathematical Miscues (domain extension — not a specific sub-pitfall example in the book)"
+  - "David Goldberg (1991), 'What Every Computer Scientist Should Know About Floating-Point Arithmetic,' ACM Computing Surveys 23(1)"
+  - "https://www.avoidingdatapitfalls.com"

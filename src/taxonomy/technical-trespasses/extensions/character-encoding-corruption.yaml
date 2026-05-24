@@ -1,0 +1,41 @@
+id: character-encoding-corruption
+name: Character Encoding Corruption (Mojibake)
+domain: Technical Trespasses
+severity: error
+description: >
+  Text is read with the wrong character encoding — typically a UTF-8 file decoded
+  as Latin-1/Windows-1252 or vice versa — so multi-byte characters turn into
+  garbled sequences ("café" → "cafÃ©", "naïve" → "naÃ¯ve"). The corruption is
+  silent: the pipeline runs without error, but accented names, currency symbols,
+  and non-Latin scripts are mangled, which breaks joins on text keys and
+  misrepresents the data. This is not described in the book; it extends the
+  domain's pipeline-failure theme.
+detection_strategy: >
+  Flag file reads with no explicit encoding (`open()` / `pd.read_csv` defaulting to
+  the platform locale), and scan string columns for tell-tale mojibake — sequences
+  like "Ã©", "Ã¼", "â€™", "Ã±", or literal replacement characters (U+FFFD "�").
+  Watch for a byte-order mark (BOM) leaking into the first column name, text keys
+  that fail to join despite looking similar, and double-encoded UTF-8. In data
+  review, scan distinct values of name/address/label fields for accented-gibberish
+  patterns.
+example_bad: >
+  A UTF-8 export of customer names is read with
+  `pd.read_csv('names.csv', encoding='latin-1')`. "José" becomes "JosÃ©" and
+  "Łukasz" is mangled; a later join to an orders table on the (correctly encoded)
+  name key drops every customer with an accented name.
+example_good: >
+  The file is read with its actual encoding declared —
+  `pd.read_csv('names.csv', encoding='utf-8')` (using `utf-8-sig` if a BOM is
+  present) — so "José" and "Łukasz" survive intact. Encoding is fixed and verified
+  at ingestion, and text is Unicode-normalized (e.g. NFC) before being used as a
+  join key.
+remediation: >
+  Always specify the encoding when reading and writing text; detect it explicitly
+  (e.g. with chardet) rather than trusting platform defaults, and standardize on
+  UTF-8 end to end. Handle BOMs (`utf-8-sig`), normalize Unicode before comparing
+  or joining on text, and add a check that scans for mojibake markers so corruption
+  fails loudly at ingestion rather than surfacing downstream.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 2: Technical Trespasses (domain extension — not a specific sub-pitfall example in the book)"
+  - "Joel Spolsky (2003), 'The Absolute Minimum Every Software Developer Absolutely, Positively Must Know About Unicode and Character Sets (No Excuses!)'"
+  - "https://www.avoidingdatapitfalls.com"

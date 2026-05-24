@@ -1,0 +1,35 @@
+id: overfit-model-extrapolation
+name: Overfit Model Extrapolation
+domain: Analytical Aberrations
+severity: warning
+description: >
+  Among several candidate models, the one with the best in-sample fit (highest R²,
+  lowest training error) is selected and used to predict, regardless of whether its
+  form makes sense. A flexible model — a high-order polynomial, say — can hug the
+  training points almost perfectly yet behave absurdly just outside them, producing
+  nonsensical forecasts.
+detection_strategy: >
+  In code, flag model selection by training fit alone (picking the max-R²/min-MSE
+  option among polynomial degrees or flexible fits) with no held-out validation,
+  cross-validation, or complexity penalty, followed by prediction outside the data.
+  Be suspicious of a suspiciously high R² (0.999+) from a high-degree polynomial, and
+  of forecasts that swing wildly or go impossible just beyond the training range. In
+  prose, watch for "we chose the model with the closest fit."
+example_bad: >
+  A polynomial fit to China's 1960–1972 life expectancy reaches R²=0.9999 and is
+  chosen for its fit, but extrapolating it sends predicted life expectancy crashing to
+  zero and then negative within about fifteen years — an absurd forecast from a model
+  picked purely on in-sample closeness.
+example_good: >
+  Candidate models are compared on held-out or cross-validated error (not training
+  fit), penalized for complexity, and judged on whether their shape is theoretically
+  sensible — so a simpler, well-behaved model is preferred over a polynomial that
+  overfits and explodes out-of-sample.
+remediation: >
+  Never select a predictive model on in-sample fit alone. Use cross-validation or a
+  holdout set, penalize complexity (AIC/BIC, regularization), prefer the simplest
+  model consistent with the data and theory, and reject any model whose extrapolations
+  are implausible no matter how high its R².
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 5B: Exuberant Extrapolations"
+  - "https://www.avoidingdatapitfalls.com"

@@ -1,0 +1,39 @@
+id: intuition-analysis-false-dichotomy
+name: Intuition/Analysis False Dichotomy
+domain: Analytical Aberrations
+severity: info
+description: >
+  Intuition and analytics are treated as mutually exclusive — either human judgment
+  is discarded wholesale in favor of "letting the data or algorithm decide," or data
+  is dismissed in favor of gut feeling. In reality the two are complementary: human
+  intuition decides which questions matter, what the numbers mean, where to look
+  next, when to stop, and how to communicate, while analysis supplies and quantifies
+  the evidence. Abdicating that judgment to an algorithm (or ignoring evidence
+  entirely) degrades decisions.
+detection_strategy: >
+  This pitfall lives mostly in process descriptions and framing rather than code or
+  data. In prose, flag claims that analytics "replaces" intuition, that one should
+  "collect everything and let the algorithm decide what's important," or conversely
+  that data is irrelevant next to experience. Be suspicious of pipelines that surface
+  patterns with no human step to judge which are meaningful, of metric/feature
+  selection driven purely by an algorithm with no domain rationale, and of decisions
+  presented as "the data says so" with no interpretive judgment.
+example_bad: >
+  A team adopts an auto-ML tool and declares "we used to use intuition, now we use
+  analytics," feeding in every available variable and acting on whatever the
+  algorithm flags as correlated — with no domain expert asking whether those patterns
+  are useful or merely spurious.
+example_good: >
+  The team uses domain intuition to frame the questions worth asking and to vet which
+  discovered patterns are meaningful, then lets the analysis supply and quantify the
+  evidence — combining the two ("intuition guides the analysis, analysis checks the
+  intuition") rather than replacing one with the other.
+remediation: >
+  Treat intuition and analysis as complementary. Keep a human-judgment step in the
+  loop to choose which questions and metrics matter, to interpret results, and to
+  separate useful patterns from noise — and use data to test and refine intuition
+  rather than to abolish it. Document the domain rationale behind what's measured and
+  acted on.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 5A: The Intuition/Analysis False Dichotomy"
+  - "https://www.avoidingdatapitfalls.com"

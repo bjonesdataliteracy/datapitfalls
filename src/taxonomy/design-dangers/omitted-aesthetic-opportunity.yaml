@@ -1,0 +1,35 @@
+id: omitted-aesthetic-opportunity
+name: Omitted Aesthetic Opportunity
+domain: Design Dangers
+severity: info
+description: >
+  A chart is clear and correct but purely utilitarian, missing the chance to engage
+  the audience and evoke the subject — a "sin of omission" on the aesthetic side.
+  Because cognition and emotion are linked, an unengaging visual can fail to capture
+  attention or stick in memory even when it's accurate. The flip side matters too:
+  aesthetic flourishes must not be added at the expense of clarity, and some audiences
+  and contexts don't want them.
+detection_strategy: >
+  This is a mostly aspirational, context-dependent pitfall, visible in design review.
+  In prose and charts, consider whether a visualization meant to engage a broad or
+  public audience does anything to draw attention, fit its subject, or be memorable,
+  or whether it's a default-styled chart where engagement is a stated goal.
+  Conversely, flag decorative elements that reduce clarity or could mislead. Weigh the
+  audience: utilitarian operational reports may rightly want no flourish.
+example_bad: >
+  A timeline of Edgar Allan Poe's works is a plain bright-blue column chart —
+  accurate, but evoking nothing of his moody, haunting subject matter, missing an easy
+  chance to engage readers who would connect with the topic.
+example_good: >
+  The same data is rendered to fit the subject — columns stacked downward in
+  blood-red with the author's public-domain portrait and signature filling a natural
+  gap — adding engagement and meaning without distorting the values, while staying
+  ready to drop the flourish for audiences that don't want it.
+remediation: >
+  For visualizations meant to engage, ask what aesthetic choices would draw attention
+  and fit the subject, and use them where they add (not subtract) meaning. Guard the
+  clarity/aesthetics trade-off: test flourishes with real audience members, and omit
+  them for contexts or audiences that prefer plain, utilitarian visuals.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 7B: Omitted Opportunities"
+  - "https://www.avoidingdatapitfalls.com"

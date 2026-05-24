@@ -1,0 +1,42 @@
+id: categorical-value-fragmentation
+name: Fragmented Categorical Values
+domain: Technical Trespasses
+severity: warning
+description: >
+  A single real-world category is split across many surface forms — misspellings,
+  abbreviations, punctuation, and inconsistent capitalization ("Chevrolet" /
+  "Chevy" / "Cheverolet", "Gray" / "Grey" / "grey") — so grouping or counting the
+  raw field scatters one category across dozens of values. Counts are understated,
+  rankings shuffle, and the true leader can stay hidden until the variants are
+  merged. The tell is a distinct-value count far larger than the domain could
+  plausibly contain.
+detection_strategy: >
+  Flag group-by, counting, or ranking over a free-text categorical field with high
+  cardinality relative to the real number of categories, a long tail of
+  low-frequency values, and near-duplicate strings (small edit distance, case-only
+  differences, trailing whitespace). In code, look for `value_counts()`,
+  `GROUP BY make`, or `COUNT(*)` on a raw text column with no preceding
+  normalization (`.str.lower().str.strip()`, fuzzy clustering, or a lookup table).
+  Be suspicious when the distinct-value count is implausible for the domain (e.g.
+  hundreds of "vehicle makes").
+example_bad: >
+  `SELECT make, COUNT(*) FROM tows GROUP BY make ORDER BY COUNT(*) DESC` is run
+  over a field with 899 distinct values including "Chevy", "Cheverolet",
+  "Chevolet", "MAZDA", and "Mazada". Honda and Ford appear far smaller than they
+  really are, and Volkswagen — spelled 36 different ways — never reaches the top
+  25.
+example_good: >
+  The field is normalized first (trim, lowercase, then cluster near-duplicates with
+  a fingerprint/Levenshtein method and apply a human-reviewed mapping table), so
+  the 899 forms collapse to ~336 real makes before counting. After merging, Honda
+  and Ford rise materially (+46% and +36%) and Volkswagen lands at 11th — a
+  corrected ranking the raw counts had hidden.
+remediation: >
+  Normalize categorical text before any group-by: standardize case and whitespace,
+  then consolidate variants with clustering (OpenRefine fingerprint, Levenshtein)
+  plus a human-reviewed mapping. Re-check the distinct-value count against a
+  plausible domain size, and keep the mapping as an auditable artifact rather than
+  editing values in place.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 2A: The Dirty Data Pitfall"
+  - "https://www.avoidingdatapitfalls.com"

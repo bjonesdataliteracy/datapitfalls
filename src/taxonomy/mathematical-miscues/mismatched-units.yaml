@@ -1,0 +1,39 @@
+id: mismatched-units
+name: Mismatched Units of Measure
+domain: Mathematical Miscues
+severity: error
+description: >
+  Values expressed in different units of measure are combined, compared, or fed
+  into a calculation without converting to a common unit. Because the numbers look
+  interchangeable, the mismatch is silent — until the result is off by a constant
+  factor or worse. Currency, metric vs imperial, temperature scales, magnitude
+  suffixes (K/M/B), angle units, coordinate formats, and calendar-vs-business days
+  are all common offenders.
+detection_strategy: >
+  In code, flag arithmetic or comparisons that combine fields of plausibly
+  different units with no conversion step — summing amounts that may be different
+  currencies, mixing meters and feet, adding values where some are in
+  thousands/millions, comparing °C to °F, or aggregating a quantity column that has
+  a companion unit-of-measure ("UoM") field that is never branched on. In
+  data/prose, watch for a measure whose magnitude or metadata implies mixed units,
+  or calculations performed without consulting each field's documented unit.
+example_bad: >
+  A spacecraft pipeline reads thruster impulse produced in pound-force seconds
+  (lbf-s) and uses it directly where Newton-seconds (N-s) are expected; since 1 lbf
+  ≈ 4.45 N, the trajectory is off by ~4.45x — the Mars Climate Orbiter failure
+  mode. More mundanely, a `revenue` column that mixes USD and EUR rows is summed
+  into a single grand total.
+example_good: >
+  Units are confirmed from the metadata and normalized before any math — converting
+  lbf-s to N-s (or all revenue to a single currency) up front. Mixed-unit fields are
+  converted via their accompanying UoM column (IF/THEN per unit) into a common unit
+  before aggregation, and the unit is documented.
+remediation: >
+  Consult the metadata for every field's unit of measure before calculating; if it
+  is missing, demand it. Convert all values to a common unit before combining them,
+  handle mixed-unit fields by branching on their UoM column, and validate results
+  against expected magnitudes so an order-of-magnitude unit error surfaces
+  immediately.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 3E: Unmatching Units"
+  - "https://www.avoidingdatapitfalls.com"

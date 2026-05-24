@@ -1,0 +1,35 @@
+id: small-sample-extremes
+name: Small-Sample Extremes
+domain: Statistical Slip-Ups
+severity: warning
+description: >
+  Statistics computed from small samples vary far more than those from large samples
+  (the variance of the mean grows as the sample shrinks), so small groups
+  disproportionately occupy the extremes of any ranking, map, or top/bottom-N list.
+  Mistaking this sampling noise for a real signal leads to spurious explanations of
+  why small units are "best" or "worst."
+detection_strategy: >
+  In code and prose, flag rankings, choropleth maps, or top/bottom lists of a
+  rate/average where the units have widely varying sample sizes and no adjustment is
+  made — no minimum-sample filter, no shrinkage/empirical-Bayes smoothing, no funnel
+  plot. Be suspicious when the extreme units are the smallest ones, when both the
+  highest and the lowest are small groups, or when a rate rests on a handful of
+  events. A funnel-shaped scatter of rate versus sample size confirms it.
+example_bad: >
+  U.S. counties are ranked by kidney-cancer rate, and the highest- and lowest-rate
+  counties are both small rural ones — prompting contradictory theories (clean rural
+  living vs rural poverty) when in fact tiny populations (sometimes ≤4 cases/year)
+  simply produce volatile rates that swing to both extremes.
+example_good: >
+  The analyst plots rate against population (revealing the telltale funnel), applies
+  a minimum-sample threshold or shrinks small-county rates toward the overall mean
+  (empirical Bayes), and treats extreme values from tiny samples as likely noise
+  rather than signal before theorizing.
+remediation: >
+  Account for sample size whenever comparing rates across units: visualize rate
+  versus sample size (a funnel plot), set a minimum-sample threshold, or use
+  shrinkage/empirical-Bayes estimates that pull small-sample rates toward the overall
+  average. Before explaining why a small unit is extreme, first rule out chance.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 4D: Insensitivity to Sample Size"
+  - "https://www.avoidingdatapitfalls.com"

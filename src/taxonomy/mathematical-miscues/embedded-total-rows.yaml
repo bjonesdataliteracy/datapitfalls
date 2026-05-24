@@ -1,0 +1,36 @@
+id: embedded-total-rows
+name: Embedded Total Rows
+domain: Mathematical Miscues
+severity: warning
+description: >
+  A data set contains pre-aggregated subtotal or "Total" rows mixed in with the
+  detail rows — a "Total" sex alongside Male and Female, or a state-level row
+  alongside its counties. Summing the measure naively then counts those records
+  twice (or more), inflating the total by a factor of two, four, or worse. The
+  duplication is silent because the total rows look like ordinary records.
+detection_strategy: >
+  In code, flag `SUM`/`COUNT` over a measure without first excluding aggregate rows
+  — no `WHERE sex <> 'Total'`, no filter on a subtotal flag. In data, look for a
+  categorical field containing a catch-all level ("Total", "All", "Both", or a
+  state name standing in for "all counties") whose value equals the sum of the
+  others, or a grand total that is a clean multiple (2x, 4x) of the plausible
+  figure. Be suspicious when one category alone accounts for ~50% of a total.
+example_bad: >
+  California infectious-disease records include a "Total" row (Male + Female) for
+  every county-year-disease and a "California" county row summing all counties.
+  `SUM(Count)` returns 15,002,836 — double-counted by sex and again by county, four
+  times the true ~3.74 million.
+example_good: >
+  Aggregate rows are identified and excluded before summing —
+  `WHERE Sex <> 'Total' AND County <> 'California'` — or the detail grain is
+  selected explicitly, yielding the correct ~3.74 million. The total rows are kept
+  only as a cross-check, never added to the detail.
+remediation: >
+  Inspect categorical fields for subtotal/total levels before aggregating, and
+  filter them out (or select only the base grain). Sanity-check grand totals against
+  an independent estimate, and treat any category that equals the sum of its
+  siblings — or a total that is a clean multiple of the expected value — as an
+  embedded-total red flag.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 3C: Tripping on Totals"
+  - "https://www.avoidingdatapitfalls.com"

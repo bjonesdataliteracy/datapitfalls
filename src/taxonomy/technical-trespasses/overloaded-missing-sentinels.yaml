@@ -1,0 +1,41 @@
+id: overloaded-missing-sentinels
+name: Ambiguous Missing-Value Encodings
+domain: Technical Trespasses
+severity: warning
+description: >
+  A single field encodes "missing" in several incompatible ways — an empty string,
+  a literal "?" or "Unknown", and out-of-range numeric sentinels like 0, -1, or 99
+  — and these are then conflated, counted as real categories, or fed into
+  arithmetic. Different reasons for absence (not asked, asked-but-unknown, not
+  applicable) get merged into one bucket, and numeric sentinels silently distort
+  sums, means, and extremes.
+detection_strategy: >
+  Flag fields that mix blanks with placeholder tokens ("?", "N/A", "Unknown",
+  "none") or that contain suspicious numeric sentinels (0, -1, 999, 99) inside an
+  otherwise continuous range. In code, look for these values passing through with
+  no explicit `na_values=[...]` mapping, sentinel tokens surviving into
+  `value_counts()` / `GROUP BY`, or numeric sentinels included in `AVG` / `SUM` /
+  `MIN`. Watch for two different missing markers folded into one, or a placeholder
+  ranked as though it were a real category.
+example_bad: >
+  A `color` field holds real colors plus blanks and a separate "?" entry, and a
+  `year` field uses 0 for unknown. The pipeline reads blank and "?" as the same
+  "missing" bucket (losing the distinction between left-blank and
+  recorded-as-unknown) and leaves the 0s in, so `MIN(year)` returns 0 and the
+  average is dragged toward zero.
+example_good: >
+  The loader declares the sentinels explicitly
+  (`pd.read_csv(..., na_values=['', '?', 'Unknown', '0'])`) and keeps semantically
+  different kinds of missing in distinct flags where the difference matters (blank
+  = not recorded vs "?" = recorded-as-unknown). Numeric sentinels are converted to
+  null before any arithmetic, so aggregates ignore them instead of treating 0 as a
+  real year.
+remediation: >
+  Inventory every value that means "missing" in each field and map them to true
+  nulls at load time, while preserving meaningful distinctions between kinds of
+  missingness in separate indicators. Never leave numeric sentinels (0, -1, 999)
+  in a column you will sum, average, or take extremes of, and confirm placeholders
+  don't survive into category counts.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 2A: The Dirty Data Pitfall"
+  - "https://www.avoidingdatapitfalls.com"

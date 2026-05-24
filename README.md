@@ -30,9 +30,9 @@ This is not a style checker. It's a thinking partner for anyone who wants to wor
 
 ---
 
-## The 7 Audit Domains
+## The 8 Audit Domains
 
-datapitfalls organizes every pitfall into one of seven domains — the chapter categories from *Avoiding Data Pitfalls*. Together they span the full arc of a data project.
+datapitfalls organizes every pitfall into one of eight domains — the pitfall categories from *Avoiding Data Pitfalls*. Together they span the full arc of a data project.
 
 ```
   ┌─────────────────────────────────────────────────────────────────────┐
@@ -64,6 +64,10 @@ datapitfalls organizes every pitfall into one of seven domains — the chapter c
   │   7.  DESIGN DANGERS          How presentation fails the audience     │
   │       └─ poor layout · missing titles/labels · cluttered dashboards · │
   │          ignoring audience needs · form over function                 │
+  │                                                                       │
+  │   8.  BIASED BASELINE         Who has a voice in the data             │
+  │       └─ unheard voices · undervalued contributions ·                 │
+  │          misattributed credit · non-representative sources            │
   │                                                                       │
   └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -145,12 +149,12 @@ export ANTHROPIC_API_KEY="sk-ant-..."
    │  chart       │     │                  │     │              │     │                  │
    │  code        │     │  retrieve the    │     │  reason over │     │  pitfalls found, │
    │  description │     │  relevant rules  │     │  input +     │     │  severity, why   │
-   │  document    │     │  from 7 domains  │     │  taxonomy    │     │  it matters, fix │
+   │  document    │     │  from 8 domains  │     │  taxonomy    │     │  it matters, fix │
    └──────────────┘     └──────────────────┘     └──────────────┘     └──────────────────┘
 ```
 
 1. **You provide input** — a chart, a code snippet, a description, or a document.
-2. **Taxonomy lookup** — datapitfalls pulls the relevant pitfall rules from its catalog of seven audit domains.
+2. **Taxonomy lookup** — datapitfalls pulls the relevant pitfall rules from its catalog of eight audit domains.
 3. **Claude API analysis** — Claude reasons over your input *and* the pitfall taxonomy, grounded in the knowledge from *Avoiding Data Pitfalls*.
 4. **Structured audit report** — you get back a clear, prioritized list of pitfalls: what was found, how severe it is, why it matters, and how to fix it.
 

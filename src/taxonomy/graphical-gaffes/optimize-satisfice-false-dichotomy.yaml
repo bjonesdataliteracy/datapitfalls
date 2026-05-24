@@ -1,0 +1,37 @@
+id: optimize-satisfice-false-dichotomy
+name: Optimize/Satisfice False Dichotomy
+domain: Graphical Gaffes
+severity: info
+description: >
+  Visualization choice is framed as either finding the one "best" chart or settling
+  for any "good enough" one — and success is often judged on comprehensibility alone.
+  In reality both optimizing and satisficing have their place depending on
+  tractability, available information, and time, and a visualization's payoff includes
+  more than comprehension: attention, impact, aesthetics, memorability, and resulting
+  behavior.
+detection_strategy: >
+  This is a mindset/process pitfall, visible in prose and review. Flag claims that
+  there is exactly one correct visualization, or that "good enough" is never
+  acceptable, and evaluations that score a visualization solely on
+  comprehension/precision while ignoring whether it drew attention, was remembered, or
+  drove action. Be suspicious of a single-criterion payoff function and of demands for
+  optimization when time or information don't allow it.
+example_bad: >
+  A critic insists the only valid measure of a chart is how precisely the audience can
+  read the values, and rejects a more memorable, attention-grabbing design that was
+  "good enough" on comprehension and far better on impact — even though the goal was
+  to get a busy board to care and act.
+example_good: >
+  The team weighs the payoff across the factors that matter for the goal (comprehension
+  plus attention, impact, aesthetics, memorability, behavior), optimizes when the
+  problem is tractable and time allows, and otherwise satisfices to a stated
+  acceptability threshold — acknowledging both approaches are legitimate.
+remediation: >
+  Don't treat optimize versus satisfice as either/or, and don't judge visualizations
+  on comprehensibility alone. Define the payoff factors that matter for the specific
+  goal and audience, optimize when tractable and time permits, satisfice to an
+  explicit threshold otherwise, and accept that more than one design can be fit for
+  purpose.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6C: The Optimize/Satisfice False Dichotomy"
+  - "https://www.avoidingdatapitfalls.com"
