@@ -32,6 +32,7 @@
   "scripts": {
     "build": "tsc",
     "test": "echo \"No tests yet — see ROADMAP.md\" && exit 0",
+    "validate": "node scripts/validate-taxonomy.mjs",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write ."
   },
@@ -45,7 +46,9 @@
     "@types/node": "^22.13.0",
     "@typescript-eslint/eslint-plugin": "^8.24.0",
     "@typescript-eslint/parser": "^8.24.0",
+    "ajv": "^8.20.0",
     "eslint": "^8.57.1",
+    "js-yaml": "^4.1.1",
     "prettier": "^3.5.0",
     "typescript": "^5.7.3"
   }
