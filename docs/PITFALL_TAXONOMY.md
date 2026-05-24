@@ -40,36 +40,37 @@ Each pitfall rule is an object with the following fields:
 
 ## Example rules
 
-Below are three fully written-out rules, one each from three different domains, to show the format in practice. Rules are authored in YAML.
+Below are three fully written-out rules, one each from three different domains, to show the format in practice. Rules are authored in YAML. (These are illustrative samples for format only — they aren't necessarily part of the catalog; see `src/taxonomy/` for the live rules.)
 
 ### Example 1 — Graphical Gaffes
 
 ```yaml
-id: truncated-y-axis
-name: Truncated Y-Axis
+id: unsorted-bar-categories
+name: Unsorted Bar Categories
 domain: Graphical Gaffes
 severity: warning
 description: >
-  A bar chart whose value axis does not start at zero. Because the length of a
-  bar encodes its value, truncating the axis exaggerates the differences between
-  bars and can make small, even trivial, differences look dramatic.
+  A bar chart whose categories are left in an arbitrary order (often alphabetical or
+  source order) when the message is about magnitude. Ranking by value would let the
+  reader compare and spot the largest and smallest at a glance; an arbitrary order
+  forces them to hunt across the chart and obscures the pattern.
 detection_strategy: >
-  For chart images, inspect the value axis of bar/column charts and check whether
-  the baseline is zero. For charting code, look for explicit axis limits or scale
-  domains that exclude zero (e.g. matplotlib `set_ylim`, ggplot `coord_cartesian`
-  / `ylim`, Vega-Lite `scale: {zero: false}`). Note: line charts and some other
-  encodings may legitimately omit zero, so scope the check to length-encoded marks.
+  In charts and charting code, flag categorical bar/column charts sorted
+  alphabetically or by an incidental key rather than by the value being compared,
+  especially when the point is "which is biggest/smallest." Note exceptions: an
+  inherent order (months, age bands, Likert scales) should be preserved, so scope the
+  check to nominal categories where rank is the message.
 example_bad: >
-  A column chart of quarterly revenue ($1.02M, $1.04M, $1.05M) with a y-axis that
-  runs from $1.00M to $1.06M, making a ~3% change look like a near-tripling.
+  A bar chart of sales by product category listed alphabetically, so the reader has to
+  scan all twelve bars to find the top seller and can't see the ranking at a glance.
 example_good: >
-  The same data plotted with a y-axis starting at $0, so the bar lengths reflect
-  the true proportional differences — or, if the small change is the point, shown
-  as a line chart or with the percentage change called out explicitly.
+  The same bars sorted descending by sales, so the largest category comes first and
+  the ranking is immediately readable — unless the categories have an inherent order
+  worth preserving.
 remediation: >
-  Start the value axis of bar/column charts at zero. If small differences are the
-  story, choose an encoding (line chart, dot plot, or explicit delta) that doesn't
-  rely on bar length, and label the change directly.
+  Sort bars by the value being compared (usually descending) when rank or magnitude is
+  the message; preserve a natural order only when one exists (time, ordinal scales).
+  Make the ordering intentional rather than an incidental default.
 references:
   - "Avoiding Data Pitfalls, Ch. 6: Graphical Gaffes"
   - "https://www.avoidingdatapitfalls.com"
@@ -78,32 +79,33 @@ references:
 ### Example 2 — Statistical Slip-Ups
 
 ```yaml
-id: survivorship-bias
-name: Survivorship Bias
+id: base-rate-neglect
+name: Base Rate Neglect
 domain: Statistical Slip-Ups
-severity: error
+severity: warning
 description: >
-  Drawing conclusions from only the people, items, or records that "survived" some
-  selection process, while ignoring those that dropped out. Because the failures are
-  invisible in the data, the survivors paint a systematically over-optimistic picture.
+  Judging how likely something is from specific evidence while ignoring the underlying
+  base rate (prior probability). When a condition is rare, even a fairly accurate test
+  produces mostly false positives, so a "positive" result is far less conclusive than
+  it seems.
 detection_strategy: >
-  In plain-English descriptions and documents, flag analyses restricted to entities
-  that "are still active," "remained," "completed," or "currently exist," especially
-  when the conclusion generalizes to the original population. In code, look for filters
-  that keep only currently-present records (e.g. `WHERE status = 'active'`, dropping
-  churned/closed/deceased rows) before computing population-level statistics.
+  In prose and code, flag probability or risk claims that use only a test's accuracy
+  (sensitivity/specificity, hit rate) without the prevalence of the condition — a
+  "positive result means X% chance" statement with no prior, or a classifier judged on
+  raw accuracy over a highly imbalanced class. Be suspicious when a rare event is
+  treated as likely on the strength of a single indicator.
 example_bad: >
-  "We measured customer satisfaction by surveying our current subscribers and found
-  92% are happy — so our product clearly delights users." (Everyone who was unhappy
-  enough to cancel is excluded.)
+  "This screening test is 99% accurate and you tested positive, so you almost certainly
+  have the disease" — for a disease that affects 1 in 10,000, most positives are false,
+  so the real chance is well under 1%.
 example_good: >
-  "We surveyed both current subscribers and customers who cancelled in the last year.
-  Satisfaction among current subscribers is 92%, but the churned cohort tells a
-  different story, and we weight both to estimate satisfaction across all customers."
+  The claim combines the test's accuracy with the base rate (via Bayes' rule),
+  reporting that a positive result raises the probability to roughly 1% and
+  recommending a confirmatory test — rather than treating the positive as near-certain.
 remediation: >
-  Identify the selection process and ask what was filtered out. Whenever possible,
-  include the non-survivors, or explicitly scope claims to the surviving population
-  rather than generalizing to the whole.
+  Always bring in the base rate (prevalence/prior) when interpreting a test or
+  indicator, and combine it with accuracy using Bayes' rule. For imbalanced
+  classification, judge models on precision and recall, not raw accuracy.
 references:
   - "Avoiding Data Pitfalls, Ch. 4: Statistical Slip-Ups"
   - "https://www.avoidingdatapitfalls.com"
