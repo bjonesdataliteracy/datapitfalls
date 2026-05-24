@@ -1,0 +1,36 @@
+id: integer-division-truncation
+name: Integer Division Truncation
+domain: Mathematical Miscues
+severity: warning
+description: >
+  Two integer values are divided and the result is silently truncated (floored) to
+  an integer instead of yielding the true fractional quotient, so a rate or ratio
+  that should be, say, 0.3 comes back as 0. This is common wherever `/` on two
+  integers means integer division (SQL, C, Java, Go, Python 2) and whenever a
+  proportion is built from two integer count columns. The error is silent — no
+  exception, just a wrong (often zero) number. It extends the domain's
+  calculation-error theme but is not a specific example in the book.
+detection_strategy: >
+  In code, flag division where both operands are integer-typed and a fractional
+  result is expected — `count_a / count_b` over int columns in SQL, `int / int` in
+  C/Java/Go, `/` in Python 2, or integer pandas Series divided to form a rate. Look
+  for rates/proportions that come out as 0, 1, or suspiciously round integers, and
+  for a missing cast before division. Be suspicious of a "percentage" column whose
+  values are only ever 0 or 100.
+example_bad: >
+  In SQL, `SELECT successes / attempts AS rate FROM trials` with both columns
+  integer-typed returns 0 for every row that has fewer successes than attempts
+  (3 / 10 → 0), so every conversion rate reads as 0%.
+example_good: >
+  At least one operand is cast to a floating/decimal type before dividing —
+  `successes * 1.0 / attempts` or `CAST(successes AS FLOAT) / attempts` (Python 3's
+  `/` already does true division) — so 3 / 10 correctly returns 0.3.
+remediation: >
+  Ensure at least one operand is a real/float/decimal type before dividing when a
+  fractional result is intended, and cast explicitly rather than relying on the
+  language default. Validate that computed rates fall across a plausible continuous
+  range instead of collapsing to 0 or 1.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 3: Mathematical Miscues (domain extension — not a specific sub-pitfall example in the book)"
+  - "Python PEP 238 — Changing the Division Operator (true division vs floor division)"
+  - "https://www.avoidingdatapitfalls.com"

@@ -1,0 +1,35 @@
+id: percentage-point-vs-percent-change
+name: Percentage Points vs Percent Change
+domain: Mathematical Miscues
+severity: warning
+description: >
+  A change between two percentages is described using the wrong kind of difference
+  — reporting the absolute change in percentage points as a relative percent change,
+  or vice versa. A move from 10% to 12% is +2 percentage points but +20% in
+  relative terms; conflating the two overstates or understates the change by a large
+  factor and misleads the reader. It extends the domain's rate-and-percent theme but
+  is not a specific example in the book.
+detection_strategy: >
+  In code and prose, flag a difference taken between two values that are themselves
+  percentages and then labeled ambiguously as "%" — `new_pct - old_pct` reported as
+  a "percent increase," or a relative change `(new - old) / old` reported as
+  "percentage points." Look for change figures derived from rate/percentage columns
+  without specifying which kind of change is meant. In prose, watch for "rose by
+  X%" where X is actually a difference in points.
+example_bad: >
+  An approval rating goes from 40% to 44%. The report says approval "rose 4%,"
+  implying a small relative bump, when it actually rose 4 percentage points — a 10%
+  relative increase. The reader can't tell which is meant, and the two differ
+  materially.
+example_good: >
+  The change is stated unambiguously — "approval rose 4 percentage points (from 40%
+  to 44%), a 10% relative increase" — distinguishing the absolute point change from
+  the relative percent change so neither is misread.
+remediation: >
+  Decide whether you mean an absolute change (percentage points) or a relative
+  change (percent), compute it accordingly, and label it explicitly. Never write
+  "%" for a difference between two percentages when you mean percentage points.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 3: Mathematical Miscues (domain extension — not a specific sub-pitfall example in the book)"
+  - "Darrell Huff, How to Lie with Statistics (Norton, 1954) — the misuse of percentages"
+  - "https://www.avoidingdatapitfalls.com"

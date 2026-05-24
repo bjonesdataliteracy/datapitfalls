@@ -1,0 +1,37 @@
+id: divide-by-tiny-denominator
+name: Division by Zero or Tiny Denominator
+domain: Mathematical Miscues
+severity: warning
+description: >
+  A rate, ratio, or percent change is computed with a denominator that is zero or
+  very small, producing an undefined result (division by zero → infinity/NaN) or an
+  unstable, explosive value that swamps comparisons and rankings. Per-capita rates
+  for tiny populations, percent changes off a near-zero base, and ratios over sparse
+  counts all blow up and dominate "top N" lists with statistical noise. It extends
+  the domain's rate-and-ratio theme but is not a specific example in the book.
+detection_strategy: >
+  In code, flag division that forms a rate/ratio without guarding the denominator —
+  no zero check, no minimum-sample threshold — especially `(new - old) / old`
+  percent changes and per-unit rates over small counts. Look for resulting inf/NaN
+  values, or rankings topped by units with tiny denominators. In data, check the
+  distribution of denominators for zeros and a long thin tail of very small values.
+example_bad: >
+  "Percent change in incidents" is computed per site as
+  `(this_year - last_year) / last_year`. A site that went from 1 incident to 4
+  shows +300% and tops the "fastest-growing" list, while a site that went 0 → 5
+  yields a divide-by-zero (inf) — all driven by tiny baselines rather than
+  meaningful trends.
+example_good: >
+  Denominators are guarded and thresholded: sites below a minimum baseline are
+  excluded or flagged, zero denominators are handled explicitly, and rates over
+  small counts are shown with their uncertainty (or smoothed) — so the ranking
+  reflects real movement rather than small-denominator noise.
+remediation: >
+  Guard every denominator before dividing: handle zero explicitly, set a
+  minimum-sample threshold for rates, and treat percent changes off a tiny base
+  with caution. Report or smooth the uncertainty of rates built on small counts so
+  noisy values don't dominate comparisons.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 3: Mathematical Miscues (domain extension — not a specific sub-pitfall example in the book)"
+  - "Gelman & Price (1999), 'All maps of parameter estimates are misleading,' Statistics in Medicine 18 — instability of rates with small denominators"
+  - "https://www.avoidingdatapitfalls.com"
