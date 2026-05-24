@@ -1,0 +1,40 @@
+id: join-fan-out
+name: Join Fan-Out (Row Multiplication)
+domain: Technical Trespasses
+severity: warning
+description: >
+  A join is performed on a key that is non-unique on one or both sides, so each
+  row matches multiple partners and the result set multiplies. Aggregates computed
+  afterward (`SUM`, `COUNT`, `AVG`) then double-count the duplicated rows and
+  inflate totals — a "fan trap." The row count silently grows instead of shrinking,
+  the mirror image of a key-mismatch drop. This extends the book's join discussion,
+  which covers non-matching keys but not row-multiplying duplicate keys.
+detection_strategy: >
+  In code, flag joins where the key is not known to be unique on at least one side
+  — `pd.merge` with no cardinality check, a SQL `JOIN` to a table with duplicate
+  keys, followed by `SUM`/`COUNT` over the result. Look for missing uniqueness
+  assertions (`validate='one_to_many'` in pandas, primary-key or `DISTINCT`
+  checks), a post-join row count larger than the driving table, and aggregates that
+  drift upward once a join is added. Be suspicious of joining two fact-grain tables
+  directly.
+example_bad: >
+  An `orders` table (one row per order) is joined to `shipments` on `order_id`,
+  but orders with multiple partial shipments now appear several times.
+  `SELECT SUM(order_total) FROM orders JOIN shipments USING (order_id)` counts each
+  multi-shipment order's total once per shipment, overstating revenue.
+example_good: >
+  The grain is reconciled before aggregating: either aggregate `shipments` to one
+  row per `order_id` first, or sum `order_total` from `orders` alone and attach
+  shipment facts separately. The merge runs with an explicit cardinality check
+  (`pd.merge(..., validate='one_to_many')`) and the post-join row count is compared
+  to the driving table, so unexpected multiplication fails loudly.
+remediation: >
+  Establish the grain (the unit one row represents) of each input and the intended
+  grain of the output before joining. Assert key uniqueness on the side that should
+  be unique, aggregate the many-side to the target grain before joining, and
+  compare row counts before and after. Treat any unexplained increase in row count
+  as a fan-out until proven otherwise.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 2: Technical Trespasses (domain extension — not a specific sub-pitfall example in the book)"
+  - "Ralph Kimball & Margy Ross, The Data Warehouse Toolkit (3rd ed., Wiley, 2013) — join grain and many-to-many fan traps"
+  - "https://www.avoidingdatapitfalls.com"

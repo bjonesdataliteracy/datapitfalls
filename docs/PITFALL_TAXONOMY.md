@@ -150,3 +150,23 @@ references:
 4. Open a [New pitfall rule](https://github.com/bjonesdataliteracy/datapitfalls/issues/new?template=new_pitfall_rule.md) issue to discuss it, then submit a PR.
 
 See [CONTRIBUTING.md](../CONTRIBUTING.md) for the full workflow.
+
+## Domain extensions
+
+Most rules are grounded in a specific example or sub-pitfall from *Avoiding Data Pitfalls*, and their first `references` entry cites that section directly (e.g. `Pitfall 2A: The Dirty Data Pitfall`). Some pitfalls clearly belong to a domain's theme but are **not** described in the book — for example, join fan-out (row multiplication) or character-encoding corruption both fit Technical Trespasses but appear nowhere in that chapter. These are captured as **domain extensions** so the catalog can cover real pipeline failures without overstating what the book says.
+
+Extension rules follow two conventions:
+
+1. **Location** — they live in an `extensions/` subdirectory of their domain, e.g. `src/taxonomy/technical-trespasses/extensions/`. They are otherwise ordinary rules: same fields, same schema, same validation, and `id` must still match the filename.
+2. **Attribution** — their first `references` entry is a domain-level attribution that explicitly marks the rule as an extension rather than a specific book example, and is followed by at least one authoritative external source:
+
+   ```yaml
+   references:
+     - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 2: Technical Trespasses (domain extension — not a specific sub-pitfall example in the book)"
+     - "Ralph Kimball & Margy Ross, The Data Warehouse Toolkit (3rd ed., Wiley, 2013) — join grain and many-to-many fan traps"
+     - "https://www.avoidingdatapitfalls.com"
+   ```
+
+   A rule that generalizes a book example (rather than introducing a wholly new one) should say so instead — e.g. `(domain extension — generalizes the two-digit-year example in Pitfall 2A)`.
+
+This keeps the book-grounded rules faithful to the source while letting the taxonomy grow to match real-world data work.
