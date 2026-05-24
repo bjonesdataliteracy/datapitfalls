@@ -1,0 +1,35 @@
+id: 3d-chart-distortion
+name: 3D Chart Distortion
+domain: Graphical Gaffes
+severity: warning
+description: >
+  A chart adds a third dimension or perspective effect — 3D pie, 3D bars,
+  tilted/extruded views — that distorts the very encodings the reader must judge.
+  Perspective foreshortening changes apparent sizes, near slices/bars look bigger than
+  far ones, and occlusion hides data behind other marks — all for decoration that adds
+  no information. This extends the domain's encoding-distortion theme but is not a
+  specific sub-pitfall in the book.
+detection_strategy: >
+  In code and charts, flag 3D or perspective chart options — 3D pie/bar/area in
+  spreadsheet tools, `projection='3d'` used purely for a 2D relationship,
+  extrusion/bevel/shadow effects — where the third dimension encodes nothing. Be
+  suspicious when foreground marks look larger than equal background ones, when
+  slices/bars are occluded, or when a rotation angle changes which value looks biggest.
+example_bad: >
+  A 3D pie chart tilts the disc so the front slice looks substantially larger than an
+  equal-sized slice at the back, and a deep bevel makes precise comparison impossible —
+  the perspective changes the apparent shares even though the underlying numbers are
+  identical.
+example_good: >
+  The data is shown in a flat 2D chart (a plain pie/bar, or better a bar chart for
+  precise comparison) where each mark's size encodes its value honestly, with no
+  perspective, extrusion, or occlusion distorting the comparison.
+remediation: >
+  Drop gratuitous 3D and perspective effects; use flat 2D encodings so size and length
+  map directly to value. Reserve a true third spatial dimension only for data that
+  genuinely has three continuous dimensions, and never tilt or extrude a chart for
+  decoration.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)"
+  - "Edward Tufte, The Visual Display of Quantitative Information (2nd ed., Graphics Press, 2001) — chartjunk and the lie factor"
+  - "https://www.avoidingdatapitfalls.com"

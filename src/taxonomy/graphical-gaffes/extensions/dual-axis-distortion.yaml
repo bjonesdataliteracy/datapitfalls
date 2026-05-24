@@ -1,0 +1,36 @@
+id: dual-axis-distortion
+name: Dual-Axis Distortion
+domain: Graphical Gaffes
+severity: warning
+description: >
+  A chart plots two series against two independent y-axes with different scales, so
+  their apparent relationship — crossovers, which line is "higher," how closely they
+  track — is an artifact of the arbitrarily chosen scales rather than the data. By
+  sliding the two axes, almost any visual correlation or dominance can be
+  manufactured. This extends the domain's encoding-distortion theme but is not a
+  specific sub-pitfall in the book.
+detection_strategy: >
+  In code and charts, flag dual-axis (secondary-axis) plots — `twinx()` in matplotlib,
+  a secondary axis in Excel/Tableau, two `y`/`y2` encodings — especially where the two
+  scales are set independently with no principled alignment, where series in different
+  units are overlaid to suggest they move together, or where a crossover point carries
+  the message. Be suspicious when shifting either axis would change the apparent story.
+example_bad: >
+  A chart overlays revenue (left axis) and complaints (right axis) on independent
+  scales chosen so the two lines cross dramatically mid-year, implying complaints
+  "overtook" revenue — but the crossover is purely a function of where each axis was
+  set, not a real relationship.
+example_good: >
+  The relationship is shown without scale trickery — indexing both series to a common
+  base (e.g. % change from the start), using small multiples, or plotting one against
+  the other in a scatterplot — so any co-movement reflects the data. If a dual axis is
+  unavoidable, the scales are aligned on a principled basis and labeled clearly.
+remediation: >
+  Avoid dual axes when the message is about how two series relate; prefer indexing to
+  a common baseline, small multiples, or a scatterplot. If a secondary axis is truly
+  necessary, fix the scales on a principled, disclosed basis and don't let arbitrary
+  scaling manufacture crossovers or co-movement.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)"
+  - "Alberto Cairo, How Charts Lie (Norton, 2019) — dual axes and scale manipulation"
+  - "https://www.avoidingdatapitfalls.com"

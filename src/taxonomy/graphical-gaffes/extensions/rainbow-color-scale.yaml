@@ -1,0 +1,37 @@
+id: rainbow-color-scale
+name: Rainbow Color Scale
+domain: Graphical Gaffes
+severity: warning
+description: >
+  A rainbow (jet) color scale is used to encode an ordered, continuous variable.
+  Because the rainbow's perceived brightness isn't monotonic and its hue bands aren't
+  evenly spaced, it introduces false boundaries where colors change sharply, hides
+  real gradients where they don't, and misranks values — and it's largely unreadable
+  for colorblind viewers. A perceptually uniform scale represents the data far more
+  faithfully. This extends the domain's encoding theme but is not a specific
+  sub-pitfall in the book.
+detection_strategy: >
+  In code and charts, flag sequential/continuous data encoded with a rainbow/jet
+  palette — `cmap='jet'`/`'rainbow'`/`'hsv'` in matplotlib, default rainbow ramps in
+  older tools, multi-hue spectral scales used for magnitude. Be suspicious of
+  heatmaps, choropleths, and contour plots that show sharp color bands not present in
+  the data, and of palettes that aren't colorblind-safe. Continuous magnitude should
+  use a perceptually uniform or single-hue sequential scale.
+example_bad: >
+  A heatmap of temperature uses the jet rainbow scale; viewers perceive a hard
+  boundary at the green-to-yellow transition that isn't in the data and miss the real
+  gradient in the blue region, while red-green colorblind readers can't order the
+  colors at all.
+example_good: >
+  The same heatmap uses a perceptually uniform sequential scale (e.g. viridis), so
+  equal steps in value look like equal steps in color, no false boundaries appear, the
+  gradient is visible throughout, and the palette stays legible to colorblind viewers.
+remediation: >
+  Encode ordered/continuous data with a perceptually uniform or single-hue sequential
+  scale (viridis, cividis, ColorBrewer sequential), and reserve hue for categorical
+  distinctions. Check palettes for colorblind safety, and avoid rainbow/jet ramps for
+  magnitude.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)"
+  - "Borland & Taylor (2007), 'Rainbow Color Map (Still) Considered Harmful,' IEEE Computer Graphics & Applications 27(2)"
+  - "https://www.avoidingdatapitfalls.com"
