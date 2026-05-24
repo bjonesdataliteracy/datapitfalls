@@ -1,0 +1,37 @@
+id: inconsistent-formatting
+name: Inconsistent Formatting
+domain: Design Dangers
+severity: warning
+description: >
+  Numbers, dates, units, labels, and styling are formatted inconsistently across a
+  chart or dashboard — mixed date formats, varying decimal places, currency sometimes
+  shown and sometimes not, different capitalization or terminology for the same thing.
+  The inconsistency forces the reader to constantly re-orient, erodes trust, and
+  invites misreading. This extends the domain's clarity theme but is not a specific
+  sub-pitfall example in the book.
+detection_strategy: >
+  In code and charts, flag the same quantity formatted differently across views
+  (decimal places, thousands separators, units, currency symbols, percent vs
+  proportion), mixed date formats (MM/DD/YY vs DD-Mon-YYYY), inconsistent
+  capitalization or naming for the same field/category, and ad-hoc per-chart styling
+  instead of a shared format. Be suspicious when no formatting standard is applied
+  across a dashboard.
+example_bad: >
+  One panel shows revenue as "$1.2M," another as "1200000," and a third as "1,200
+  (k)"; dates appear as "01/02/25" in one chart and "2 Jan 2025" in another, and the
+  same category is "N. America" here and "North America" there — the reader must keep
+  re-deciphering.
+example_good: >
+  A single formatting standard is applied throughout — consistent units and decimal
+  places for each measure, one date format, one name per category, shared
+  number/currency formatting — so values are directly comparable at a glance and
+  nothing has to be re-interpreted.
+remediation: >
+  Define and apply consistent formatting across the whole deliverable: one date
+  format, fixed decimal places and units per measure, consistent currency/percent
+  display, and one canonical label per field or category. Centralize formatting rather
+  than styling each chart ad hoc.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 7: Design Dangers (domain extension — not a specific sub-pitfall example in the book)"
+  - "Jakob Nielsen (1994), '10 Usability Heuristics for User Interface Design' — consistency and standards"
+  - "https://www.avoidingdatapitfalls.com"
