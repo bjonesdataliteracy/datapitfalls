@@ -1,0 +1,33 @@
+id: eda-noise-mistaken-for-signal
+name: EDA Noise Mistaken for Signal
+domain: Graphical Gaffes
+severity: warning
+description: >
+  During fast exploratory analysis, a pattern is taken as real without pausing to
+  check whether it's signal or noise. Dragging a trendline onto a series and declaring
+  it "rising" can mislead when a method that accounts for variation (such as a control
+  chart) shows the movement is within normal noise.
+detection_strategy: >
+  In code and prose, flag conclusions drawn from a quick visual impression — a fitted
+  trendline, an eyeballed slope — with no test that the variation exceeds noise
+  (control chart, control limits, significance test). Be suspicious of rapid "explore
+  many charts, publish the striking one" workflows, of trend claims over series with
+  large month-to-month variation, and of no run/limit analysis before asserting a
+  change.
+example_bad: >
+  An analyst drags a trendline over monthly reported thefts, sees it slope upward, and
+  concludes theft is rising every month — but an individuals control chart shows 35
+  straight months of statistical noise since early 2015, with no significant change.
+example_good: >
+  Before claiming a trend, the analyst views the series on a control chart (or runs a
+  signal-vs-noise test), distinguishing genuine signals (runs, shifts, points beyond
+  the limits) from noise — and tempers the "rising" claim to what the data actually
+  supports.
+remediation: >
+  Slow down in exploration: before treating a visual pattern as real, check it against
+  a method that separates signal from noise (control chart, run rules, significance
+  test). Don't publish the first striking chart; confirm the pattern exceeds normal
+  variation.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6A: Challenging Charts"
+  - "https://www.avoidingdatapitfalls.com"

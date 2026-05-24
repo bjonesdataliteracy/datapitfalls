@@ -1,0 +1,35 @@
+id: chart-omits-key-context
+name: Chart Omits Key Context
+domain: Graphical Gaffes
+severity: warning
+description: >
+  A chart is accurate as far as it goes but omits something more important — a "sin of
+  omission." A static snapshot can be technically true yet miss the real story (a
+  category's share is growing over time), and presenting data without its known
+  caveats and exclusions (reported vs actual, excluded categories) leaves the audience
+  with a false sense of completeness.
+detection_strategy: >
+  In prose and charts, flag a single snapshot used to make a point that a time trend
+  or breakdown would materially change (a share shown as static when it's rising), and
+  charts presented without the data's documented caveats — exclusions, "reported not
+  actual," definition or coverage changes over time. Be suspicious when the most
+  important fact about the data isn't shown, or when known disclaimers are left off
+  the visual.
+example_bad: >
+  A pie chart shows theft as ~half of reported crimes (2010–2017) and stops there —
+  omitting that theft's share climbed from 45% in 2010 to over 55% by 2017, the more
+  important story, and omitting that the data is reported (not actual) crime with
+  whole categories excluded.
+example_good: >
+  Alongside the share snapshot, a timeline shows theft's growing proportion over the
+  period, and the data's caveats (reported-not-actual, excluded crime categories,
+  possible reporting-policy changes) are stated on or near the chart — so the audience
+  gets the fuller, fairer picture.
+remediation: >
+  Ask what the most important fact about the data is and make sure the visual conveys
+  it, not just a true-but-incomplete snapshot; add the trend or breakdown that changes
+  the interpretation. Always present the data's known caveats and exclusions with the
+  chart rather than omitting them.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6A: Challenging Charts"
+  - "https://www.avoidingdatapitfalls.com"

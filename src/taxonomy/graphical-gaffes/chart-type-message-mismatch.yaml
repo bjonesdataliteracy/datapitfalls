@@ -1,0 +1,35 @@
+id: chart-type-message-mismatch
+name: Chart Type Message Mismatch
+domain: Graphical Gaffes
+severity: warning
+description: >
+  The chart type doesn't support the comparison the message requires. Part-to-whole
+  points (a few categories make up three-quarters of the total) read clearly from a
+  pie or treemap that forms a single cohesive whole, but get lost in separated bars or
+  bubbles; conversely, treating a set as a "whole" when it isn't (heavy data caveats)
+  makes a part-to-whole chart misleading.
+detection_strategy: >
+  In prose and charts, flag a mismatch between the claim and the encoding — a
+  part-to-whole message shown with separated marks (bars, packed bubbles) that don't
+  convey a unified whole, or a part-to-whole chart (pie/treemap) used when the data
+  isn't a legitimate complete whole. Be suspicious when the audience can't see the
+  stated relationship at a glance because the mark arrangement doesn't match the
+  comparison.
+example_bad: >
+  To show that theft, burglary, and assault together are three of every four reported
+  crimes, an analyst uses a bar chart and a packed bubble chart — but the separated
+  marks don't form a cohesive whole, so the 75% share doesn't pop the way it does in a
+  pie or treemap.
+example_good: >
+  The part-to-whole point is shown with a pie or treemap whose three highlighted
+  segments visibly reach ~75% of the whole — and only if the data is a legitimate
+  whole; if heavy caveats mean it isn't, a non-part-to-whole encoding (like a bar
+  chart) is used and the caveats are stated.
+remediation: >
+  Match the encoding to the comparison: use a unified part-to-whole form (pie,
+  treemap, stacked bar) for share-of-total messages, and separated marks for
+  part-to-part. First confirm the data is a legitimate whole; if it isn't, avoid
+  part-to-whole encodings or disclose what's excluded.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6A: Challenging Charts"
+  - "https://www.avoidingdatapitfalls.com"

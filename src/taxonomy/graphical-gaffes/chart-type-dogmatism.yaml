@@ -1,0 +1,33 @@
+id: chart-type-dogmatism
+name: Chart Type Dogmatism
+domain: Graphical Gaffes
+severity: info
+description: >
+  Chart types are judged by blanket rules — "pie charts are bad," "word clouds are
+  evil" — and banished from consideration, rather than evaluated by fit to the
+  objective, audience, and context. Eliminating options up front shrinks the solution
+  space and can rule out the choice that would actually work best for a given task.
+detection_strategy: >
+  This is mostly a mindset/process pitfall, visible in prose and review comments. Flag
+  absolute claims that a chart type "never works" or "should never be used," critiques
+  of a visualization made without knowing its objective/audience/context, and style
+  guides that ban chart types outright. Be suspicious of dismissals based on chart
+  type alone rather than on whether it serves the specific task.
+example_bad: >
+  A reviewer dismisses a word cloud as "always wrong" — but in the scenario (flashing
+  the handful of most common, absurd passwords to a large room, including the back
+  rows) the word cloud conveys the gist at a glance better than a bar chart that shows
+  only 17 of 100 and needs scrolling.
+example_good: >
+  The chart type is judged on fit to the task: the word cloud is accepted for the
+  at-a-glance-gist scenario where precise comparison isn't needed, while a bar chart
+  is chosen when precise magnitude matters — keeping all types in the toolkit and
+  selecting by context.
+remediation: >
+  Treat chart types as a toolkit, not a list of sanctioned and forbidden options.
+  Judge a visualization by how well it serves its objective, audience, and context,
+  keep less-common types available for the cases where they fit, and avoid blanket
+  "good/bad" verdicts when critiquing others' work.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6B: Data Dogmatism"
+  - "https://www.avoidingdatapitfalls.com"

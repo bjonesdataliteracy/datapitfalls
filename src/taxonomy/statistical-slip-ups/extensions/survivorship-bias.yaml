@@ -1,0 +1,36 @@
+id: survivorship-bias
+name: Survivorship Bias
+domain: Statistical Slip-Ups
+severity: warning
+description: >
+  Conclusions are drawn only from the people, items, or records that "survived" some
+  selection process, while those that dropped out are invisible and ignored. Because
+  the failures are missing from the data, the survivors paint a systematically
+  over-optimistic or distorted picture. This extends the domain's sampling/selection
+  theme; it is a classic bias not formally named as a sub-pitfall in the book.
+detection_strategy: >
+  In code and prose, flag analyses restricted to entities still present — "current"
+  customers, "active" accounts, funds "still operating," products "still on the
+  market," planes that "returned" — then generalized to the original population with
+  no accounting for those that exited. Be suspicious of filters that keep only
+  surviving/active/completed records before computing population-level statistics, and
+  of success studies that sample only successes.
+example_bad: >
+  Engineers propose reinforcing returning WWII aircraft where they show the most
+  bullet holes, concluding those areas need armor — but the planes hit elsewhere
+  didn't return at all. The holes in survivors mark where a plane can be hit and still
+  make it back, so the unhit areas are the ones that actually need protecting.
+example_good: >
+  The analysis explicitly accounts for the non-survivors — modeling where downed
+  planes were likely hit, or including churned/closed/failed cases alongside the
+  survivors — so conclusions reflect the full population (armor the areas the
+  survivors were not hit) rather than the survivors alone.
+remediation: >
+  Identify the selection process and ask what was filtered out before the data reached
+  you. Include the non-survivors where possible, or explicitly scope claims to the
+  surviving subpopulation, and never generalize from survivors to the whole without
+  accounting for what's missing.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 4: Statistical Slip-Ups (domain extension — not a specific sub-pitfall example in the book)"
+  - "Abraham Wald, Statistical Research Group (1943), analysis of armor placement on returning WWII aircraft"
+  - "https://www.avoidingdatapitfalls.com"
