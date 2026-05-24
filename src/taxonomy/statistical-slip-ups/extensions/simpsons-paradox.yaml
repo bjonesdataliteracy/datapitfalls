@@ -1,0 +1,38 @@
+id: simpsons-paradox
+name: Simpson's Paradox
+domain: Statistical Slip-Ups
+severity: warning
+description: >
+  A trend or comparison that holds in aggregate reverses (or vanishes) when the data
+  is split by a lurking third variable. Because group sizes and composition differ,
+  the pooled numbers can favor one side while every subgroup favors the other.
+  Reporting only the aggregate — or only the subgroups — without checking the other
+  view can flip the conclusion entirely. This extends the domain's
+  composition-confound theme but is a distinct named phenomenon not covered in the
+  book.
+detection_strategy: >
+  In code and prose, flag aggregate comparisons of rates/proportions across two
+  groups where a confounding category is present but not examined — a pooled
+  `GROUP BY` with no breakdown by the lurking variable, especially with unequal
+  composition within it. Be suspicious when one group is weighted differently across
+  subgroups, or when an aggregate result contradicts intuition. Check both the pooled
+  and the subgroup-level comparison; a reversal between them is the signature.
+example_bad: >
+  A hospital reports a higher overall death rate than a rival and is judged worse —
+  but it treats far more severe cases. Within every severity tier its death rate is
+  lower; the aggregate reverses only because its case mix is sicker, so the pooled
+  comparison condemns the better hospital.
+example_good: >
+  The analyst compares the two hospitals within each severity tier (stratifying on
+  the confounder), finds the larger hospital does better in every tier, and reports
+  the stratified result — or a case-mix-adjusted rate — rather than the misleading
+  pooled number.
+remediation: >
+  When comparing aggregate rates across groups, check whether a confounding variable
+  differs in composition between them, and compare within strata as well as in
+  aggregate. If the two views disagree, prefer the stratified or covariate-adjusted
+  comparison and report the confounder explicitly.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 4: Statistical Slip-Ups (domain extension — not a specific sub-pitfall example in the book)"
+  - "Simpson, E.H. (1951), 'The Interpretation of Interaction in Contingency Tables,' J. Royal Statistical Society B; Bickel et al. (1975), UC Berkeley admissions, Science"
+  - "https://www.avoidingdatapitfalls.com"
