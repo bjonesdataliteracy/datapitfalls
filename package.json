@@ -1,0 +1,52 @@
+{
+  "name": "datapitfalls",
+  "version": "0.1.0",
+  "description": "Helping you steer clear of common blunders when working with data. Based on Avoiding Data Pitfalls by Ben Jones.",
+  "author": "Ben Jones <bjones@dataliteracy.com> (https://dataliteracy.com)",
+  "license": "MIT",
+  "repository": "github:bjonesdataliteracy/datapitfalls",
+  "homepage": "https://www.avoidingdatapitfalls.com",
+  "bugs": {
+    "url": "https://github.com/bjonesdataliteracy/datapitfalls/issues"
+  },
+  "keywords": [
+    "data-quality",
+    "data-literacy",
+    "data-visualization",
+    "chart-audit",
+    "data-pitfalls",
+    "avoiding-data-pitfalls",
+    "ai",
+    "linting",
+    "data-analysis"
+  ],
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "datapitfalls": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"No tests yet — see ROADMAP.md\" && exit 0",
+    "lint": "eslint . --ext .ts",
+    "format": "prettier --write ."
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.0",
+    "@typescript-eslint/eslint-plugin": "^8.24.0",
+    "@typescript-eslint/parser": "^8.24.0",
+    "eslint": "^8.57.1",
+    "prettier": "^3.5.0",
+    "typescript": "^5.7.3"
+  }
+}
