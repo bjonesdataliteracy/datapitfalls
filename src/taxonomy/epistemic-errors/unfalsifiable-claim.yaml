@@ -1,0 +1,35 @@
+id: unfalsifiable-claim
+name: Unfalsifiable Hypothesis (the God Pitfall)
+domain: Epistemic Errors
+severity: warning
+description: >
+  Working with a hypothesis that no possible observation could disprove — either
+  because it is framed as a basic existential or untestable claim, or because the
+  analyst shields it from disconfirmation by only ever seeking supporting
+  evidence. A claim that cannot be proven wrong cannot be tested, so corroboration
+  of it teaches us nothing. Genuine progress comes from honest attempts to falsify
+  a claim, not from accumulating evidence that flatters it.
+detection_strategy: >
+  Flag conclusions for which no described observation would count as
+  disconfirming, hypotheses stated so vaguely that any result appears to fit, and
+  analyses that gather only confirming cases while never looking for the data that
+  could refute the claim. Watch for existential framings ("X exists somewhere")
+  presented as data-supported conclusions, and for post-hoc reasoning that
+  explains away every contradicting result.
+example_bad: >
+  "Our redesign improves engagement." When metrics fall, the team says the benefit
+  is long-term; when they rise, it is taken as proof. No conceivable outcome could
+  ever count against the claim, so the data can never test it.
+example_good: >
+  "Our redesign will raise 30-day retention by at least 2 points. If retention is
+  flat or lower in the A/B test, we will treat the hypothesis as disproven and
+  roll the change back." The disconfirming result is defined in advance.
+remediation: >
+  State hypotheses so that a specific, observable result would falsify them, and
+  name that disconfirming result up front. Actively seek the evidence that could
+  prove you wrong rather than only the evidence that confirms you, and treat a
+  failed prediction as a valuable correction rather than a threat to defend
+  against.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 1E: Falsifiability and the God Pitfall"
+  - "https://www.avoidingdatapitfalls.com"

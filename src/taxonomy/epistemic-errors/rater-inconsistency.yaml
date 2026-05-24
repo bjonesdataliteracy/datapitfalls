@@ -1,0 +1,36 @@
+id: rater-inconsistency
+name: Treating Subjective Ratings as Objective Measures
+domain: Epistemic Errors
+severity: warning
+description: >
+  Human ratings and categorizations carry measurement noise: different raters
+  disagree (reproducibility), and even the same rater can score an identical item
+  differently on a repeat viewing (repeatability), swayed by context and the order
+  in which items appear. Treating subjective ratings as if they were precise,
+  objective measurements reads real signal into what is partly rater variability.
+detection_strategy: >
+  Flag analyses that lean on subjective human ratings or labels — ripeness,
+  quality, sentiment, severity, star ratings — as though they were exact,
+  repeatable measurements. Be suspicious of single-rater labels with no measure
+  of inter-rater agreement, of small rating differences treated as meaningful, and
+  of rating scales whose categories are vague or undefined. Watch for ignored
+  order or context effects, where the same item is scored differently depending on
+  what preceded it.
+example_bad: >
+  "Our panel rated version B a 3.8 and version A a 3.6, so B is the better design."
+  A 0.2 gap on a subjective scale can easily be rater noise; the same panelists
+  often score an identical item differently when it appears in a different
+  position in the sequence.
+example_good: >
+  "Version B averaged 3.8 versus A's 3.6, but inter-rater spread was wide and a
+  hidden duplicate item was scored differently by a third of the panel. We treat
+  the gap as within noise and collect more ratings before concluding B is better."
+remediation: >
+  Quantify rating reliability before trusting it: use multiple raters and report
+  inter-rater agreement, embed repeated or duplicate items to measure intra-rater
+  consistency, define each rating category operationally, and randomize
+  presentation order to limit context effects. Treat small differences on noisy
+  scales as inconclusive.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 1C: Inconsistent Ratings"
+  - "https://www.avoidingdatapitfalls.com"
