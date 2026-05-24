@@ -1,0 +1,38 @@
+id: misleading-performance-metric
+name: Misleading Performance Metric
+domain: Analytical Aberrations
+severity: warning
+description: >
+  Performance is judged by a metric that doesn't actually capture the outcome that
+  matters — typically an activity metric (how much someone did something) or an
+  opinion metric (how others rated them) standing in for an output metric (what they
+  actually achieved). A weak or absent link between the proxy and true impact produces
+  unfair or backwards rankings, and measuring the wrong thing pushes people to game
+  it.
+detection_strategy: >
+  In code and prose, flag rankings or evaluations built on a proxy metric without
+  checking how well it correlates with the outcome of interest — activity counts
+  (calls made, miles run, lines of code) or rating scores used as the headline
+  measure of performance, with no output/impact metric alongside. Be suspicious when
+  the "worst" by the metric is plainly excellent on results, when the metric's
+  correlation with true impact is weak, or when a single easily-gamed number drives
+  incentives.
+example_bad: >
+  A player is labeled the "slowest" and ranked dead last by average speed — an
+  activity metric — even though he leads the league in Player Impact Estimate
+  (output); average speed correlates barely at all with impact (R²=0.056), so the
+  metric ranks one of the best players worst.
+example_good: >
+  Players are evaluated primarily on an output/impact metric (e.g. PIE), with activity
+  metrics like average speed treated as secondary context (useful for recovery or
+  pacing, not for ranking contribution) — and any proxy is validated against the
+  outcome it's meant to represent before being used to judge.
+remediation: >
+  Measure the outcome that actually matters: prefer output/results metrics over
+  activity or opinion proxies, and validate that any proxy correlates with true impact
+  before ranking on it. Pair metrics so a single number can't be gamed, get
+  stakeholder buy-in, and don't judge performance by a metric just because it's easy
+  to collect.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 5E: Moronic Measures"
+  - "https://www.avoidingdatapitfalls.com"

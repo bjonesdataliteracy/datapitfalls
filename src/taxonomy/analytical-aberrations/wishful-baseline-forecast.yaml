@@ -1,0 +1,35 @@
+id: wishful-baseline-forecast
+name: Wishful Baseline Forecast
+domain: Analytical Aberrations
+severity: warning
+description: >
+  Forecasts default to a comfortable, "return to normal" baseline regardless of the
+  current trajectory or the variable's known volatility — predicting a steady
+  reversion to a typical level and never anticipating downturns or cycles. Such
+  forecasts say more about what the forecaster hopes (or wants to communicate) than
+  about likely outcomes, and they reliably miss turning points.
+detection_strategy: >
+  In code and data, flag forecasts that flatten to a constant baseline across the
+  whole horizon for a variable known to be cyclical or volatile (unemployment,
+  markets, demand), repeated forecasts that all converge to the same "normal" value
+  regardless of starting conditions, and the absence of scenario/downside modeling.
+  In prose, watch for predictions of "a return to typical levels" with no mechanism,
+  and forecasts that never call a decline.
+example_bad: >
+  Each year the OMB forecasts unemployment returning to ~5% within a couple of years
+  no matter the current rate — so the FY2008 forecast shows a smooth glide to 5% just
+  before the 2009 spike, as do forecasts across every administration. The "return to
+  normal" is assumed, not derived.
+example_good: >
+  The forecast models the variable's cyclicality and uncertainty, presents scenarios
+  (including downturns) with probabilities or bands instead of a single reassuring
+  line, and is honest when the realistic outlook isn't a clean reversion to a
+  comfortable baseline.
+remediation: >
+  Build forecasts from the variable's actual dynamics (cyclicality, volatility,
+  mean-reversion speed) rather than defaulting to a comfortable baseline. Present
+  uncertainty bands and downside scenarios, back-test the forecasting approach against
+  history, and be wary when every forecast conveniently predicts a return to normal.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 5D: Funky Forecasts"
+  - "https://www.avoidingdatapitfalls.com"

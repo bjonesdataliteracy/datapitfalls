@@ -1,0 +1,35 @@
+id: trend-extrapolation-beyond-range
+name: Trend Extrapolation Beyond the Data
+domain: Analytical Aberrations
+severity: warning
+description: >
+  A trend fitted to historical data is projected beyond the observed range as if it
+  would continue unchanged, ignoring saturation points, natural ceilings, asymptotes,
+  and regime changes. A high in-sample fit (R² near 1, a tiny p-value) says nothing
+  about behavior outside the data, so a confident-looking line can produce impossible
+  forecasts.
+detection_strategy: >
+  In code, flag predictions made from a fitted model (linear or otherwise) at
+  x-values well outside the training range — `model.predict` on far-future or extreme
+  inputs, trendlines extended past the last data point — with no saturation term, no
+  domain bound, and no uncertainty band that widens with distance. In prose, watch
+  for "at this rate, by [future year]..." claims and forecasts justified solely by a
+  high R². Sanity-check whether the extrapolated value is even possible.
+example_bad: >
+  A 1960–1980 linear fit of Korean life expectancy (R²>0.95) is extended to predict
+  96 years by 2015 and ~170 years by 2100 — ignoring that lifespan approaches a
+  ceiling, and that North Korea's actually fell about 5 years in the 1990s.
+example_good: >
+  The forecast respects domain limits (a saturating/logistic curve toward a plausible
+  asymptote), is restricted to a near horizon, and is shown with an uncertainty band
+  that widens the farther it extends — and the analyst notes that a high historical
+  R² doesn't guarantee the trend continues.
+remediation: >
+  Don't project a trend past the data without justification. Bound forecasts by
+  domain knowledge (ceilings, saturation), prefer models that capture the expected
+  nonlinearity, widen uncertainty with extrapolation distance, and treat in-sample
+  fit as no evidence of out-of-sample behavior. Validate extrapolations against
+  plausibility.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 5B: Exuberant Extrapolations"
+  - "https://www.avoidingdatapitfalls.com"
