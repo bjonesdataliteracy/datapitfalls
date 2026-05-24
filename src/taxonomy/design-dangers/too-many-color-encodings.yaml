@@ -1,0 +1,35 @@
+id: too-many-color-encodings
+name: Too Many Color Encodings
+domain: Design Dangers
+severity: warning
+description: >
+  A single dashboard carries multiple independent color schemes at once — several
+  legends, conflicting red-green scales, categorical hues layered on top of sequential
+  ones — so the viewer has to keep track of what color means in each view and quickly
+  loses the thread. More color schemes mean more cognitive load and more chances to
+  misread.
+detection_strategy: >
+  In code and charts, flag dashboards with multiple distinct color legends/encodings —
+  two or more sequential scales, a categorical scheme plus a diverging one, the same
+  red-green applied to different measures, color piled onto views that don't need it.
+  Be suspicious when stakeholders have asked for "everything in one view," when no
+  single variable is clearly the focus of color, and when removing a color encoding
+  would lose no information.
+example_bad: >
+  A sales dashboard uses two separate red-green profit scales with different extremes,
+  then red and green again for two regions in a scatterplot, and a blue bar chart
+  whose blue matches a third region — several color systems competing in one view,
+  none clearly primary.
+example_good: >
+  The dashboard is limited to a single color encoding, assigned to the one variable
+  most tied to the user's primary task (e.g. Region for a regional sales review);
+  other measures are shown without color or moved to a separate view, so color carries
+  one clear meaning.
+remediation: >
+  Aim for one color encoding per dashboard, given to the variable most central to the
+  user's task. Drop or relocate competing schemes, show secondary measures without
+  color (or in a separate view), and resist cramming every possible measure into one
+  over-colored view.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 7A: Confusing Colors"
+  - "https://www.avoidingdatapitfalls.com"

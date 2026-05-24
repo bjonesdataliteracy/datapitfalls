@@ -1,0 +1,34 @@
+id: design-induced-user-error
+name: Design-Induced User Error
+domain: Design Dangers
+severity: warning
+description: >
+  When users misread or misuse a visualization, the design blames the user instead of
+  treating the error as a design flaw to fix. People make slips (meaning one thing,
+  doing another) and mistakes (the wrong goal or plan); a visualization that lets or
+  induces these errors is badly designed. If someone draws a wrong conclusion from
+  your chart, that's at least as much your problem as theirs.
+detection_strategy: >
+  In process and prose, flag visualizations shipped with no usability testing — no
+  watching real users interact, no iteration on observed errors — and a posture of
+  explaining away user confusion ("they should've known better") rather than
+  redesigning. In UI, be suspicious of designs that make wrong actions easy
+  (mis-tappable adjacent controls, misleading default filters) or invite
+  misinterpretation, with no guardrails.
+example_bad: >
+  Users keep filtering a dashboard to a subset that introduces selection bias and
+  reach wrong conclusions; the designer dismisses it as user error and adds an
+  instruction, rather than recognizing the design induced the mistake and changing it.
+example_good: >
+  The team watches real users interact, writes down every slip and mistake instead of
+  blaming the tester, and iterates the design to prevent those errors — assuming that
+  if one tester erred, many real users will, and the only chance to fix it is to
+  prevent it.
+remediation: >
+  Treat user errors as design defects: build, test with real users, watch where they
+  slip or misinterpret, and iterate to prevent it rather than explaining it away.
+  Design out easy wrong actions and misleading defaults, and remember you won't be
+  there to correct users later.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 7C: Usability Uh-Ohs"
+  - "https://www.avoidingdatapitfalls.com"

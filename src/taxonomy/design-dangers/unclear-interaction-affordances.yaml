@@ -1,0 +1,34 @@
+id: unclear-interaction-affordances
+name: Unclear Interaction Affordances
+domain: Design Dangers
+severity: warning
+description: >
+  An interactive visualization doesn't make it discoverable what actions are possible
+  or understandable what the controls and marks mean, and its controls aren't
+  naturally mapped to the views they affect. Users can't tell what they can do or how,
+  so the interactivity goes unused or is used wrongly — like a stovetop whose knobs
+  don't line up with its burners.
+detection_strategy: >
+  In code and UI, flag interactive dashboards where filters/controls (dropdowns,
+  sliders, legends, buttons) are placed far from or in a different spatial arrangement
+  than the views they control, where it isn't visually obvious a mark is
+  clickable/filterable, or where controls lack clear signifiers/labels. Be suspicious
+  of default control placement (all on the right) when multiple views need different
+  controls, and of interactions a first-time user couldn't discover unaided.
+example_bad: >
+  A four-panel dashboard puts all its filters in a single column on the right, so it's
+  unclear which filter drives which panel — a user changes a control expecting panel A
+  to update, but panel C changes instead, mirroring a stovetop with knobs in a row
+  over a 2x2 burner grid.
+example_good: >
+  Controls are mapped to the views they affect — mounted on or beside each panel, or
+  arranged in the same spatial layout as the panels — with clear labels and
+  signifiers, so it's obvious what each control does and how to use it.
+remediation: >
+  Make interactivity discoverable and understandable: place each control on or
+  adjacent to the view it affects (or mirror the views' spatial layout), label
+  controls clearly, and signal which marks are interactive. Invest the effort to make
+  complex interactions obvious.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 7C: Usability Uh-Ohs"
+  - "https://www.avoidingdatapitfalls.com"
