@@ -31,5 +31,5 @@ remediation: >
   decoration.
 references:
   - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)"
-  - "Edward Tufte, The Visual Display of Quantitative Information (2nd ed., Graphics Press, 2001) — chartjunk and the lie factor"
+  - "Edward Tufte, The Visual Display of Quantitative Information (2nd ed., Graphics Press, 2001) — the lie factor"
   - "https://www.avoidingdatapitfalls.com"
