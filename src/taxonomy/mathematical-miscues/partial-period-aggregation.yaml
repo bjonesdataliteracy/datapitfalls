@@ -1,0 +1,36 @@
+id: partial-period-aggregation
+name: Partial-Period Aggregation
+domain: Mathematical Miscues
+severity: warning
+description: >
+  A time series is aggregated into buckets (year, month, week) where the first or
+  — more often — the most recent bucket covers only part of its period, because the
+  data was extracted mid-period. Plotted or trended as if complete, the partial
+  bucket looks like a sudden drop (or the first bucket like a slow start), and
+  viewers infer a real decline that is purely an artifact of where the data ends.
+detection_strategy: >
+  In code, flag time aggregations (`resample`, `GROUP BY date_trunc`, pivot by
+  period) and trend lines that include the edge buckets without checking the data's
+  actual min/max timestamp against the bucket boundary — i.e. no comparison of
+  `max(date)` to the end of its period. In data, look for a final period whose total
+  falls far below the prior trend, or whose record count is a fraction of a full
+  period. In prose, watch for decline/trend claims about "the latest year/month"
+  with no note of whether that period is complete.
+example_bad: >
+  An extract of FAA wildlife-strike reports runs through July 31, 2017. Counting
+  strikes per year and plotting the timeline shows a steep drop in 2017, and the
+  analyst speculates about new airport technology — when in fact 2017 simply holds
+  about half a year of records.
+example_good: >
+  The analyst first checks the data's date range (earliest Jan 1 2000, latest Jul
+  31 2017), recognizes 2017 is partial, and either excludes the incomplete period,
+  annotates it clearly ("2017 partial — through Jul 31"), or annualizes it before
+  comparing — so no false decline is read into the trend.
+remediation: >
+  Before trending aggregated periods, explore the contours of the data: record the
+  minimum and maximum timestamp and compare them to the bucket boundaries. Drop,
+  flag, or pro-rate any partial leading/trailing bucket, and never compare a partial
+  period head-to-head with complete ones.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 3A: Aggravating Aggregations"
+  - "https://www.avoidingdatapitfalls.com"

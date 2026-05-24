@@ -1,0 +1,39 @@
+id: dropped-missing-categories
+name: Dropped Missing Categories
+domain: Mathematical Miscues
+severity: warning
+description: >
+  A category or period with no records — a true zero — is silently omitted from a
+  chart or table instead of being shown as zero. On an ordinal/categorical axis the
+  empty period simply doesn't appear (the gap is invisible and the slopes around it
+  are distorted); switched to a continuous axis, a line is interpolated straight
+  across the gap, implying nonzero values that never existed. Either way the absence
+  is hidden. This is context-dependent: for events that legitimately occur only
+  every few years, omitting or zero-filling can both be acceptable if chosen
+  deliberately.
+detection_strategy: >
+  In code, flag series built from present records only (`value_counts`, `GROUP BY
+  year`) and plotted without reindexing onto the complete domain of
+  periods/categories — no `reindex`/`asfreq`/calendar spine, no explicit zero-fill.
+  Look for ordinal date axes that can skip values, or continuous axes that connect
+  across gaps. In data, check whether the sequence of periods has holes (e.g.
+  missing years) the visualization never surfaces.
+example_bad: >
+  A timeline of Edgar Allan Poe's works by year is built only from years with at
+  least one work, so 1826, 1828, and 1830 — years he published nothing — vanish from
+  the axis entirely. The "fewest works" years look like 1824/1825, and a
+  continuous-axis version even implies ~6–11 works in the missing years.
+example_good: >
+  The series is reindexed onto every year from 1824 to 1849 with missing years
+  filled at zero and shown explicitly (as discrete bars or points at zero), so the
+  three nonproductive years are visible and the productivity pattern reads
+  correctly — unless the domain is one where gaps are expected, in which case the
+  handling is chosen deliberately and noted.
+remediation: >
+  Decide explicitly how missing categories should render rather than accepting the
+  software default. For dense series, reindex onto the full domain and show true
+  zeros; for intermittent events, state that gaps are expected. Never let a
+  continuous axis interpolate across a period that had no data.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 3B: Missing Values"
+  - "https://www.avoidingdatapitfalls.com"
