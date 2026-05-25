@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { basename, extname } from 'node:path';
 import { DOMAINS, TAGLINE, VERSION, ruleCount, ruleCountsByDomain } from './index.js';
 import { analyze } from './analyze.js';
-import { formatReport } from './report.js';
+import { formatReport, hasBlockingFindings } from './report.js';
 
 const EXT_LANGUAGE: Record<string, string> = {
   '.py': 'Python',
@@ -33,6 +33,8 @@ function printHelp(): void {
       '    --thorough                     Use Opus 4.7 instead of the default Sonnet 4.6\n' +
       '    --fast                         Use Haiku 4.5 (cheapest)\n' +
       '    --all                          Show all findings, incl. lower-confidence latent ones\n' +
+      '    --json                         Output the full report as JSON\n' +
+      '    --ci                           Exit non-zero if an active error/warning is found\n' +
       '\nThe scan command needs an Anthropic API key in ANTHROPIC_API_KEY.\n' +
       'Default model is claude-sonnet-4-6; override with --thorough, --fast, or ANTHROPIC_MODEL.'
   );
@@ -47,11 +49,17 @@ async function scan(args: string[]): Promise<void> {
   const file = args.find((arg) => !arg.startsWith('-'));
   let model: string | undefined;
   let showAll = false;
+  let asJson = false;
+  let ci = false;
   for (const arg of args) {
     if (arg in MODEL_FLAGS) {
       model = MODEL_FLAGS[arg];
     } else if (arg === '--all') {
       showAll = true;
+    } else if (arg === '--json') {
+      asJson = true;
+    } else if (arg === '--ci') {
+      ci = true;
     } else if (arg.startsWith('-')) {
       console.error(`Unknown option: ${arg}`);
       process.exitCode = 1;
@@ -84,7 +92,10 @@ async function scan(args: string[]): Promise<void> {
     { content, kind: 'code', language, filename: basename(file) },
     { model }
   );
-  console.log(formatReport(report, { showAll }));
+
+  console.log(asJson ? JSON.stringify(report, null, 2) : formatReport(report, { showAll }));
+
+  if (ci && hasBlockingFindings(report)) process.exitCode = 1;
 }
 
 async function main(): Promise<void> {

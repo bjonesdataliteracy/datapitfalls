@@ -20,6 +20,15 @@ function bySeverity(a: Finding, b: Finding): number {
   return SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity];
 }
 
+/**
+ * Whether the report contains an active finding serious enough to fail CI:
+ * active (evident from the artifact, not data-dependent) and severity error or
+ * warning. Info-level advisories and all latent findings do not fail the build.
+ */
+export function hasBlockingFindings(report: AuditReport): boolean {
+  return report.findings.some((f) => f.nature === 'active' && f.severity !== 'info');
+}
+
 function renderFinding(finding: Finding, lines: string[]): void {
   lines.push(
     `[${SEVERITY_LABEL[finding.severity]}] ${finding.name}  (${finding.domain} · ${finding.ruleId} · ${finding.confidence} confidence)`
