@@ -1,0 +1,12 @@
+{
+  "description": "Runs k-means with k picked by eye and hard-codes authoritative geographic names onto the clusters, treating an arbitrary partition as established structure with no validation.",
+  "language": "Python",
+  "expected": [{ "ruleId": "unvalidated-clustering", "nature": "active" }],
+  "acceptable": [
+    "log-scale-averaging",
+    "normality-assumption-unchecked",
+    "mean-mistaken-for-typical",
+    "inductive-overreach",
+    "data-reality-gap"
+  ]
+}

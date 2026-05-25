@@ -1,0 +1,40 @@
+id: unvalidated-clustering
+name: Unvalidated Clustering
+domain: Analytical Aberrations
+severity: warning
+description: >
+  An unsupervised clustering (k-means, hierarchical, and the like) is run and its
+  output is treated as real, meaningful structure — often with interpretive labels —
+  without validating that the clusters reflect genuine groups rather than an arbitrary
+  partition the algorithm always produces. k-means will split any data into k blobs;
+  the number of clusters and the feature scaling are analyst choices, so a different k
+  or scaling yields different "groups." Naming and reasoning about unvalidated
+  clusters imposes a story the data may not support. This extends the domain's
+  analysis-distortion theme but is not a specific sub-pitfall example in the book.
+detection_strategy: >
+  In code and prose, flag clustering (`KMeans`, `AgglomerativeClustering`, DBSCAN,
+  etc.) whose results are interpreted, labeled, or acted on with no validation step —
+  no silhouette/Davies-Bouldin score, no stability check across seeds or k, no
+  comparison to domain-known groups, and a k chosen by eyeballing an elbow. Be
+  suspicious of hard-coded human-readable names assigned to numeric cluster labels,
+  and of cluster summaries presented as discovered "types" without caveat.
+example_bad: >
+  k-means with a hand-picked `k=5` (chosen by glancing at an elbow plot) is run on
+  scaled features, and clusters 0–4 are hard-coded to names like "Western Pacific
+  Shallow" — presenting an arbitrary partition as established seismic zones, with no
+  silhouette score, stability check, or domain validation.
+example_good: >
+  The analyst validates before interpreting: checks cluster quality (e.g. silhouette),
+  tests stability across seeds and several values of k, and compares the result to
+  known domain structure — then labels and reasons about clusters only to the extent
+  the validation supports, framing them as provisional rather than definitive types.
+remediation: >
+  Treat clusters as hypotheses, not findings, until validated. Justify the number of
+  clusters with more than an eyeballed elbow (silhouette, gap statistic, stability
+  across seeds/k), check sensitivity to feature scaling, and compare to external or
+  domain-known groupings. Don't assign authoritative labels to clusters you haven't
+  shown to be real and stable.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 5: Analytical Aberrations (domain extension — not a specific sub-pitfall example in the book)"
+  - "Rousseeuw (1987), 'Silhouettes: a graphical aid to the interpretation and validation of cluster analysis,' J. Computational and Applied Mathematics 20"
+  - "https://www.avoidingdatapitfalls.com"

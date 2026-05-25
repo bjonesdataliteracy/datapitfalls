@@ -2,20 +2,20 @@
 
 datapitfalls is being built in the open. This roadmap lays out the path from a documented foundation to a full, community-driven ecosystem for auditing data work. Each phase builds on the last.
 
-**Legend:** 🟢 In Progress · ⚪ Planned
+**Legend:** ✅ Complete · 🟢 In Progress · ⚪ Planned
 
 ---
 
-## 🟢 Phase 1 — Foundation _(Current)_
+## ✅ Phase 1 — Foundation
 
 Lay the groundwork that everything else stands on.
 
 - [x] Repository setup and project structure
 - [x] Professional documentation (README, Contributing, Code of Conduct, Security, License)
-- [ ] Pitfall taxonomy v0.1 — the structured, machine-readable catalog of pitfalls across all seven audit domains
-- [ ] Taxonomy specification and contribution format
+- [x] Pitfall taxonomy v0.1 — the structured, machine-readable catalog of pitfalls across all eight audit domains
+- [x] Taxonomy specification and contribution format
 
-## ⚪ Phase 2 — Chart Audit MVP
+## 🟢 Phase 2 — Chart Audit MVP _(Current)_
 
 Ship the first thing people can actually use: a website that audits a chart image.
 

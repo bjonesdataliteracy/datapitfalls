@@ -1,0 +1,6 @@
+{
+  "description": "Negative control: sums a column after asserting it has no nulls, over a stated record count. No active pitfall is present; the tool should raise no active findings (a latent data-reality caveat is acceptable).",
+  "language": "Python",
+  "expected": [],
+  "acceptable": ["data-reality-gap"]
+}
