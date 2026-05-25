@@ -61,7 +61,7 @@ export interface AuditReport {
 }
 
 export interface AnalyzeOptions {
-  /** Model id. Defaults to ANTHROPIC_MODEL, then claude-opus-4-7. */
+  /** Model id. Defaults to ANTHROPIC_MODEL, then claude-sonnet-4-6. */
   model?: string;
   /** API key. Defaults to the ANTHROPIC_API_KEY environment variable. */
   apiKey?: string;
@@ -73,7 +73,7 @@ export interface AnalyzeOptions {
   maxTokens?: number;
 }
 
-export const DEFAULT_MODEL = 'claude-opus-4-7';
+export const DEFAULT_MODEL = 'claude-sonnet-4-6';
 
 const SYSTEM_INSTRUCTIONS = `You are datapitfalls, an auditor that reviews data work for known data pitfalls.
 

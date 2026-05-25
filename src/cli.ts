@@ -28,16 +28,35 @@ function printHelp(): void {
   console.log(
     `datapitfalls v${VERSION} — ${TAGLINE}\n` +
       'Usage:\n' +
-      '  datapitfalls stats          Show the pitfall catalog size by domain\n' +
-      '  datapitfalls scan <file>    Audit a code file for data pitfalls\n' +
+      '  datapitfalls stats               Show the pitfall catalog size by domain\n' +
+      '  datapitfalls scan <file>         Audit a code file for data pitfalls\n' +
+      '    --thorough                     Use the most capable model (claude-opus-4-7)\n' +
+      '    --fast                         Use the cheapest model (claude-haiku-4-5)\n' +
       '\nThe scan command needs an Anthropic API key in ANTHROPIC_API_KEY.\n' +
-      'Override the model with ANTHROPIC_MODEL (default: claude-opus-4-7).'
+      'Default model is claude-sonnet-4-6; override with --thorough, --fast, or ANTHROPIC_MODEL.'
   );
 }
 
-async function scan(file: string | undefined): Promise<void> {
+const MODEL_FLAGS: Record<string, string> = {
+  '--thorough': 'claude-opus-4-7',
+  '--fast': 'claude-haiku-4-5',
+};
+
+async function scan(args: string[]): Promise<void> {
+  const file = args.find((arg) => !arg.startsWith('-'));
+  let model: string | undefined;
+  for (const arg of args) {
+    if (arg in MODEL_FLAGS) {
+      model = MODEL_FLAGS[arg];
+    } else if (arg.startsWith('-')) {
+      console.error(`Unknown option: ${arg}`);
+      process.exitCode = 1;
+      return;
+    }
+  }
+
   if (!file) {
-    console.error('Usage: datapitfalls scan <file>');
+    console.error('Usage: datapitfalls scan [--thorough|--fast] <file>');
     process.exitCode = 1;
     return;
   }
@@ -57,19 +76,22 @@ async function scan(file: string | undefined): Promise<void> {
   }
 
   const language = EXT_LANGUAGE[extname(file).toLowerCase()];
-  const report = await analyze({ content, kind: 'code', language, filename: basename(file) });
+  const report = await analyze(
+    { content, kind: 'code', language, filename: basename(file) },
+    { model }
+  );
   console.log(formatReport(report));
 }
 
 async function main(): Promise<void> {
-  const [command, arg] = process.argv.slice(2);
+  const [command, ...args] = process.argv.slice(2);
 
   switch (command) {
     case 'stats':
       printStats();
       break;
     case 'scan':
-      await scan(arg);
+      await scan(args);
       break;
     default:
       printHelp();
