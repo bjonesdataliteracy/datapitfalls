@@ -23,6 +23,9 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "workspaces": [
+    "web"
+  ],
   "bin": {
     "datapitfalls": "./dist/cli.js"
   },

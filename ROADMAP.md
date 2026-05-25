@@ -35,12 +35,12 @@ Teach the auditor to see, so it can review the chart itself.
 - [x] Visual pitfall detection (Graphical Gaffes & Design Dangers)
 - [x] Chart-image scanning from the CLI
 
-## ⚪ Phase 4 — Web Experience _(Next up)_
+## 🟢 Phase 4 — Web Experience _(Current)_
 
 Put the auditor on the web so anyone can use it without a terminal.
 
-- [ ] Website at [avoidingdatapitfalls.com](https://www.avoidingdatapitfalls.com)
-- [ ] Image upload interface
+- [x] Image upload interface (Next.js app in `web/` — upload a chart, audit it via the engine)
+- [ ] Website deployed at [avoidingdatapitfalls.com](https://www.avoidingdatapitfalls.com)
 
 ## ⚪ Phase 5 — Document Analysis
 

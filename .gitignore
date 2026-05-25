@@ -8,6 +8,10 @@ dist/
 build/
 *.tsbuildinfo
 
+# Next.js (web/)
+.next/
+next-env.d.ts
+
 # Environment variables
 .env
 .env.local
