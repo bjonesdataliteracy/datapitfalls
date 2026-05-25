@@ -25,13 +25,13 @@ Ship the first thing people can actually use: a website that audits a chart imag
 - [x] Visual pitfall detection (Graphical Gaffes & Design Dangers)
 - [x] Structured audit report output
 
-## ⚪ Phase 3 — Multi-Modal Analysis
+## ✅ Phase 3 — Multi-Modal Analysis
 
 Move beyond images to audit the reasoning behind the chart.
 
-- [ ] Code snippet analysis (Python / SQL / R)
-- [ ] Plain-English analysis description input
-- [ ] Expanded pitfall detection across Technical Trespasses, Mathematical Miscues, Statistical Slip-Ups, and Analytical Aberrations
+- [x] Code snippet analysis (Python / SQL / R)
+- [x] Plain-English analysis description input
+- [x] Expanded pitfall detection across Technical Trespasses, Mathematical Miscues, Statistical Slip-Ups, and Analytical Aberrations
 
 ## ⚪ Phase 4 — Document Analysis
 
@@ -41,13 +41,13 @@ Audit whole bodies of work, in context.
 - [ ] Multi-chart audit that understands charts in relation to one another
 - [ ] Full-document pitfall scanning across the entire data reasoning chain
 
-## ⚪ Phase 5 — Developer Tools
+## 🟢 Phase 5 — Developer Tools
 
 Put datapitfalls into the workflows where data work actually happens.
 
 - [ ] Published npm package
-- [ ] CLI tool (`npx datapitfalls scan`)
-- [ ] CI/CD integration to catch pitfalls before they ship
+- [x] CLI tool (`datapitfalls scan` — code, description, and chart-image audits)
+- [x] CI/CD integration to catch pitfalls before they ship (`--ci` exit code)
 - [ ] Public API for tool builders
 
 ## ⚪ Phase 6 — Community & Ecosystem
