@@ -25,6 +25,10 @@ export interface AnalyzeInput {
 
 export type Confidence = 'low' | 'medium' | 'high';
 
+/** Whether a pitfall is evident from the artifact itself ("active") or is a risky
+ *  pattern whose impact depends on data the auditor can't see ("latent"). */
+export type FindingNature = 'active' | 'latent';
+
 /** One detected pitfall. Catalog fields (name/domain/severity/remediation) are
  *  filled from the taxonomy, not from the model, so they're always authoritative. */
 export interface Finding {
@@ -33,6 +37,10 @@ export interface Finding {
   domain: Domain;
   severity: Severity;
   confidence: Confidence;
+  /** "active" = evident from the artifact; "latent" = depends on unseen data. */
+  nature: FindingNature;
+  /** For latent findings, the data condition under which the pitfall bites. */
+  condition: string;
   evidence: string;
   explanation: string;
   remediation: string;
@@ -71,10 +79,14 @@ const SYSTEM_INSTRUCTIONS = `You are datapitfalls, an auditor that reviews data 
 
 You are given an artifact — source code or a plain-English description of a data analysis — and a catalog of pitfall rules. Identify which pitfalls from the catalog the artifact actually exhibits.
 
+You can see only the artifact, never the data it runs on. Many pitfalls are patterns whose real-world impact depends on data values you cannot inspect. Classify every finding by its nature:
+- "active": the pitfall is evident from the artifact itself, regardless of the data (e.g. averaging a two-digit-year column, summing a column that includes a "Total" row, reporting a mean as the "typical" value, mismatched units in a formula). State these directly.
+- "latent": the artifact uses a risky pattern, but whether it actually bites depends on data you can't see (e.g. dropna() before an aggregate only matters if nulls exist; grouping by date only drops periods if some periods have zero rows). Phrase these conditionally, do NOT assert the pitfall is definitely affecting the results, and fill in "condition" with what must be true of the data for it to occur.
+
 Rules of engagement:
 - Only report pitfalls that appear in the catalog below, and cite each by its exact \`id\`.
-- Report a finding only when the artifact shows real evidence of the pitfall. Be conservative: avoid speculation and false positives.
-- For each finding, provide the rule id, your confidence (low/medium/high), the specific evidence from the artifact (quote the relevant line or phrase), and a concise explanation of why the pitfall applies here.
+- Report a finding only when the artifact shows real evidence of the pitfall (active) or a genuinely risky pattern (latent). Be conservative: avoid speculation and false positives.
+- For each finding, provide the rule id, confidence (low/medium/high), nature (active/latent), the specific evidence from the artifact (quote the relevant line or phrase), a concise explanation, and — for latent findings — the data condition under which it bites.
 - A single artifact may exhibit several pitfalls, one, or none. If none apply, return an empty findings list.
 - Do not invent rule ids. Do not report a pitfall that is not in the catalog.
 
@@ -101,6 +113,17 @@ const REPORT_TOOL: Anthropic.Tool = {
               enum: ['low', 'medium', 'high'],
               description: 'How confident you are that this pitfall is present.',
             },
+            nature: {
+              type: 'string',
+              enum: ['active', 'latent'],
+              description:
+                '"active" if the pitfall is evident from the artifact itself; "latent" if it is a risky pattern whose impact depends on data you cannot see.',
+            },
+            condition: {
+              type: 'string',
+              description:
+                'For latent findings, the data condition under which the pitfall actually occurs (e.g. "the latitude/longitude columns contain nulls"). Leave empty for active findings.',
+            },
             evidence: {
               type: 'string',
               description:
@@ -111,7 +134,7 @@ const REPORT_TOOL: Anthropic.Tool = {
               description: 'A concise explanation of why this pitfall applies to this artifact.',
             },
           },
-          required: ['rule_id', 'confidence', 'evidence', 'explanation'],
+          required: ['rule_id', 'confidence', 'nature', 'evidence', 'explanation'],
         },
       },
     },
@@ -146,6 +169,10 @@ function normalizeConfidence(value: unknown): Confidence {
   return value === 'low' || value === 'medium' || value === 'high' ? value : 'medium';
 }
 
+function normalizeNature(value: unknown): FindingNature {
+  return value === 'latent' ? 'latent' : 'active';
+}
+
 function extractFindings(message: Anthropic.Message): Finding[] {
   const toolUse = message.content.find(
     (block): block is Anthropic.ToolUseBlock =>
@@ -174,6 +201,8 @@ function extractFindings(message: Anthropic.Message): Finding[] {
       domain: rule.domain,
       severity: rule.severity,
       confidence: normalizeConfidence(raw.confidence),
+      nature: normalizeNature(raw.nature),
+      condition: typeof raw.condition === 'string' ? raw.condition : '',
       evidence: typeof raw.evidence === 'string' ? raw.evidence : '',
       explanation: typeof raw.explanation === 'string' ? raw.explanation : '',
       remediation: rule.remediation.trim(),
