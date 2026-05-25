@@ -10,17 +10,51 @@ import { getAllRules, getRule, getRulesByDomain } from './taxonomy/index.js';
 import type { Domain, PitfallRule, Severity } from './taxonomy/index.js';
 
 /** The kind of artifact being audited. */
-export type InputKind = 'code' | 'text';
+export type InputKind = 'code' | 'text' | 'image';
 
-export interface AnalyzeInput {
+/** Image media types Claude Vision accepts (matches the SDK's base64 image source). */
+export type ImageMediaType = 'image/png' | 'image/jpeg' | 'image/gif' | 'image/webp';
+
+/** A code file or plain-English analysis description. */
+export interface TextAnalyzeInput {
+  /** Whether `content` is source code or a plain-English analysis description. */
+  kind: 'code' | 'text';
   /** The raw artifact to audit. */
   content: string;
-  /** Whether `content` is source code or a plain-English analysis description. */
-  kind: InputKind;
   /** Optional language hint for code (e.g. "Python", "SQL"). */
   language?: string;
   /** Optional source filename, surfaced to the model for context. */
   filename?: string;
+}
+
+/** A chart/visualization image, audited via Claude Vision. */
+export interface ImageAnalyzeInput {
+  kind: 'image';
+  /** Base64-encoded image bytes. */
+  content: string;
+  /** The image's media type, used to build the Vision image block. */
+  mediaType: ImageMediaType;
+  /** Optional source filename, surfaced to the model for context. */
+  filename?: string;
+}
+
+export type AnalyzeInput = TextAnalyzeInput | ImageAnalyzeInput;
+
+/** Map a file extension (with leading dot, any case) to a Vision media type. */
+export function imageMediaTypeForExtension(ext: string): ImageMediaType | undefined {
+  switch (ext.toLowerCase()) {
+    case '.png':
+      return 'image/png';
+    case '.jpg':
+    case '.jpeg':
+      return 'image/jpeg';
+    case '.gif':
+      return 'image/gif';
+    case '.webp':
+      return 'image/webp';
+    default:
+      return undefined;
+  }
 }
 
 export type Confidence = 'low' | 'medium' | 'high';
@@ -95,6 +129,23 @@ Rules of engagement:
 
 Return your results by calling the report_findings tool.`;
 
+const IMAGE_SYSTEM_INSTRUCTIONS = `You are datapitfalls, an auditor that reviews data visualizations for known data pitfalls.
+
+You are shown a chart image — and a catalog of pitfall rules. Identify which pitfalls from the catalog the chart actually exhibits.
+
+You can see only the chart, never the underlying data or how it was made. Many pitfalls are patterns whose real-world impact depends on values you cannot inspect. Classify every finding by its nature:
+- "active": the pitfall is evident from the image itself, regardless of the data (e.g. a bar chart with a truncated/non-zero baseline, a dual y-axis, a 3D or exploded pie, an inverted or non-linear axis, a distorting aspect ratio, area/bubble sizing by radius instead of area, a rainbow/red-green color scale, missing axis labels or units, an overcrowded or spaghetti chart). State these directly.
+- "latent": the chart makes a choice that is only sometimes misleading, and whether it bites depends on data or context you can't see (e.g. a particular bin width, a chosen time window or axis range, an aggregation that may hide variation). Phrase these conditionally, do NOT assert the pitfall is definitely distorting the message, and fill in "condition" with what must be true for it to occur.
+
+Rules of engagement:
+- Only report pitfalls that appear in the catalog below, and cite each by its exact \`id\`.
+- Report a finding only when the chart shows real evidence of the pitfall (active) or a genuinely risky choice (latent). Be conservative: avoid speculation and false positives.
+- For each finding, provide the rule id, confidence (low/medium/high), nature (active/latent), the specific visual evidence (name the element you see — the axis, legend, mark, or label), a concise explanation, and — for latent findings — the data condition under which it bites.
+- A single chart may exhibit several pitfalls, one, or none. If none apply, return an empty findings list.
+- Do not invent rule ids. Do not report a pitfall that is not in the catalog.
+
+Return your results by calling the report_findings tool.`;
+
 const REPORT_TOOL: Anthropic.Tool = {
   name: 'report_findings',
   description: 'Report the data pitfalls found in the audited artifact.',
@@ -159,13 +210,51 @@ function serializeRules(rules: readonly PitfallRule[]): string {
     .join('\n');
 }
 
-function describeInput(input: AnalyzeInput): string {
+function describeInput(input: TextAnalyzeInput): string {
   if (input.kind === 'code') {
     const lang = input.language ? ` (${input.language})` : '';
     const file = input.filename ? ` from ${input.filename}` : '';
     return `code${lang}${file}`;
   }
   return 'plain-English analysis description';
+}
+
+// Images default to the two visual domains plus the cross-cutting epistemic rule
+// that charts most often trip (treating the chart as reality). options.domains
+// overrides this; non-image inputs default to the whole catalog.
+const IMAGE_DEFAULT_DOMAINS: Domain[] = ['Graphical Gaffes', 'Design Dangers'];
+const IMAGE_EXTRA_RULE_ID = 'data-reality-gap';
+
+function selectRules(input: AnalyzeInput, domains?: Domain[]): PitfallRule[] {
+  if (domains) return domains.flatMap((domain) => getRulesByDomain(domain));
+  if (input.kind === 'image') {
+    const rules = IMAGE_DEFAULT_DOMAINS.flatMap((domain) => getRulesByDomain(domain));
+    const extra = getRule(IMAGE_EXTRA_RULE_ID);
+    return extra ? [...rules, extra] : rules;
+  }
+  return [...getAllRules()];
+}
+
+function buildUserContent(input: AnalyzeInput): Anthropic.MessageParam['content'] {
+  if (input.kind === 'image') {
+    const where = input.filename ? ` (${input.filename})` : '';
+    return [
+      {
+        type: 'image',
+        source: { type: 'base64', media_type: input.mediaType, data: input.content },
+      },
+      {
+        type: 'text',
+        text:
+          `You are shown a chart image${where}. Identify the data pitfalls from the ` +
+          `catalog that are evident in it, and report them via the report_findings tool.`,
+      },
+    ];
+  }
+  return (
+    `Audit the following ${describeInput(input)} for data pitfalls from the catalog.\n\n` +
+    `<artifact>\n${input.content}\n</artifact>`
+  );
 }
 
 function normalizeConfidence(value: unknown): Confidence {
@@ -224,35 +313,27 @@ export async function analyze(
   input: AnalyzeInput,
   options: AnalyzeOptions = {}
 ): Promise<AuditReport> {
-  const rules = options.domains
-    ? options.domains.flatMap((domain) => getRulesByDomain(domain))
-    : [...getAllRules()];
+  const rules = selectRules(input, options.domains);
 
   const model = options.model ?? process.env.ANTHROPIC_MODEL ?? DEFAULT_MODEL;
   const maxTokens = options.maxTokens ?? 16000;
   const client = options.client ?? new Anthropic(options.apiKey ? { apiKey: options.apiKey } : {});
 
+  const instructions = input.kind === 'image' ? IMAGE_SYSTEM_INSTRUCTIONS : SYSTEM_INSTRUCTIONS;
   const taxonomyBlock = `# Pitfall catalog (${rules.length} rules)\n\n${serializeRules(rules)}`;
 
   const message = await client.messages.create({
     model,
     max_tokens: maxTokens,
     system: [
-      { type: 'text', text: SYSTEM_INSTRUCTIONS },
-      // The catalog is identical across requests — cache it so repeated audits
-      // only pay full price for the (small) per-request artifact.
+      { type: 'text', text: instructions },
+      // The catalog is identical across requests of the same kind — cache it so
+      // repeated audits only pay full price for the (small) per-request artifact.
       { type: 'text', text: taxonomyBlock, cache_control: { type: 'ephemeral' } },
     ],
     tools: [REPORT_TOOL],
     tool_choice: { type: 'tool', name: REPORT_TOOL.name },
-    messages: [
-      {
-        role: 'user',
-        content:
-          `Audit the following ${describeInput(input)} for data pitfalls from the catalog.\n\n` +
-          `<artifact>\n${input.content}\n</artifact>`,
-      },
-    ],
+    messages: [{ role: 'user', content: buildUserContent(input) }],
   });
 
   return {
