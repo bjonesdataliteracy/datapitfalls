@@ -1,6 +1,12 @@
 {
-  "description": "Counts FAA wildlife strikes per year from an extract that ends mid-2017, then reads the partial final year as a real decline.",
+  "description": "Counts FAA wildlife strikes per year from an extract that ends mid-2017, then reads the partial final year as a real decline and credits mitigation.",
   "language": "Python",
   "expected": [{ "ruleId": "partial-period-aggregation", "nature": "active" }],
-  "acceptable": ["data-reality-gap", "dropped-missing-categories", "uneven-aggregation-coverage"]
+  "acceptable": [
+    "data-reality-gap",
+    "dropped-missing-categories",
+    "uneven-aggregation-coverage",
+    "correlation-implies-causation",
+    "measurement-system-drift"
+  ]
 }

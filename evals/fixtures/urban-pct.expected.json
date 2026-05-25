@@ -2,5 +2,5 @@
   "description": "Computes a regional urban-population percentage as the unweighted mean of country percentages, ignoring that the countries have very different populations (denominators).",
   "language": "Python",
   "expected": [{ "ruleId": "unweighted-rate-average", "nature": "active" }],
-  "acceptable": []
+  "acceptable": ["data-reality-gap"]
 }

@@ -1,14 +1,8 @@
 import pandas as pd
 
-# Count rows per category over the full, fixed category set and report shares.
+# Total sales over a column we first confirm is complete (nothing dropped silently).
 df = pd.read_csv("sales.csv")
+assert df["amount"].notna().all(), "amount column has missing values"
 
-categories = ["A", "B", "C", "D"]
-counts = df["category"].value_counts().reindex(categories, fill_value=0)
-total = int(counts.sum())
-
-print(f"Total records: {total}")
-for category in categories:
-    n = int(counts[category])
-    share = n / total if total else 0.0
-    print(f"  {category}: {n} ({share:.1%})")
+total = df["amount"].sum()
+print(f"Total sales across {len(df)} complete records: {total:,.2f}")
