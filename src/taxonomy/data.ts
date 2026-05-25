@@ -297,6 +297,22 @@ export const rules: PitfallRule[] = [
     ]
   },
   {
+    "id": "log-scale-averaging",
+    "name": "Misreading a Log-Scale Average",
+    "domain": "Mathematical Miscues",
+    "severity": "warning",
+    "description": "Values measured on a logarithmic (or otherwise nonlinear) scale — pH, decibels, earthquake magnitude, star magnitude, log-returns — are averaged arithmetically and the result is read as the average of the underlying physical quantity. The calculation is valid, but the arithmetic mean of log-scale values equals the log of the geometric mean of the original quantity, not the mean of that quantity. Conflating the two answers a different question than intended and can mislead badly, because a one-unit step on the scale is a multiplicative (often 10x or ~32x) step in the quantity. This extends the domain's aggregation theme but is not a specific sub-pitfall example in the book.\n",
+    "detection_strategy": "In code and prose, flag an arithmetic mean or sum over a column known to be on a log or nonlinear scale — earthquake `mag`/Richter, `pH`, decibel/`dB`, log-returns, star magnitudes — especially when the result is described as the \"average\" magnitude/level/acidity or used as a stand-in for the physical quantity. Be suspicious of `mean()`/`AVG()` on such fields with no note that it reflects a geometric mean of the underlying quantity, and of summing log-scale values.\n",
+    "example_bad": "An analysis reports `avg_magnitude = df[\"mag\"].mean()` as the \"average earthquake,\" implying typical energy release — but magnitude is logarithmic (an M6 releases ~32x the energy of an M5), so the arithmetic mean of magnitudes does not represent average energy at all.\n",
+    "example_good": "The analyst is explicit about which question is being answered: report the mean magnitude as a summary of the magnitude scale itself (equivalently, the geometric mean of energy), or — to summarize the physical quantity — convert magnitudes to energy, average in energy units, and convert back. The scale and its meaning are stated.\n",
+    "remediation": "Decide whether you want the average of the scale or the average of the underlying quantity. For the physical quantity, transform to linear units (energy, concentration, intensity, dollars), average there, then transform back if needed. When you do average on the log scale, label it as such — it is the geometric mean of the quantity, not its arithmetic mean.\n",
+    "references": [
+      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 3: Mathematical Miscues (domain extension — not a specific sub-pitfall example in the book)",
+      "Limpert, Stahel & Abbt (2001), 'Log-normal Distributions across the Sciences,' BioScience 51(5) — the geometric mean and log-scale data",
+      "https://www.avoidingdatapitfalls.com"
+    ]
+  },
+  {
     "id": "mismatched-units",
     "name": "Mismatched Units of Measure",
     "domain": "Mathematical Miscues",
@@ -707,6 +723,22 @@ export const rules: PitfallRule[] = [
     "remediation": "Don't project a trend past the data without justification. Bound forecasts by domain knowledge (ceilings, saturation), prefer models that capture the expected nonlinearity, widen uncertainty with extrapolation distance, and treat in-sample fit as no evidence of out-of-sample behavior. Validate extrapolations against plausibility.\n",
     "references": [
       "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 5B: Exuberant Extrapolations",
+      "https://www.avoidingdatapitfalls.com"
+    ]
+  },
+  {
+    "id": "unvalidated-clustering",
+    "name": "Unvalidated Clustering",
+    "domain": "Analytical Aberrations",
+    "severity": "warning",
+    "description": "An unsupervised clustering (k-means, hierarchical, and the like) is run and its output is treated as real, meaningful structure — often with interpretive labels — without validating that the clusters reflect genuine groups rather than an arbitrary partition the algorithm always produces. k-means will split any data into k blobs; the number of clusters and the feature scaling are analyst choices, so a different k or scaling yields different \"groups.\" Naming and reasoning about unvalidated clusters imposes a story the data may not support. This extends the domain's analysis-distortion theme but is not a specific sub-pitfall example in the book.\n",
+    "detection_strategy": "In code and prose, flag clustering (`KMeans`, `AgglomerativeClustering`, DBSCAN, etc.) whose results are interpreted, labeled, or acted on with no validation step — no silhouette/Davies-Bouldin score, no stability check across seeds or k, no comparison to domain-known groups, and a k chosen by eyeballing an elbow. Be suspicious of hard-coded human-readable names assigned to numeric cluster labels, and of cluster summaries presented as discovered \"types\" without caveat.\n",
+    "example_bad": "k-means with a hand-picked `k=5` (chosen by glancing at an elbow plot) is run on scaled features, and clusters 0–4 are hard-coded to names like \"Western Pacific Shallow\" — presenting an arbitrary partition as established seismic zones, with no silhouette score, stability check, or domain validation.\n",
+    "example_good": "The analyst validates before interpreting: checks cluster quality (e.g. silhouette), tests stability across seeds and several values of k, and compares the result to known domain structure — then labels and reasons about clusters only to the extent the validation supports, framing them as provisional rather than definitive types.\n",
+    "remediation": "Treat clusters as hypotheses, not findings, until validated. Justify the number of clusters with more than an eyeballed elbow (silhouette, gap statistic, stability across seeds/k), check sensitivity to feature scaling, and compare to external or domain-known groupings. Don't assign authoritative labels to clusters you haven't shown to be real and stable.\n",
+    "references": [
+      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 5: Analytical Aberrations (domain extension — not a specific sub-pitfall example in the book)",
+      "Rousseeuw (1987), 'Silhouettes: a graphical aid to the interpretation and validation of cluster analysis,' J. Computational and Applied Mathematics 20",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
