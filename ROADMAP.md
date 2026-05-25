@@ -1,6 +1,6 @@
 # Roadmap
 
-datapitfalls is being built in the open. This roadmap lays out the path from a documented foundation to a full, community-driven ecosystem for auditing data work. Each phase builds on the last.
+datapitfalls is being built in the open. This roadmap reflects how the tool is actually coming together — the auditing engine first, then the surfaces and distribution around it — on the path from a documented foundation to a full, community-driven ecosystem for auditing data work. Each phase builds on the last.
 
 **Legend:** ✅ Complete · 🟢 In Progress · ⚪ Planned
 
@@ -15,25 +15,34 @@ Lay the groundwork that everything else stands on.
 - [x] Pitfall taxonomy v0.1 — the structured, machine-readable catalog of pitfalls across all eight audit domains
 - [x] Taxonomy specification and contribution format
 
-## 🟢 Phase 2 — Chart Audit MVP _(Current)_
+## ✅ Phase 2 — Analysis Engine & CLI
 
-Ship the first thing people can actually use: a website that audits a chart image.
+Build the core auditor: ground Claude on the pitfall catalog and return structured findings from the command line.
+
+- [x] Claude API analysis pipeline grounded on the pitfall catalog
+- [x] Code snippet analysis (Python / SQL / R)
+- [x] Plain-English analysis description input
+- [x] Pitfall detection across Technical Trespasses, Mathematical Miscues, Statistical Slip-Ups, and Analytical Aberrations
+- [x] Structured audit report output
+- [x] `datapitfalls scan` command-line tool
+- [x] CI integration to catch pitfalls before they ship (`--ci` exit code)
+
+## ✅ Phase 3 — Chart & Visual Audits
+
+Teach the auditor to see, so it can review the chart itself.
+
+- [x] Claude Vision API analysis pipeline
+- [x] Visual pitfall detection (Graphical Gaffes & Design Dangers)
+- [x] Chart-image scanning from the CLI
+
+## ⚪ Phase 4 — Web Experience _(Next up)_
+
+Put the auditor on the web so anyone can use it without a terminal.
 
 - [ ] Website at [avoidingdatapitfalls.com](https://www.avoidingdatapitfalls.com)
 - [ ] Image upload interface
-- [ ] Claude Vision API analysis pipeline
-- [ ] Visual pitfall detection (Graphical Gaffes & Design Dangers)
-- [ ] Structured audit report output
 
-## ⚪ Phase 3 — Multi-Modal Analysis
-
-Move beyond images to audit the reasoning behind the chart.
-
-- [ ] Code snippet analysis (Python / SQL / R)
-- [ ] Plain-English analysis description input
-- [ ] Expanded pitfall detection across Technical Trespasses, Mathematical Miscues, Statistical Slip-Ups, and Analytical Aberrations
-
-## ⚪ Phase 4 — Document Analysis
+## ⚪ Phase 5 — Document Analysis
 
 Audit whole bodies of work, in context.
 
@@ -41,16 +50,14 @@ Audit whole bodies of work, in context.
 - [ ] Multi-chart audit that understands charts in relation to one another
 - [ ] Full-document pitfall scanning across the entire data reasoning chain
 
-## ⚪ Phase 5 — Developer Tools
+## ⚪ Phase 6 — Distribution & Public API
 
-Put datapitfalls into the workflows where data work actually happens.
+Make datapitfalls easy to install and build on.
 
 - [ ] Published npm package
-- [ ] CLI tool (`npx datapitfalls scan`)
-- [ ] CI/CD integration to catch pitfalls before they ship
 - [ ] Public API for tool builders
 
-## ⚪ Phase 6 — Community & Ecosystem
+## ⚪ Phase 7 — Community & Ecosystem
 
 Open the doors and grow.
 
