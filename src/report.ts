@@ -78,7 +78,8 @@ export function formatReport(report: AuditReport, options: ReportFormatOptions =
   ];
 
   if (active.length > 0) {
-    lines.push('Active — evident from the code/description:');
+    const source = report.kind === 'image' ? 'chart' : 'code/description';
+    lines.push(`Active — evident from the ${source}:`);
     lines.push('');
     for (const finding of active) renderFinding(finding, lines);
   }

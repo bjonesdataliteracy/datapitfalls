@@ -89,6 +89,8 @@ export interface AuditUsage {
 
 export interface AuditReport {
   findings: Finding[];
+  /** The kind of artifact that was audited, for report phrasing. */
+  kind: InputKind;
   model: string;
   rulesConsidered: number;
   usage?: AuditUsage;
@@ -338,6 +340,7 @@ export async function analyze(
 
   return {
     findings: extractFindings(message),
+    kind: input.kind,
     model,
     rulesConsidered: rules.length,
     usage: message.usage
