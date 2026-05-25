@@ -33,18 +33,37 @@ function renderFinding(finding: Finding, lines: string[]): void {
   lines.push('');
 }
 
-/** Render an audit report as plain text for the terminal. */
-export function formatReport(report: AuditReport): string {
-  if (report.findings.length === 0) {
-    return `No pitfalls detected (considered ${report.rulesConsidered} rules, model ${report.model}).`;
-  }
+export interface ReportFormatOptions {
+  /** Show every finding, including lower-confidence latent ones. Default false. */
+  showAll?: boolean;
+}
+
+/**
+ * Render an audit report as plain text for the terminal.
+ *
+ * By default this shows all active findings plus only high-confidence latent
+ * findings — latent findings fire on almost any real code, so the lower-confidence
+ * ones are hidden as noise unless `showAll` is set.
+ */
+export function formatReport(report: AuditReport, options: ReportFormatOptions = {}): string {
+  const showAll = options.showAll ?? false;
 
   const active = report.findings.filter((f) => f.nature === 'active').sort(bySeverity);
-  const latent = report.findings.filter((f) => f.nature === 'latent').sort(bySeverity);
-  const counts = countBySeverity(report.findings);
+  const allLatent = report.findings.filter((f) => f.nature === 'latent').sort(bySeverity);
+  const latent = showAll ? allLatent : allLatent.filter((f) => f.confidence === 'high');
+  const hiddenLatent = allLatent.length - latent.length;
 
+  if (active.length === 0 && latent.length === 0) {
+    const base =
+      hiddenLatent > 0
+        ? `No active pitfalls detected — ${hiddenLatent} lower-confidence latent note(s) hidden (use --all to show).`
+        : 'No pitfalls detected.';
+    return `${base} Considered ${report.rulesConsidered} rules, model ${report.model}.`;
+  }
+
+  const counts = countBySeverity([...active, ...latent]);
   const lines: string[] = [
-    `${report.findings.length} pitfall(s) found — ${active.length} active, ${latent.length} latent (data-dependent) · ` +
+    `${active.length + latent.length} pitfall(s) shown — ${active.length} active, ${latent.length} latent · ` +
       `${counts.error} error / ${counts.warning} warning / ${counts.info} info (model ${report.model}):`,
     '',
   ];
@@ -59,6 +78,10 @@ export function formatReport(report: AuditReport): string {
     lines.push('Latent — risky patterns to verify against your data:');
     lines.push('');
     for (const finding of latent) renderFinding(finding, lines);
+  }
+
+  if (hiddenLatent > 0) {
+    lines.push(`(${hiddenLatent} lower-confidence latent finding(s) hidden — use --all to show.)`);
   }
 
   return lines.join('\n').trimEnd();

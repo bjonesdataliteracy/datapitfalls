@@ -30,8 +30,9 @@ function printHelp(): void {
       'Usage:\n' +
       '  datapitfalls stats               Show the pitfall catalog size by domain\n' +
       '  datapitfalls scan <file>         Audit a code file for data pitfalls\n' +
-      '    --thorough                     Use the most capable model (claude-opus-4-7)\n' +
-      '    --fast                         Use the cheapest model (claude-haiku-4-5)\n' +
+      '    --thorough                     Use Opus 4.7 instead of the default Sonnet 4.6\n' +
+      '    --fast                         Use Haiku 4.5 (cheapest)\n' +
+      '    --all                          Show all findings, incl. lower-confidence latent ones\n' +
       '\nThe scan command needs an Anthropic API key in ANTHROPIC_API_KEY.\n' +
       'Default model is claude-sonnet-4-6; override with --thorough, --fast, or ANTHROPIC_MODEL.'
   );
@@ -45,9 +46,12 @@ const MODEL_FLAGS: Record<string, string> = {
 async function scan(args: string[]): Promise<void> {
   const file = args.find((arg) => !arg.startsWith('-'));
   let model: string | undefined;
+  let showAll = false;
   for (const arg of args) {
     if (arg in MODEL_FLAGS) {
       model = MODEL_FLAGS[arg];
+    } else if (arg === '--all') {
+      showAll = true;
     } else if (arg.startsWith('-')) {
       console.error(`Unknown option: ${arg}`);
       process.exitCode = 1;
@@ -80,7 +84,7 @@ async function scan(args: string[]): Promise<void> {
     { content, kind: 'code', language, filename: basename(file) },
     { model }
   );
-  console.log(formatReport(report));
+  console.log(formatReport(report, { showAll }));
 }
 
 async function main(): Promise<void> {

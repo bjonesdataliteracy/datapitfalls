@@ -73,6 +73,9 @@ export interface AnalyzeOptions {
   maxTokens?: number;
 }
 
+// claude-sonnet-4-6 is the default: in the eval harness it had the highest active
+// precision and best calibration of the three models, at ~half the cost of Opus 4.7
+// (Opus, --thorough; Haiku 4.5, --fast).
 export const DEFAULT_MODEL = 'claude-sonnet-4-6';
 
 const SYSTEM_INSTRUCTIONS = `You are datapitfalls, an auditor that reviews data work for known data pitfalls.
