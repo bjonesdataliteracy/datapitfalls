@@ -16,6 +16,9 @@ const EXT_LANGUAGE: Record<string, string> = {
   '.ipynb': 'Jupyter notebook',
 };
 
+// Extensions treated as a plain-English analysis description rather than code.
+const TEXT_EXTS = new Set(['.md', '.markdown', '.txt', '.text', '.rst']);
+
 function printStats(): void {
   const counts = ruleCountsByDomain();
   console.log(`datapitfalls v${VERSION} — ${ruleCount()} rules across ${DOMAINS.length} domains\n`);
@@ -29,7 +32,8 @@ function printHelp(): void {
     `datapitfalls v${VERSION} — ${TAGLINE}\n` +
       'Usage:\n' +
       '  datapitfalls stats               Show the pitfall catalog size by domain\n' +
-      '  datapitfalls scan <file>         Audit a code file for data pitfalls\n' +
+      '  datapitfalls scan <file>         Audit a code file or analysis description\n' +
+      '    --text                         Treat the file as a plain-English analysis description\n' +
       '    --thorough                     Use Opus 4.7 instead of the default Sonnet 4.6\n' +
       '    --fast                         Use Haiku 4.5 (cheapest)\n' +
       '    --all                          Show all findings, incl. lower-confidence latent ones\n' +
@@ -51,6 +55,7 @@ async function scan(args: string[]): Promise<void> {
   let showAll = false;
   let asJson = false;
   let ci = false;
+  let forceText = false;
   for (const arg of args) {
     if (arg in MODEL_FLAGS) {
       model = MODEL_FLAGS[arg];
@@ -60,6 +65,8 @@ async function scan(args: string[]): Promise<void> {
       asJson = true;
     } else if (arg === '--ci') {
       ci = true;
+    } else if (arg === '--text') {
+      forceText = true;
     } else if (arg.startsWith('-')) {
       console.error(`Unknown option: ${arg}`);
       process.exitCode = 1;
@@ -87,11 +94,10 @@ async function scan(args: string[]): Promise<void> {
     return;
   }
 
-  const language = EXT_LANGUAGE[extname(file).toLowerCase()];
-  const report = await analyze(
-    { content, kind: 'code', language, filename: basename(file) },
-    { model }
-  );
+  const ext = extname(file).toLowerCase();
+  const kind = forceText || TEXT_EXTS.has(ext) ? 'text' : 'code';
+  const language = kind === 'code' ? EXT_LANGUAGE[ext] : undefined;
+  const report = await analyze({ content, kind, language, filename: basename(file) }, { model });
 
   console.log(asJson ? JSON.stringify(report, null, 2) : formatReport(report, { showAll }));
 
