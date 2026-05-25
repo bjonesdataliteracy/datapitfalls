@@ -78,7 +78,7 @@ datapitfalls organizes every pitfall into one of eight domains — the pitfall c
 
 datapitfalls is designed around **four input modes**, so you can audit your work at whatever stage you're in.
 
-> ⚠️ **Status:** datapitfalls is in **Phase 1 — Foundation**. The commands below show the intended interface. They are not fully wired up yet. Follow the [Roadmap](ROADMAP.md) to track progress.
+> ⚠️ **Status:** datapitfalls is in **Phase 2 — Chart Audit MVP**. The CLI audits **chart images, code snippets, and plain-English descriptions** today (modes 1–3 below). Document/slide-deck upload (mode 4) and the hosted website at [avoidingdatapitfalls.com](https://www.avoidingdatapitfalls.com) are still planned — see the [Roadmap](ROADMAP.md). Not yet published to npm: run it from a local clone with `npm run build`, then `node dist/cli.js scan <file>`.
 
 ### 1. Scan a chart image
 

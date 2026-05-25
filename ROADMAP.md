@@ -21,9 +21,9 @@ Ship the first thing people can actually use: a website that audits a chart imag
 
 - [ ] Website at [avoidingdatapitfalls.com](https://www.avoidingdatapitfalls.com)
 - [ ] Image upload interface
-- [ ] Claude Vision API analysis pipeline
-- [ ] Visual pitfall detection (Graphical Gaffes & Design Dangers)
-- [ ] Structured audit report output
+- [x] Claude Vision API analysis pipeline
+- [x] Visual pitfall detection (Graphical Gaffes & Design Dangers)
+- [x] Structured audit report output
 
 ## ⚪ Phase 3 — Multi-Modal Analysis
 
