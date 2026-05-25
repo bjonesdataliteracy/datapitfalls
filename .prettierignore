@@ -1,0 +1,4 @@
+dist/
+coverage/
+# Generated from the per-rule YAML files; see scripts/build-taxonomy.mjs
+src/taxonomy/data.ts

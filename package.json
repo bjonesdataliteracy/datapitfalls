@@ -30,7 +30,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "npm run build:taxonomy && tsc",
+    "build:taxonomy": "node scripts/build-taxonomy.mjs",
     "test": "echo \"No tests yet — see ROADMAP.md\" && exit 0",
     "validate": "node scripts/validate-taxonomy.mjs",
     "lint": "eslint . --ext .ts",
