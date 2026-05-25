@@ -4,7 +4,8 @@
 import { readFileSync } from 'node:fs';
 import { basename, extname } from 'node:path';
 import { DOMAINS, TAGLINE, VERSION, ruleCount, ruleCountsByDomain } from './index.js';
-import { analyze } from './analyze.js';
+import { analyze, imageMediaTypeForExtension } from './analyze.js';
+import type { AuditReport } from './analyze.js';
 import { formatReport, hasBlockingFindings } from './report.js';
 
 const EXT_LANGUAGE: Record<string, string> = {
@@ -32,13 +33,15 @@ function printHelp(): void {
     `datapitfalls v${VERSION} — ${TAGLINE}\n` +
       'Usage:\n' +
       '  datapitfalls stats               Show the pitfall catalog size by domain\n' +
-      '  datapitfalls scan <file>         Audit a code file or analysis description\n' +
+      '  datapitfalls scan <file>         Audit a code file, analysis description, or chart image\n' +
       '    --text                         Treat the file as a plain-English analysis description\n' +
       '    --thorough                     Use Opus 4.7 instead of the default Sonnet 4.6\n' +
       '    --fast                         Use Haiku 4.5 (cheapest)\n' +
       '    --all                          Show all findings, incl. lower-confidence latent ones\n' +
       '    --json                         Output the full report as JSON\n' +
       '    --ci                           Exit non-zero if an active error/warning is found\n' +
+      '\nImage files (.png/.jpg/.jpeg/.gif/.webp) are audited with Claude Vision against the\n' +
+      'visual pitfall domains (Graphical Gaffes & Design Dangers).\n' +
       '\nThe scan command needs an Anthropic API key in ANTHROPIC_API_KEY.\n' +
       'Default model is claude-sonnet-4-6; override with --thorough, --fast, or ANTHROPIC_MODEL.'
   );
@@ -85,19 +88,37 @@ async function scan(args: string[]): Promise<void> {
     return;
   }
 
-  let content: string;
-  try {
-    content = readFileSync(file, 'utf8');
-  } catch {
-    console.error(`Could not read file: ${file}`);
-    process.exitCode = 1;
-    return;
-  }
-
   const ext = extname(file).toLowerCase();
-  const kind = forceText || TEXT_EXTS.has(ext) ? 'text' : 'code';
-  const language = kind === 'code' ? EXT_LANGUAGE[ext] : undefined;
-  const report = await analyze({ content, kind, language, filename: basename(file) }, { model });
+  // An image extension (unless --text forces a text reading) routes to Vision.
+  const mediaType = forceText ? undefined : imageMediaTypeForExtension(ext);
+
+  let report: AuditReport;
+  if (mediaType) {
+    let data: string;
+    try {
+      data = readFileSync(file).toString('base64');
+    } catch {
+      console.error(`Could not read file: ${file}`);
+      process.exitCode = 1;
+      return;
+    }
+    report = await analyze(
+      { content: data, kind: 'image', mediaType, filename: basename(file) },
+      { model }
+    );
+  } else {
+    let content: string;
+    try {
+      content = readFileSync(file, 'utf8');
+    } catch {
+      console.error(`Could not read file: ${file}`);
+      process.exitCode = 1;
+      return;
+    }
+    const kind = forceText || TEXT_EXTS.has(ext) ? 'text' : 'code';
+    const language = kind === 'code' ? EXT_LANGUAGE[ext] : undefined;
+    report = await analyze({ content, kind, language, filename: basename(file) }, { model });
+  }
 
   console.log(asJson ? JSON.stringify(report, null, 2) : formatReport(report, { showAll }));
 
