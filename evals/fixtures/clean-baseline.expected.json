@@ -1,0 +1,6 @@
+{
+  "description": "Negative control: counts categories over a fixed category set with zero-fill and reports correct shares. No pitfall is present; the tool should find nothing.",
+  "language": "Python",
+  "expected": [],
+  "acceptable": []
+}

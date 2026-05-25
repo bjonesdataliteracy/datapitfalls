@@ -1,0 +1,6 @@
+{
+  "description": "Groups works by year; years in which Poe published nothing never appear, so the 'least productive year' is wrong and the line chart hides the true zeros.",
+  "language": "Python",
+  "expected": [{ "ruleId": "dropped-missing-categories", "nature": "active" }],
+  "acceptable": ["misleading-interpolation"]
+}

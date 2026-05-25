@@ -1,0 +1,6 @@
+{
+  "description": "Takes the arithmetic mean of earthquake magnitudes (a logarithmic scale) and describes it as average energy release — the mean of the logs is the geometric mean of energy, not its arithmetic mean.",
+  "language": "Python",
+  "expected": [{ "ruleId": "log-scale-averaging", "nature": "active" }],
+  "acceptable": ["mean-mistaken-for-typical", "data-reality-gap"]
+}
