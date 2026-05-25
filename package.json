@@ -32,7 +32,8 @@
   "scripts": {
     "build": "npm run build:taxonomy && tsc",
     "build:taxonomy": "node scripts/build-taxonomy.mjs",
-    "test": "echo \"No tests yet — see ROADMAP.md\" && exit 0",
+    "pretest": "npm run build",
+    "test": "node --test test/*.test.mjs",
     "validate": "node scripts/validate-taxonomy.mjs",
     "eval": "node evals/run.mjs",
     "lint": "eslint . --ext .ts",

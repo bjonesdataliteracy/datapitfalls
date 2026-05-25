@@ -4,7 +4,7 @@
 
 ### Helping you steer clear of common blunders when working with data
 
-[![Build Status](https://img.shields.io/badge/build-pending-lightgrey.svg)](https://github.com/bjonesdataliteracy/datapitfalls/actions)
+[![CI](https://github.com/bjonesdataliteracy/datapitfalls/actions/workflows/ci.yml/badge.svg)](https://github.com/bjonesdataliteracy/datapitfalls/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/badge/npm-v0.1.0-blue.svg)](https://www.npmjs.com/package/datapitfalls)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/bjonesdataliteracy/datapitfalls.svg?style=social)](https://github.com/bjonesdataliteracy/datapitfalls/stargazers)
