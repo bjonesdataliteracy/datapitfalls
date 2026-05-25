@@ -12,3 +12,7 @@ export const TAGLINE = 'Helping you steer clear of common blunders when working 
 
 // The pitfall taxonomy: types and queries over the compiled rule catalog.
 export * from './taxonomy/index.js';
+
+// The analysis engine and report formatting.
+export * from './analyze.js';
+export * from './report.js';

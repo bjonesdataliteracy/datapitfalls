@@ -1,22 +1,82 @@
 #!/usr/bin/env node
 // datapitfalls — command-line entry point
 
+import { readFileSync } from 'node:fs';
+import { basename, extname } from 'node:path';
 import { DOMAINS, TAGLINE, VERSION, ruleCount, ruleCountsByDomain } from './index.js';
+import { analyze } from './analyze.js';
+import { formatReport } from './report.js';
 
-const command = process.argv[2];
+const EXT_LANGUAGE: Record<string, string> = {
+  '.py': 'Python',
+  '.sql': 'SQL',
+  '.r': 'R',
+  '.js': 'JavaScript',
+  '.ts': 'TypeScript',
+  '.ipynb': 'Jupyter notebook',
+};
 
-if (command === 'stats') {
-  // Smoke test that the compiled taxonomy loads and is queryable.
+function printStats(): void {
   const counts = ruleCountsByDomain();
   console.log(`datapitfalls v${VERSION} — ${ruleCount()} rules across ${DOMAINS.length} domains\n`);
   for (const domain of DOMAINS) {
     console.log(`  ${String(counts[domain]).padStart(3)}  ${domain}`);
   }
-} else {
+}
+
+function printHelp(): void {
   console.log(
     `datapitfalls v${VERSION} — ${TAGLINE}\n` +
       'Usage:\n' +
-      '  datapitfalls stats     Show the pitfall catalog size by domain\n' +
-      '\n(More commands arrive with the Phase 2 analyzer — see ROADMAP.md.)'
+      '  datapitfalls stats          Show the pitfall catalog size by domain\n' +
+      '  datapitfalls scan <file>    Audit a code file for data pitfalls\n' +
+      '\nThe scan command needs an Anthropic API key in ANTHROPIC_API_KEY.\n' +
+      'Override the model with ANTHROPIC_MODEL (default: claude-opus-4-7).'
   );
 }
+
+async function scan(file: string | undefined): Promise<void> {
+  if (!file) {
+    console.error('Usage: datapitfalls scan <file>');
+    process.exitCode = 1;
+    return;
+  }
+  if (!process.env.ANTHROPIC_API_KEY) {
+    console.error('ANTHROPIC_API_KEY is not set. Export your Anthropic API key to run an audit.');
+    process.exitCode = 1;
+    return;
+  }
+
+  let content: string;
+  try {
+    content = readFileSync(file, 'utf8');
+  } catch {
+    console.error(`Could not read file: ${file}`);
+    process.exitCode = 1;
+    return;
+  }
+
+  const language = EXT_LANGUAGE[extname(file).toLowerCase()];
+  const report = await analyze({ content, kind: 'code', language, filename: basename(file) });
+  console.log(formatReport(report));
+}
+
+async function main(): Promise<void> {
+  const [command, arg] = process.argv.slice(2);
+
+  switch (command) {
+    case 'stats':
+      printStats();
+      break;
+    case 'scan':
+      await scan(arg);
+      break;
+    default:
+      printHelp();
+  }
+}
+
+main().catch((error: unknown) => {
+  console.error(`datapitfalls error: ${error instanceof Error ? error.message : String(error)}`);
+  process.exitCode = 1;
+});
