@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import type { ChangeEvent, FormEvent } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import type { ChangeEvent, DragEvent, FormEvent } from 'react';
 import type { AuditReport, Finding } from 'datapitfalls';
+
+type Mode = 'image' | 'text' | 'code';
 
 type State =
   | { status: 'idle' }
@@ -10,37 +12,94 @@ type State =
   | { status: 'error'; message: string }
   | { status: 'done'; report: AuditReport };
 
+const MODES: { id: Mode; label: string }[] = [
+  { id: 'image', label: 'Chart image' },
+  { id: 'text', label: 'Written analysis' },
+  { id: 'code', label: 'Analysis code' },
+];
+
 export default function Home() {
+  const [mode, setMode] = useState<Mode>('image');
   const [state, setState] = useState<State>({ status: 'idle' });
+
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [fileName, setFileName] = useState<string | null>(null);
+  const [dragging, setDragging] = useState(false);
+
+  const [text, setText] = useState('');
+  const [code, setCode] = useState('');
+  const [language, setLanguage] = useState('');
+
+  const selectImage = useCallback((file: File) => {
+    if (!file.type.startsWith('image/')) return;
+    setImageFile(file);
+    setPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return URL.createObjectURL(file);
+    });
+    setMode('image');
+  }, []);
+
+  // Paste a chart screenshot from anywhere on the page.
+  useEffect(() => {
+    function onPaste(e: ClipboardEvent) {
+      const file = Array.from(e.clipboardData?.files ?? []).find((f) => f.type.startsWith('image/'));
+      if (file) {
+        e.preventDefault();
+        selectImage(file);
+      }
+    }
+    window.addEventListener('paste', onPaste);
+    return () => window.removeEventListener('paste', onPaste);
+  }, [selectImage]);
+
+  useEffect(() => () => {
+    if (preview) URL.revokeObjectURL(preview);
+  }, [preview]);
 
   function onFileChange(e: ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0] ?? null;
-    if (preview) URL.revokeObjectURL(preview);
-    setPreview(file ? URL.createObjectURL(file) : null);
-    setFileName(file ? file.name : null);
+    const file = e.target.files?.[0];
+    if (file) selectImage(file);
+  }
+
+  function onDrop(e: DragEvent<HTMLLabelElement>) {
+    e.preventDefault();
+    setDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) selectImage(file);
   }
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const input = e.currentTarget.elements.namedItem('file') as HTMLInputElement | null;
-    const file = input?.files?.[0];
-    if (!file) {
-      setState({ status: 'error', message: 'Choose a chart image first.' });
-      return;
+
+    let request: RequestInit;
+    if (mode === 'image') {
+      if (!imageFile) {
+        setState({ status: 'error', message: 'Choose, drop, or paste a chart image first.' });
+        return;
+      }
+      const body = new FormData();
+      body.append('file', imageFile);
+      request = { method: 'POST', body };
+    } else {
+      const content = mode === 'code' ? code : text;
+      if (content.trim() === '') {
+        setState({ status: 'error', message: 'Paste something to audit first.' });
+        return;
+      }
+      request = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ kind: mode, content, language: mode === 'code' ? language : undefined }),
+      };
     }
 
     setState({ status: 'loading' });
-    const body = new FormData();
-    body.append('file', file);
-
     try {
-      const res = await fetch('/api/audit', { method: 'POST', body });
+      const res = await fetch('/api/audit', request);
       const data = (await res.json()) as AuditReport | { error: string };
       if (!res.ok) {
-        const message = 'error' in data ? data.error : 'The audit failed.';
-        setState({ status: 'error', message });
+        setState({ status: 'error', message: 'error' in data ? data.error : 'The audit failed.' });
         return;
       }
       setState({ status: 'done', report: data as AuditReport });
@@ -53,27 +112,77 @@ export default function Home() {
     <main className="container">
       <header className="masthead">
         <h1>datapitfalls</h1>
-        <p>Upload a chart image and Claude audits it for common data-visualization pitfalls.</p>
+        <p>Audit a chart image, a written analysis, or analysis code for common data pitfalls.</p>
       </header>
 
-      <form className="uploader" onSubmit={onSubmit}>
-        <label className="filefield">
-          <input
-            type="file"
-            name="file"
-            accept="image/png,image/jpeg,image/gif,image/webp"
-            onChange={onFileChange}
-          />
-          <span>{fileName ?? 'Choose a chart image (PNG, JPEG, GIF, WebP)'}</span>
-        </label>
+      <div className="modes" role="tablist" aria-label="What to audit">
+        {MODES.map((m) => (
+          <button
+            key={m.id}
+            type="button"
+            role="tab"
+            aria-selected={mode === m.id}
+            className={mode === m.id ? 'mode active' : 'mode'}
+            onClick={() => setMode(m.id)}
+          >
+            {m.label}
+          </button>
+        ))}
+      </div>
 
-        {preview && (
+      <form className="uploader" onSubmit={onSubmit}>
+        {mode === 'image' && (
+          <label
+            className={dragging ? 'filefield dragging' : 'filefield'}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragging(true);
+            }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={onDrop}
+          >
+            <input type="file" accept="image/png,image/jpeg,image/gif,image/webp" onChange={onFileChange} />
+            <span>{imageFile?.name ?? 'Choose, drop, or paste a chart image (PNG, JPEG, GIF, WebP)'}</span>
+          </label>
+        )}
+
+        {mode === 'image' && preview && (
           // eslint-disable-next-line @next/next/no-img-element
           <img className="preview" src={preview} alt="Chart preview" />
         )}
 
+        {mode === 'text' && (
+          <textarea
+            className="editor"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Paste a written description of your analysis, claim, or chart…"
+            rows={10}
+          />
+        )}
+
+        {mode === 'code' && (
+          <>
+            <input
+              className="language"
+              type="text"
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              placeholder="Language (optional, e.g. Python, SQL, R)"
+            />
+            <textarea
+              className="editor mono"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              placeholder="Paste the analysis code to audit…"
+              rows={14}
+              spellCheck={false}
+            />
+          </>
+        )}
+
         <button type="submit" disabled={state.status === 'loading'}>
-          {state.status === 'loading' ? 'Auditing…' : 'Audit chart'}
+          {state.status === 'loading' ? 'Auditing…' : 'Audit'}
         </button>
       </form>
 
@@ -110,7 +219,7 @@ function Results({ report }: { report: AuditReport }) {
 
       {active.length > 0 && (
         <>
-          <h2>Active — evident from the chart</h2>
+          <h2>Active — evident from the artifact</h2>
           {active.map((f, i) => (
             <FindingCard key={`active-${i}`} finding={f} />
           ))}

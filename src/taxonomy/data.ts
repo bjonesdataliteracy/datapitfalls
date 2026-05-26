@@ -834,6 +834,22 @@ export const rules: PitfallRule[] = [
     ]
   },
   {
+    "id": "disproportionate-encoding",
+    "name": "Disproportionate Encoding",
+    "domain": "Graphical Gaffes",
+    "severity": "error",
+    "description": "The size of a mark — a bar's length, a wedge's angle, a bubble's area — does not match the value it represents under any consistent scale. Equal values render at different sizes, or unequal values render at nearly the same size, so the picture misstates the magnitudes it claims to show. This is Tufte's \"lie factor\" departing from 1: the effect shown in the graphic is not proportional to the effect in the data. It extends the domain's encoding-integrity theme and is distinct from a merely truncated baseline (where bars are still ordered and consistent with one another) and from 3D/perspective distortion (where the misreading comes from a tilt or extrusion).\n",
+    "detection_strategy": "Where values are labeled, compare the ratios of the rendered sizes to the ratios of the labels. Flag when the geometry cannot be reconciled with the numbers under one linear scale: two equal labels drawn at different sizes, a value twice another shown at near-equal size, or a mark whose size implies a value far from its label. Rule out innocent explanations first — a clearly stated non-linear (log) axis, or a non-zero baseline that still preserves the ordering — and only flag when no single consistent scale fits. In code, watch for bar lengths, heights, or widths set from a constant or from something other than the plotted value.\n",
+    "example_bad": "A bar chart labels four models 74.9, 52.8, 69.1, and 30.8, but the 69.1 and 30.8 bars are drawn at almost the same height while the 74.9 bar towers over both — no single scale maps these heights to those numbers, so the chart's lengths simply do not encode the data.\n",
+    "example_good": "Every bar's height is set by the same linear scale from a zero baseline, so a value twice as large is drawn twice as tall and two equal values are exactly the same height — the rendered lengths are proportional to the numbers they represent.\n",
+    "remediation": "Drive every mark's size from the data through one consistent scale, and check the rendered sizes against the labels (a value twice another should look twice as big). Keep the lie factor at 1: don't hand-size marks, don't start a length-based axis off zero, and if a non-linear scale is genuinely needed, label it clearly so readers can decode the sizes.\n",
+    "references": [
+      "Edward Tufte, The Visual Display of Quantitative Information (2nd ed., Graphics Press, 2001) — the lie factor and graphical integrity",
+      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)",
+      "https://www.avoidingdatapitfalls.com"
+    ]
+  },
+  {
     "id": "dual-axis-distortion",
     "name": "Dual-Axis Distortion",
     "domain": "Graphical Gaffes",
