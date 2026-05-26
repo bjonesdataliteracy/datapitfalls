@@ -140,6 +140,61 @@ body {
   color: var(--muted);
 }
 
+.uploadrow {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+}
+
+.uploadbtn {
+  position: relative;
+  display: inline-block;
+  padding: 0.4rem 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.uploadbtn input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.filehint {
+  color: var(--muted);
+}
+
+.filename {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text);
+}
+
+.clearfile {
+  padding: 0 0.4rem;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.editor:disabled,
+.language:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .uploader button {
   align-self: flex-start;
   padding: 0.6rem 1.25rem;

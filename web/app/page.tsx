@@ -18,6 +18,16 @@ const MODES: { id: Mode; label: string }[] = [
   { id: 'code', label: 'Analysis code' },
 ];
 
+const UPLOAD_ACCEPT: Record<Exclude<Mode, 'image'>, string> = {
+  text: '.pdf,.docx,.txt,.md,.markdown,.rst,application/pdf',
+  code: '.py,.ipynb,.r,.sql,.js,.mjs,.jsx,.ts,.tsx,.java,.scala,.go,.rb,.jl,.m,.sas,.do,.cpp,.c,.cs,.php,.kt,.rs,.txt',
+};
+
+const UPLOAD_HINT: Record<Exclude<Mode, 'image'>, string> = {
+  text: '.pdf, .docx, .txt, .md',
+  code: '.py, .ipynb, .sql, .r, .js …',
+};
+
 export default function Home() {
   const [mode, setMode] = useState<Mode>('image');
   const [state, setState] = useState<State>({ status: 'idle' });
@@ -29,6 +39,7 @@ export default function Home() {
   const [text, setText] = useState('');
   const [code, setCode] = useState('');
   const [language, setLanguage] = useState('');
+  const [docFile, setDocFile] = useState<File | null>(null);
 
   const selectImage = useCallback((file: File) => {
     if (!file.type.startsWith('image/')) return;
@@ -57,7 +68,13 @@ export default function Home() {
     if (preview) URL.revokeObjectURL(preview);
   }, [preview]);
 
-  function onFileChange(e: ChangeEvent<HTMLInputElement>) {
+  function changeMode(m: Mode) {
+    setMode(m);
+    setDocFile(null);
+    setState({ status: 'idle' });
+  }
+
+  function onImageChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (file) selectImage(file);
   }
@@ -78,13 +95,13 @@ export default function Home() {
         setState({ status: 'error', message: 'Choose, drop, or paste a chart image first.' });
         return;
       }
-      const body = new FormData();
-      body.append('file', imageFile);
-      request = { method: 'POST', body };
+      request = { method: 'POST', body: fileBody(imageFile, 'image') };
+    } else if (docFile) {
+      request = { method: 'POST', body: fileBody(docFile, mode) };
     } else {
       const content = mode === 'code' ? code : text;
       if (content.trim() === '') {
-        setState({ status: 'error', message: 'Paste something to audit first.' });
+        setState({ status: 'error', message: 'Paste something — or upload a file — to audit first.' });
         return;
       }
       request = {
@@ -123,7 +140,7 @@ export default function Home() {
             role="tab"
             aria-selected={mode === m.id}
             className={mode === m.id ? 'mode active' : 'mode'}
-            onClick={() => setMode(m.id)}
+            onClick={() => changeMode(m.id)}
           >
             {m.label}
           </button>
@@ -132,52 +149,71 @@ export default function Home() {
 
       <form className="uploader" onSubmit={onSubmit}>
         {mode === 'image' && (
-          <label
-            className={dragging ? 'filefield dragging' : 'filefield'}
-            onDragOver={(e) => {
-              e.preventDefault();
-              setDragging(true);
-            }}
-            onDragLeave={() => setDragging(false)}
-            onDrop={onDrop}
-          >
-            <input type="file" accept="image/png,image/jpeg,image/gif,image/webp" onChange={onFileChange} />
-            <span>{imageFile?.name ?? 'Choose, drop, or paste a chart image (PNG, JPEG, GIF, WebP)'}</span>
-          </label>
-        )}
-
-        {mode === 'image' && preview && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img className="preview" src={preview} alt="Chart preview" />
-        )}
-
-        {mode === 'text' && (
-          <textarea
-            className="editor"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Paste a written description of your analysis, claim, or chart…"
-            rows={10}
-          />
-        )}
-
-        {mode === 'code' && (
           <>
-            <input
-              className="language"
-              type="text"
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              placeholder="Language (optional, e.g. Python, SQL, R)"
-            />
+            <label
+              className={dragging ? 'filefield dragging' : 'filefield'}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragging(true);
+              }}
+              onDragLeave={() => setDragging(false)}
+              onDrop={onDrop}
+            >
+              <input type="file" accept="image/png,image/jpeg,image/gif,image/webp" onChange={onImageChange} />
+              <span>{imageFile?.name ?? 'Choose, drop, or paste a chart image (PNG, JPEG, GIF, WebP)'}</span>
+            </label>
+            {preview && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img className="preview" src={preview} alt="Chart preview" />
+            )}
+          </>
+        )}
+
+        {mode !== 'image' && (
+          <>
+            {mode === 'code' && (
+              <input
+                className="language"
+                type="text"
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
+                placeholder="Language (optional, e.g. Python, SQL, R)"
+                disabled={docFile !== null}
+              />
+            )}
             <textarea
-              className="editor mono"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              placeholder="Paste the analysis code to audit…"
-              rows={14}
-              spellCheck={false}
+              className={mode === 'code' ? 'editor mono' : 'editor'}
+              value={mode === 'code' ? code : text}
+              onChange={(e) => (mode === 'code' ? setCode(e.target.value) : setText(e.target.value))}
+              placeholder={
+                mode === 'code'
+                  ? 'Paste the analysis code to audit…'
+                  : 'Paste a written description of your analysis, claim, or chart…'
+              }
+              rows={mode === 'code' ? 14 : 10}
+              spellCheck={mode === 'code' ? false : undefined}
+              disabled={docFile !== null}
             />
+            <div className="uploadrow">
+              <label className="uploadbtn">
+                <input
+                  type="file"
+                  accept={UPLOAD_ACCEPT[mode]}
+                  onChange={(e) => setDocFile(e.target.files?.[0] ?? null)}
+                />
+                Upload a file
+              </label>
+              {docFile ? (
+                <span className="filename">
+                  Auditing {docFile.name}
+                  <button type="button" className="clearfile" onClick={() => setDocFile(null)} aria-label="Remove file">
+                    ×
+                  </button>
+                </span>
+              ) : (
+                <span className="filehint">or upload {UPLOAD_HINT[mode]}</span>
+              )}
+            </div>
           </>
         )}
 
@@ -194,6 +230,13 @@ export default function Home() {
       {state.status === 'done' && <Results report={state.report} />}
     </main>
   );
+}
+
+function fileBody(file: File, mode: Mode): FormData {
+  const body = new FormData();
+  body.append('file', file);
+  body.append('mode', mode);
+  return body;
 }
 
 function Results({ report }: { report: AuditReport }) {
