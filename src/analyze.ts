@@ -10,7 +10,7 @@ import { getAllRules, getRule, getRulesByDomain } from './taxonomy/index.js';
 import type { Domain, PitfallRule, Severity } from './taxonomy/index.js';
 
 /** The kind of artifact being audited. */
-export type InputKind = 'code' | 'text' | 'image';
+export type InputKind = 'code' | 'text' | 'image' | 'document';
 
 /** Image media types Claude Vision accepts (matches the SDK's base64 image source). */
 export type ImageMediaType = 'image/png' | 'image/jpeg' | 'image/gif' | 'image/webp';
@@ -38,7 +38,19 @@ export interface ImageAnalyzeInput {
   filename?: string;
 }
 
-export type AnalyzeInput = TextAnalyzeInput | ImageAnalyzeInput;
+/** A PDF report, sent to Claude as a document so it reads the prose *and* sees
+ *  the charts and tables on the page. */
+export interface DocumentAnalyzeInput {
+  kind: 'document';
+  /** Base64-encoded document bytes. */
+  content: string;
+  /** Only PDF is accepted as a native document. */
+  mediaType: 'application/pdf';
+  /** Optional source filename, surfaced to the model for context. */
+  filename?: string;
+}
+
+export type AnalyzeInput = TextAnalyzeInput | ImageAnalyzeInput | DocumentAnalyzeInput;
 
 /** Map a file extension (with leading dot, any case) to a Vision media type. */
 export function imageMediaTypeForExtension(ext: string): ImageMediaType | undefined {
@@ -148,6 +160,23 @@ Rules of engagement:
 
 Return your results by calling the report_findings tool.`;
 
+const DOCUMENT_SYSTEM_INSTRUCTIONS = `You are datapitfalls, an auditor that reviews data work for known data pitfalls.
+
+You are given a report document — which may mix written analysis, tables, and charts — and a catalog of pitfall rules. Audit the whole document: the reasoning and claims in the prose, and any charts or tables it contains. Identify which pitfalls from the catalog the document actually exhibits.
+
+You can see the document but not the underlying data or the code that produced it. Many pitfalls are patterns whose real-world impact depends on values you cannot inspect. Classify every finding by its nature:
+- "active": the pitfall is evident from the document itself, regardless of the unseen data (e.g. a chart with a truncated baseline, a mean reported as the "typical" value, a claim that confuses correlation with causation). State these directly.
+- "latent": the document describes a choice that is only sometimes misleading, and whether it bites depends on data or context you can't see. Phrase these conditionally, do NOT assert the pitfall is definitely present, and fill in "condition" with what must be true for it to occur.
+
+Rules of engagement:
+- Only report pitfalls that appear in the catalog below, and cite each by its exact \`id\`.
+- Report a finding only when the document shows real evidence of the pitfall (active) or a genuinely risky choice (latent). Be conservative: avoid speculation and false positives.
+- For each finding, provide the rule id, confidence (low/medium/high), nature (active/latent), the specific evidence (quote the sentence, name the chart element, or cite the figure/section), a concise explanation, and — for latent findings — the data condition under which it bites.
+- A single document may exhibit several pitfalls, one, or none. If none apply, return an empty findings list.
+- Do not invent rule ids. Do not report a pitfall that is not in the catalog.
+
+Return your results by calling the report_findings tool.`;
+
 const REPORT_TOOL: Anthropic.Tool = {
   name: 'report_findings',
   description: 'Report the data pitfalls found in the audited artifact.',
@@ -253,6 +282,22 @@ function buildUserContent(input: AnalyzeInput): Anthropic.MessageParam['content'
       },
     ];
   }
+  if (input.kind === 'document') {
+    const where = input.filename ? ` (${input.filename})` : '';
+    return [
+      {
+        type: 'document',
+        source: { type: 'base64', media_type: input.mediaType, data: input.content },
+      },
+      {
+        type: 'text',
+        text:
+          `You are given a report document${where}. Audit both its written analysis and any ` +
+          `charts or tables it contains for data pitfalls from the catalog, and report them ` +
+          `via the report_findings tool.`,
+      },
+    ];
+  }
   return (
     `Audit the following ${describeInput(input)} for data pitfalls from the catalog.\n\n` +
     `<artifact>\n${input.content}\n</artifact>`
@@ -321,7 +366,12 @@ export async function analyze(
   const maxTokens = options.maxTokens ?? 16000;
   const client = options.client ?? new Anthropic(options.apiKey ? { apiKey: options.apiKey } : {});
 
-  const instructions = input.kind === 'image' ? IMAGE_SYSTEM_INSTRUCTIONS : SYSTEM_INSTRUCTIONS;
+  const instructions =
+    input.kind === 'image'
+      ? IMAGE_SYSTEM_INSTRUCTIONS
+      : input.kind === 'document'
+        ? DOCUMENT_SYSTEM_INSTRUCTIONS
+        : SYSTEM_INSTRUCTIONS;
   const taxonomyBlock = `# Pitfall catalog (${rules.length} rules)\n\n${serializeRules(rules)}`;
 
   const message = await client.messages.create({

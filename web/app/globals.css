@@ -78,7 +78,124 @@ body {
   border: 1px solid var(--border);
 }
 
-button {
+.modes {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.mode {
+  padding: 0.45rem 0.9rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.mode.active {
+  color: #0b0d12;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.filefield.dragging {
+  border-color: var(--accent);
+  color: var(--text);
+  background: rgba(91, 140, 255, 0.08);
+}
+
+.editor {
+  width: 100%;
+  resize: vertical;
+  padding: 0.85rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.editor.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+}
+
+.language {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.9rem;
+  color: var(--text);
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.editor::placeholder,
+.language::placeholder {
+  color: var(--muted);
+}
+
+.uploadrow {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+}
+
+.uploadbtn {
+  position: relative;
+  display: inline-block;
+  padding: 0.4rem 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.uploadbtn input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.filehint {
+  color: var(--muted);
+}
+
+.filename {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text);
+}
+
+.clearfile {
+  padding: 0 0.4rem;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.editor:disabled,
+.language:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.uploader button {
   align-self: flex-start;
   padding: 0.6rem 1.25rem;
   font-size: 0.95rem;
@@ -90,7 +207,7 @@ button {
   cursor: pointer;
 }
 
-button:disabled {
+.uploader button:disabled {
   opacity: 0.6;
   cursor: progress;
 }
