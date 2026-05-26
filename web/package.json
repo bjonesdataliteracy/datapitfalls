@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "vercel-build": "npm run build --prefix .. && next build",
     "start": "next start"
   },
   "dependencies": {
