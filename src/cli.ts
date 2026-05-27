@@ -1,24 +1,10 @@
 #!/usr/bin/env node
 // datapitfalls — command-line entry point
 
-import { readFileSync } from 'node:fs';
-import { basename, extname } from 'node:path';
 import { DOMAINS, TAGLINE, VERSION, ruleCount, ruleCountsByDomain } from './index.js';
-import { analyze, imageMediaTypeForExtension } from './analyze.js';
-import type { AuditReport } from './analyze.js';
+import { analyze } from './analyze.js';
 import { formatReport, hasBlockingFindings } from './report.js';
-
-const EXT_LANGUAGE: Record<string, string> = {
-  '.py': 'Python',
-  '.sql': 'SQL',
-  '.r': 'R',
-  '.js': 'JavaScript',
-  '.ts': 'TypeScript',
-  '.ipynb': 'Jupyter notebook',
-};
-
-// Extensions treated as a plain-English analysis description rather than code.
-const TEXT_EXTS = new Set(['.md', '.markdown', '.txt', '.text', '.rst']);
+import { buildScanInput } from './scan-input.js';
 
 function printStats(): void {
   const counts = ruleCountsByDomain();
@@ -33,15 +19,17 @@ function printHelp(): void {
     `datapitfalls v${VERSION} — ${TAGLINE}\n` +
       'Usage:\n' +
       '  datapitfalls stats               Show the pitfall catalog size by domain\n' +
-      '  datapitfalls scan <file>         Audit a code file, analysis description, or chart image\n' +
+      '  datapitfalls scan <file>         Audit a code file, analysis description, chart image, or PDF\n' +
+      '  datapitfalls scan <a.png> <b.png> …  Audit several charts together (cross-chart pitfalls)\n' +
       '    --text                         Treat the file as a plain-English analysis description\n' +
       '    --thorough                     Use Opus 4.7 instead of the default Sonnet 4.6\n' +
       '    --fast                         Use Haiku 4.5 (cheapest)\n' +
       '    --all                          Show all findings, incl. lower-confidence latent ones\n' +
       '    --json                         Output the full report as JSON\n' +
       '    --ci                           Exit non-zero if an active error/warning is found\n' +
-      '\nImage files (.png/.jpg/.jpeg/.gif/.webp) are audited with Claude Vision against the\n' +
-      'visual pitfall domains (Graphical Gaffes & Design Dangers).\n' +
+      '\nImage files (.png/.jpg/.jpeg/.gif/.webp) are audited with Claude Vision; pass several to\n' +
+      'audit them as a set. PDF files (.pdf) are sent to Claude as a document, so it reads the\n' +
+      'prose and sees the charts and tables together.\n' +
       '\nThe scan command needs an Anthropic API key in ANTHROPIC_API_KEY.\n' +
       'Default model is claude-sonnet-4-6; override with --thorough, --fast, or ANTHROPIC_MODEL.'
   );
@@ -53,7 +41,7 @@ const MODEL_FLAGS: Record<string, string> = {
 };
 
 async function scan(args: string[]): Promise<void> {
-  const file = args.find((arg) => !arg.startsWith('-'));
+  const files = args.filter((arg) => !arg.startsWith('-'));
   let model: string | undefined;
   let showAll = false;
   let asJson = false;
@@ -77,8 +65,8 @@ async function scan(args: string[]): Promise<void> {
     }
   }
 
-  if (!file) {
-    console.error('Usage: datapitfalls scan [--thorough|--fast] <file>');
+  if (files.length === 0) {
+    console.error('Usage: datapitfalls scan [--thorough|--fast] <file> [more charts…]');
     process.exitCode = 1;
     return;
   }
@@ -88,38 +76,14 @@ async function scan(args: string[]): Promise<void> {
     return;
   }
 
-  const ext = extname(file).toLowerCase();
-  // An image extension (unless --text forces a text reading) routes to Vision.
-  const mediaType = forceText ? undefined : imageMediaTypeForExtension(ext);
-
-  let report: AuditReport;
-  if (mediaType) {
-    let data: string;
-    try {
-      data = readFileSync(file).toString('base64');
-    } catch {
-      console.error(`Could not read file: ${file}`);
-      process.exitCode = 1;
-      return;
-    }
-    report = await analyze(
-      { kind: 'image', images: [{ content: data, mediaType, filename: basename(file) }] },
-      { model }
-    );
-  } else {
-    let content: string;
-    try {
-      content = readFileSync(file, 'utf8');
-    } catch {
-      console.error(`Could not read file: ${file}`);
-      process.exitCode = 1;
-      return;
-    }
-    const kind = forceText || TEXT_EXTS.has(ext) ? 'text' : 'code';
-    const language = kind === 'code' ? EXT_LANGUAGE[ext] : undefined;
-    report = await analyze({ content, kind, language, filename: basename(file) }, { model });
+  const result = buildScanInput(files, forceText);
+  if ('error' in result) {
+    console.error(result.error);
+    process.exitCode = 1;
+    return;
   }
 
+  const report = await analyze(result.input, { model });
   console.log(asJson ? JSON.stringify(report, null, 2) : formatReport(report, { showAll }));
 
   if (ci && hasBlockingFindings(report)) process.exitCode = 1;
