@@ -28,6 +28,32 @@ const UPLOAD_HINT: Record<Exclude<Mode, 'image'>, string> = {
   code: '.py, .ipynb, .sql, .r, .js …',
 };
 
+// Planted-pitfall examples so a first-time visitor can run a real audit with one
+// click. The text sample hides survivorship bias and a mean-as-typical claim;
+// the code sample hides a silent null drop, an inner-join row loss, and the same
+// mean-as-typical reporting.
+const SAMPLES = {
+  text:
+    'We measured the average customer lifetime value by taking every customer who is ' +
+    'still active today and averaging how much each has spent. The mean came out to ' +
+    '$4,200, so we are telling the board the typical customer is worth about $4,200. ' +
+    'We left out the customers who churned, because their records were incomplete.',
+  code: `import pandas as pd
+
+orders = pd.read_csv("orders.csv")
+users = pd.read_csv("users.csv")
+
+# Drop any rows with missing values before aggregating.
+orders = orders.dropna()
+
+# Attach each order to its user.
+df = orders.merge(users, on="user_id")  # inner join: users with no orders disappear
+
+# Report the average order amount as the "typical" customer spend.
+typical_spend = df["amount"].mean()
+print(f"Typical customer spend: \${typical_spend:.2f}")`,
+};
+
 export default function Home() {
   const [mode, setMode] = useState<Mode>('image');
   const [state, setState] = useState<State>({ status: 'idle' });
@@ -80,6 +106,16 @@ export default function Home() {
     setMode(m);
     setDocFile(null);
     setState({ status: 'idle' });
+  }
+
+  function loadSample() {
+    setDocFile(null);
+    if (mode === 'code') {
+      setLanguage('Python');
+      setCode(SAMPLES.code);
+    } else {
+      setText(SAMPLES.text);
+    }
   }
 
   function onImageChange(e: ChangeEvent<HTMLInputElement>) {
@@ -139,7 +175,21 @@ export default function Home() {
     <main className="container">
       <header className="masthead">
         <h1>datapitfalls</h1>
-        <p>Audit a chart — or several at once — a written analysis, or analysis code for common data pitfalls.</p>
+        <p className="tagline">
+          Audit your data work — a chart (or several at once), a written analysis, analysis code, or
+          a whole document — for the common pitfalls that mislead even seasoned practitioners.
+        </p>
+        <p className="subtag">
+          Grounded in the taxonomy from{' '}
+          <a href="https://www.avoidingdatapitfalls.com" target="_blank" rel="noreferrer">
+            <em>Avoiding Data Pitfalls</em>
+          </a>
+          , across all eight audit domains.{' '}
+          <a href="https://github.com/bjonesdataliteracy/datapitfalls" target="_blank" rel="noreferrer">
+            Open source on GitHub
+          </a>
+          .
+        </p>
       </header>
 
       <div className="modes" role="tablist" aria-label="What to audit">
@@ -246,6 +296,9 @@ export default function Home() {
               ) : (
                 <span className="filehint">or upload {UPLOAD_HINT[mode]}</span>
               )}
+              <button type="button" className="linklike" onClick={loadSample}>
+                Try a sample
+              </button>
             </div>
           </>
         )}
@@ -262,14 +315,28 @@ export default function Home() {
       )}
       {state.status === 'done' && <Results report={state.report} />}
 
-      <footer className="privacy">
-        Your input is sent to Anthropic&rsquo;s Claude API to run the audit and isn&rsquo;t stored by
-        this app — please don&rsquo;t upload confidential or personal data. To prevent abuse, audits
-        are rate-limited per visitor. datapitfalls is{' '}
-        <a href="https://github.com/bjonesdataliteracy/datapitfalls" target="_blank" rel="noreferrer">
-          open source
-        </a>
-        .
+      <footer className="sitefoot">
+        <p className="privacy">
+          Your input is sent to Anthropic&rsquo;s Claude API to run the audit and isn&rsquo;t stored
+          by this app — please don&rsquo;t upload confidential or personal data. To prevent abuse,
+          audits are rate-limited per visitor, and we use privacy-friendly, cookieless analytics (no
+          personal data).
+        </p>
+        <p className="credits">
+          Created by{' '}
+          <a href="https://dataliteracy.com" target="_blank" rel="noreferrer">
+            Ben Jones
+          </a>
+          , author of <em>Avoiding Data Pitfalls</em>. Built with{' '}
+          <a href="https://www.anthropic.com/" target="_blank" rel="noreferrer">
+            Claude
+          </a>
+          .{' '}
+          <a href="https://github.com/bjonesdataliteracy/datapitfalls" target="_blank" rel="noreferrer">
+            Source on GitHub
+          </a>
+          .
+        </p>
       </footer>
     </main>
   );
