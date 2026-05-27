@@ -6,6 +6,61 @@ import { detectPitfalls } from './analyze.js';
 import { formatReport, hasBlockingFindings } from './report.js';
 import { buildScanInput } from './scan-input.js';
 
+const useColor = Boolean(process.stdout.isTTY) && !process.env.NO_COLOR;
+const orange = (s: string): string => (useColor ? `\x1b[38;5;214m${s}\x1b[0m` : s);
+const bold = (s: string): string => (useColor ? `\x1b[1m${s}\x1b[0m` : s);
+const dim = (s: string): string => (useColor ? `\x1b[2m${s}\x1b[0m` : s);
+const cyan = (s: string): string => (useColor ? `\x1b[38;5;80m${s}\x1b[0m` : s);
+
+// "DATA" stacked over "PITFALLS" in a block font (see scripts; rendered once).
+const WORDMARK = [
+  '████   ███  █████  ███  ',
+  '█   █ █   █   █   █   █ ',
+  '█   █ █████   █   █████ ',
+  '█   █ █   █   █   █   █ ',
+  '████  █   █   █   █   █ ',
+  '████  █████ █████ █████  ███  █     █      ████ ',
+  '█   █   █     █   █     █   █ █     █     █     ',
+  '████    █     █   ████  █████ █     █      ███  ',
+  '█       █     █   █     █   █ █     █         █ ',
+  '█     █████   █   █     █   █ █████ █████ ████ ',
+];
+
+function introBox(): string {
+  const width = 70;
+  const lines = [
+    'Catch data pitfalls in any data work — a chart, a code file, a',
+    'report, or a description — whether a person or an AI produced it.',
+    'Get back what is wrong, why it matters, and how to fix it.',
+  ];
+  const horiz = '─'.repeat(width - 2);
+  const body = lines.map((l) => '  ' + orange('│') + ' ' + l.padEnd(width - 4) + ' ' + orange('│'));
+  return ['  ' + orange('╭' + horiz + '╮'), ...body, '  ' + orange('╰' + horiz + '╯')].join('\n');
+}
+
+function printSplash(): void {
+  console.log();
+  for (const line of WORDMARK) console.log('  ' + orange(line));
+  console.log();
+  console.log('  ' + dim('Check the data work of humans and AI alike for the pitfalls that mislead.'));
+  console.log();
+  console.log(introBox());
+  console.log();
+  console.log('  ' + bold(cyan('Getting Started:')));
+  console.log(
+    '    ' + bold('Human:') + '  ' + cyan('datapitfalls scan <file>') + '  scan a chart, code, report, or description'
+  );
+  console.log('            add ' + dim('--all') + ' for every finding, ' + dim('--thorough') + ' for the deepest model');
+  console.log(
+    '    ' + bold('Agent:') + '  ' + cyan('datapitfalls scan --json <file>') + '  machine-readable findings'
+  );
+  console.log('            add ' + dim('--ci') + ' to exit non-zero when a blocking pitfall is found');
+  console.log();
+  console.log('  ' + dim(`Run datapitfalls --help for the full command list · v${VERSION}`));
+  console.log('  ' + dim('Made by Data Literacy · github.com/bjonesdataliteracy/datapitfalls'));
+  console.log();
+}
+
 function printStats(): void {
   const counts = ruleCountsByDomain();
   console.log(`datapitfalls v${VERSION} — ${ruleCount()} rules across ${DOMAINS.length} domains\n`);
@@ -93,11 +148,19 @@ async function main(): Promise<void> {
   const [command, ...args] = process.argv.slice(2);
 
   switch (command) {
+    case undefined:
+      printSplash();
+      break;
     case 'stats':
       printStats();
       break;
     case 'scan':
       await scan(args);
+      break;
+    case 'help':
+    case '--help':
+    case '-h':
+      printHelp();
       break;
     default:
       printHelp();
