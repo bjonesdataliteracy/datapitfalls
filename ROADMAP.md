@@ -53,11 +53,11 @@ Audit whole bodies of work, in context.
 - [ ] Slide-deck upload (PPTX)
 - [ ] Full-document pitfall scanning across the entire data reasoning chain
 
-## ⚪ Phase 6 — Distribution & Public API
+## 🟢 Phase 6 — Distribution & Public API
 
 Make datapitfalls easy to install and build on.
 
-- [ ] Published npm package
+- [x] Published npm package — [`datapitfalls`](https://www.npmjs.com/package/datapitfalls) (`npm install datapitfalls`)
 - [ ] Public API for tool builders
 
 ## ⚪ Phase 7 — Community & Ecosystem
