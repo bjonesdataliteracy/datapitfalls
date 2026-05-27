@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ChangeEvent, DragEvent, FormEvent } from 'react';
 import type { AuditReport, Finding } from 'datapitfalls';
 
@@ -32,8 +32,8 @@ export default function Home() {
   const [mode, setMode] = useState<Mode>('image');
   const [state, setState] = useState<State>({ status: 'idle' });
 
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
   const [dragging, setDragging] = useState(false);
 
   const [text, setText] = useState('');
@@ -41,32 +41,40 @@ export default function Home() {
   const [language, setLanguage] = useState('');
   const [docFile, setDocFile] = useState<File | null>(null);
 
-  const selectImage = useCallback((file: File) => {
-    if (!file.type.startsWith('image/')) return;
-    setImageFile(file);
-    setPreview((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
-      return URL.createObjectURL(file);
-    });
+  const addImages = useCallback((files: File[]) => {
+    const images = files.filter((f) => f.type.startsWith('image/'));
+    if (images.length === 0) return;
+    setImageFiles((prev) => [...prev, ...images]);
+    setPreviews((prev) => [...prev, ...images.map((f) => URL.createObjectURL(f))]);
     setMode('image');
   }, []);
 
-  // Paste a chart screenshot from anywhere on the page.
+  function removeImage(index: number) {
+    setPreviews((prev) => {
+      const url = prev[index];
+      if (url) URL.revokeObjectURL(url);
+      return prev.filter((_, i) => i !== index);
+    });
+    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  // Paste chart screenshots from anywhere on the page.
   useEffect(() => {
     function onPaste(e: ClipboardEvent) {
-      const file = Array.from(e.clipboardData?.files ?? []).find((f) => f.type.startsWith('image/'));
-      if (file) {
+      const images = Array.from(e.clipboardData?.files ?? []).filter((f) => f.type.startsWith('image/'));
+      if (images.length > 0) {
         e.preventDefault();
-        selectImage(file);
+        addImages(images);
       }
     }
     window.addEventListener('paste', onPaste);
     return () => window.removeEventListener('paste', onPaste);
-  }, [selectImage]);
+  }, [addImages]);
 
-  useEffect(() => () => {
-    if (preview) URL.revokeObjectURL(preview);
-  }, [preview]);
+  // Revoke any outstanding object URLs when the page unmounts.
+  const previewsRef = useRef<string[]>([]);
+  previewsRef.current = previews;
+  useEffect(() => () => previewsRef.current.forEach((url) => URL.revokeObjectURL(url)), []);
 
   function changeMode(m: Mode) {
     setMode(m);
@@ -75,15 +83,14 @@ export default function Home() {
   }
 
   function onImageChange(e: ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (file) selectImage(file);
+    addImages(Array.from(e.target.files ?? []));
+    e.target.value = '';
   }
 
   function onDrop(e: DragEvent<HTMLLabelElement>) {
     e.preventDefault();
     setDragging(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file) selectImage(file);
+    addImages(Array.from(e.dataTransfer.files ?? []));
   }
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
@@ -91,11 +98,14 @@ export default function Home() {
 
     let request: RequestInit;
     if (mode === 'image') {
-      if (!imageFile) {
+      if (imageFiles.length === 0) {
         setState({ status: 'error', message: 'Choose, drop, or paste a chart image first.' });
         return;
       }
-      request = { method: 'POST', body: fileBody(imageFile, 'image') };
+      const body = new FormData();
+      imageFiles.forEach((file) => body.append('file', file));
+      body.append('mode', 'image');
+      request = { method: 'POST', body };
     } else if (docFile) {
       request = { method: 'POST', body: fileBody(docFile, mode) };
     } else {
@@ -129,7 +139,7 @@ export default function Home() {
     <main className="container">
       <header className="masthead">
         <h1>datapitfalls</h1>
-        <p>Audit a chart image, a written analysis, or analysis code for common data pitfalls.</p>
+        <p>Audit a chart — or several at once — a written analysis, or analysis code for common data pitfalls.</p>
       </header>
 
       <div className="modes" role="tablist" aria-label="What to audit">
@@ -159,12 +169,35 @@ export default function Home() {
               onDragLeave={() => setDragging(false)}
               onDrop={onDrop}
             >
-              <input type="file" accept="image/png,image/jpeg,image/gif,image/webp" onChange={onImageChange} />
-              <span>{imageFile?.name ?? 'Choose, drop, or paste a chart image (PNG, JPEG, GIF, WebP)'}</span>
+              <input
+                type="file"
+                multiple
+                accept="image/png,image/jpeg,image/gif,image/webp"
+                onChange={onImageChange}
+              />
+              <span>
+                {imageFiles.length === 0
+                  ? 'Choose, drop, or paste chart images (PNG, JPEG, GIF, WebP) — add several to compare them'
+                  : `${imageFiles.length} chart${imageFiles.length > 1 ? 's' : ''} selected — add more, or audit them together`}
+              </span>
             </label>
-            {preview && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img className="preview" src={preview} alt="Chart preview" />
+            {previews.length > 0 && (
+              <div className="previews">
+                {previews.map((url, i) => (
+                  <div className="thumb" key={url}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={url} alt={`Chart ${i + 1} preview`} />
+                    <button
+                      type="button"
+                      className="thumb-remove"
+                      onClick={() => removeImage(i)}
+                      aria-label={`Remove chart ${i + 1}`}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
             )}
           </>
         )}

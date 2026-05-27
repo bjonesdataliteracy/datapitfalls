@@ -16,7 +16,7 @@ A short, memorable name for this pitfall (e.g. "Truncated Y-Axis", "Survivorship
 
 ## Audit Domain
 
-_Which of the seven domains does this belong to? Choose one:_
+_Which of the eight domains does this belong to? Choose one:_
 
 - [ ] Epistemic Errors
 - [ ] Technical Trespasses
@@ -25,6 +25,7 @@ _Which of the seven domains does this belong to? Choose one:_
 - [ ] Analytical Aberrations
 - [ ] Graphical Gaffes
 - [ ] Design Dangers
+- [ ] Biased Baseline
 
 ## Description of the Pitfall
 

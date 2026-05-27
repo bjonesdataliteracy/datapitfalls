@@ -1,0 +1,34 @@
+id: inconsistent-encoding-across-charts
+name: Inconsistent Encoding Across Charts
+domain: Design Dangers
+severity: warning
+description: >
+  Across a set of charts — a dashboard, a slide sequence, a report's figures — the same
+  visual channel means different things, or the same thing is shown different ways. A
+  color that marks one category here marks another there; a series is blue in one chart
+  and orange in the next; legends or orderings shift between panels. Readers build a
+  mental key from the first chart and the later ones quietly break it, so they
+  misread the data. Unlike inconsistent encoding *within* one chart, this only shows up
+  when the charts are reviewed together.
+detection_strategy: >
+  Only applies when more than one chart is shown together. Check whether the encoding is
+  stable across the set: does each category/series keep the same color, shape, and size
+  meaning in every chart? Are legends, category orderings, and units consistent? Flag a
+  reused hue that means different things across charts, a single entity drawn in different
+  colors, or a legend that changes between panels — and name the charts involved.
+example_bad: >
+  In a quarterly dashboard, "Revenue" is the green line in the first chart but green marks
+  "Costs" in the second, while Revenue switches to blue — a reader tracking the green line
+  across panels follows two different metrics.
+example_good: >
+  One shared legend governs the whole dashboard: Revenue is always blue, Costs always red,
+  in the same order, with the same units, so a color means exactly one thing across every
+  chart.
+remediation: >
+  Define one encoding for the whole set and apply it everywhere: fix each category/series
+  to a single color (and shape/size meaning), keep legend, ordering, and units identical
+  across charts, and surface a shared legend. If two charts genuinely need different
+  encodings, make the schemes visibly distinct so readers don't carry the wrong key over.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 7: Design Dangers (domain extension — not a specific sub-pitfall example in the book)"
+  - "https://www.avoidingdatapitfalls.com"

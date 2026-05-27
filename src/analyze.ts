@@ -27,15 +27,23 @@ export interface TextAnalyzeInput {
   filename?: string;
 }
 
-/** A chart/visualization image, audited via Claude Vision. */
-export interface ImageAnalyzeInput {
-  kind: 'image';
+/** A single chart/visualization image. */
+export interface ImageSource {
   /** Base64-encoded image bytes. */
   content: string;
   /** The image's media type, used to build the Vision image block. */
   mediaType: ImageMediaType;
   /** Optional source filename, surfaced to the model for context. */
   filename?: string;
+}
+
+/** One or more chart images, audited via Claude Vision. When several are given
+ *  they are audited together, so pitfalls that only emerge across charts —
+ *  inconsistent scales, inconsistent encodings, contradictory messages — can be
+ *  detected. */
+export interface ImageAnalyzeInput {
+  kind: 'image';
+  images: ImageSource[];
 }
 
 /** A PDF report, sent to Claude as a document so it reads the prose *and* sees
@@ -145,9 +153,9 @@ Return your results by calling the report_findings tool.`;
 
 const IMAGE_SYSTEM_INSTRUCTIONS = `You are datapitfalls, an auditor that reviews data visualizations for known data pitfalls.
 
-You are shown a chart image — and a catalog of pitfall rules. Identify which pitfalls from the catalog the chart actually exhibits.
+You are shown one or more chart images — and a catalog of pitfall rules. Identify which pitfalls from the catalog the charts actually exhibit.
 
-You can see only the chart, never the underlying data or how it was made. Many pitfalls are patterns whose real-world impact depends on values you cannot inspect. Classify every finding by its nature:
+You can see only the charts, never the underlying data or how they were made. Many pitfalls are patterns whose real-world impact depends on values you cannot inspect. Classify every finding by its nature:
 - "active": the pitfall is evident from the image itself, regardless of the data (e.g. a bar chart with a truncated/non-zero baseline, a dual y-axis, a 3D or exploded pie, an inverted or non-linear axis, a distorting aspect ratio, area/bubble sizing by radius instead of area, a rainbow/red-green color scale, missing axis labels or units, an overcrowded or spaghetti chart). State these directly.
 - "latent": the chart makes a choice that is only sometimes misleading, and whether it bites depends on data or context you can't see (e.g. a particular bin width, a chosen time window or axis range, an aggregation that may hide variation). Phrase these conditionally, do NOT assert the pitfall is definitely distorting the message, and fill in "condition" with what must be true for it to occur.
 
@@ -155,7 +163,8 @@ Rules of engagement:
 - Only report pitfalls that appear in the catalog below, and cite each by its exact \`id\`.
 - Report a finding only when the chart shows real evidence of the pitfall (active) or a genuinely risky choice (latent). Be conservative: avoid speculation and false positives.
 - For each finding, provide the rule id, confidence (low/medium/high), nature (active/latent), the specific visual evidence (name the element you see — the axis, legend, mark, or label), a concise explanation, and — for latent findings — the data condition under which it bites.
-- A single chart may exhibit several pitfalls, one, or none. If none apply, return an empty findings list.
+- When several charts are shown together, also check for pitfalls that only emerge across them — inconsistent axis scales/ranges/units that break comparison, the same color/shape/size meaning different things from one chart to the next, or charts whose messages contradict one another — and name the charts involved in the evidence.
+- A chart may exhibit several pitfalls, one, or none. If none apply, return an empty findings list.
 - Do not invent rule ids. Do not report a pitfall that is not in the catalog.
 
 Return your results by calling the report_findings tool.`;
@@ -268,19 +277,33 @@ function selectRules(input: AnalyzeInput, domains?: Domain[]): PitfallRule[] {
 
 function buildUserContent(input: AnalyzeInput): Anthropic.MessageParam['content'] {
   if (input.kind === 'image') {
-    const where = input.filename ? ` (${input.filename})` : '';
-    return [
-      {
+    const images = input.images;
+    const multiple = images.length > 1;
+    const content: Anthropic.ContentBlockParam[] = [];
+    images.forEach((img, i) => {
+      if (multiple) {
+        const where = img.filename ? ` — ${img.filename}` : '';
+        content.push({ type: 'text', text: `Chart ${i + 1}${where}:` });
+      }
+      content.push({
         type: 'image',
-        source: { type: 'base64', media_type: input.mediaType, data: input.content },
-      },
-      {
-        type: 'text',
-        text:
-          `You are shown a chart image${where}. Identify the data pitfalls from the ` +
-          `catalog that are evident in it, and report them via the report_findings tool.`,
-      },
-    ];
+        source: { type: 'base64', media_type: img.mediaType, data: img.content },
+      });
+    });
+    content.push({
+      type: 'text',
+      text: multiple
+        ? `These ${images.length} charts are part of one set (e.g. a dashboard or small multiples). ` +
+          `Audit each chart for its own pitfalls, and also check for pitfalls that only emerge across ` +
+          `them — inconsistent axis scales/ranges/units that break comparison, the same color/shape/size ` +
+          `meaning different things from one chart to the next, or charts whose messages contradict one ` +
+          `another. In each finding's evidence, name which chart(s) it refers to (e.g. "Chart 2"). ` +
+          `Report the pitfalls via the report_findings tool.`
+        : `You are shown a chart image${images[0]?.filename ? ` (${images[0].filename})` : ''}. ` +
+          `Identify the data pitfalls from the catalog that are evident in it, and report them via ` +
+          `the report_findings tool.`,
+    });
+    return content;
   }
   if (input.kind === 'document') {
     const where = input.filename ? ` (${input.filename})` : '';
