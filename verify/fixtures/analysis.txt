@@ -1,0 +1,8 @@
+We measured the average customer lifetime value by taking every customer who is
+still active today and averaging how much each has spent with us. The mean came
+out to $4,200, so we are telling the board that the typical customer is worth
+about $4,200.
+
+We left out the customers who churned, because their records were incomplete and
+they would only have dragged the number down. We also compared this quarter's
+signups to last quarter's, counting only the signups who are still active now.
