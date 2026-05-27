@@ -41,6 +41,7 @@ Put the auditor on the web so anyone can use it without a terminal.
 
 - [x] Web auditor app (Next.js in `web/`) — chart-image, written-analysis, and code modes
 - [x] Drag-and-drop and clipboard paste for chart images
+- [x] Public-launch hardening — per-IP rate limiting on the audit endpoint and a privacy note
 - [ ] Public site at [avoidingdatapitfalls.com](https://www.avoidingdatapitfalls.com)
 
 ## 🟢 Phase 5 — Document Analysis _(Current)_

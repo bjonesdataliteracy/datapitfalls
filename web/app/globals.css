@@ -339,3 +339,15 @@ body {
 .badge.sev-info {
   background: var(--info);
 }
+
+.privacy {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.privacy a {
+  color: var(--accent);
+}
