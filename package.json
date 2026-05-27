@@ -4,7 +4,10 @@
   "description": "Helping you steer clear of common blunders when working with data. Based on Avoiding Data Pitfalls by Ben Jones.",
   "author": "Ben Jones <bjones@dataliteracy.com> (https://dataliteracy.com)",
   "license": "MIT",
-  "repository": "github:bjonesdataliteracy/datapitfalls",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bjonesdataliteracy/datapitfalls.git"
+  },
   "homepage": "https://www.avoidingdatapitfalls.com",
   "bugs": {
     "url": "https://github.com/bjonesdataliteracy/datapitfalls/issues"
@@ -33,7 +36,7 @@
     "web"
   ],
   "bin": {
-    "datapitfalls": "./dist/cli.js"
+    "datapitfalls": "dist/cli.js"
   },
   "files": [
     "dist"

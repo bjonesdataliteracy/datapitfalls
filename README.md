@@ -5,7 +5,7 @@
 ### Helping you steer clear of common blunders when working with data
 
 [![CI](https://github.com/bjonesdataliteracy/datapitfalls/actions/workflows/ci.yml/badge.svg)](https://github.com/bjonesdataliteracy/datapitfalls/actions/workflows/ci.yml)
-[![Status: pre-release](https://img.shields.io/badge/status-pre--release-orange.svg)](ROADMAP.md)
+[![npm version](https://img.shields.io/npm/v/datapitfalls.svg)](https://www.npmjs.com/package/datapitfalls)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/bjonesdataliteracy/datapitfalls.svg?style=social)](https://github.com/bjonesdataliteracy/datapitfalls/stargazers)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
@@ -80,7 +80,7 @@ datapitfalls organizes every pitfall into one of eight domains — the pitfall c
 
 datapitfalls is designed around **four input modes**, so you can audit your work at whatever stage you're in.
 
-> ⚠️ **Status:** The datapitfalls **analysis engine is live**, and you can use it two ways. The **command line** audits chart images, code snippets, and plain-English descriptions (modes 1–3 below), with a `--ci` exit code for pipelines. A **web app** (in [`web/`](web/)) does all of that in the browser and adds **document upload** — PDF read natively (so Claude audits the prose *and* the charts and tables), Word `.docx`, Jupyter notebooks, and code files — plus **multi-chart audits** that compare several charts at once. The web app is per-IP rate-limited, and your input is sent to the Claude API to run the audit but isn't stored by the app. Still planned: a public site at [avoidingdatapitfalls.com](https://www.avoidingdatapitfalls.com), slide-deck (PPTX) support, and an npm release — see the [Roadmap](ROADMAP.md). Until then, run from a local clone: `npm run build` then `node dist/cli.js scan <file>`, or `cd web && npm run dev` for the app.
+> ⚠️ **Status:** The datapitfalls **analysis engine is live**, and you can use it two ways. The **command line** audits chart images, code snippets, and plain-English descriptions (modes 1–3 below), with a `--ci` exit code for pipelines. A **web app** (in [`web/`](web/)) does all of that in the browser and adds **document upload** — PDF read natively (so Claude audits the prose *and* the charts and tables), Word `.docx`, Jupyter notebooks, and code files — plus **multi-chart audits** that compare several charts at once. The web app is per-IP rate-limited, and your input is sent to the Claude API to run the audit but isn't stored by the app. Install the CLI and engine with `npm install datapitfalls`, or run the web app locally with `cd web && npm run dev`. Still planned: a public site at [avoidingdatapitfalls.com](https://www.avoidingdatapitfalls.com) and slide-deck (PPTX) support — see the [Roadmap](ROADMAP.md).
 
 ### 1. Scan a chart image
 
@@ -120,20 +120,11 @@ In the web app, drop in a **PDF report** and Claude audits the whole thing in co
 
 ## Installation
 
-> **Not on npm yet.** Publishing is on the [Roadmap](ROADMAP.md) — until then, run it from a local clone.
-
 ```bash
-git clone https://github.com/bjonesdataliteracy/datapitfalls.git
-cd datapitfalls
-npm install
-npm run build
-node dist/cli.js scan ./my-chart.png
-```
+# Install as a project dependency
+npm install datapitfalls
 
-Once it's published, installation will be as simple as:
-
-```bash
-npm install datapitfalls      # coming soon
+# …or run the CLI without installing
 npx datapitfalls scan ./my-chart.png
 ```
 
