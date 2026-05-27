@@ -7,7 +7,8 @@
 // instance keeps its own counters, so this is a first line of defense, not a
 // global guarantee — the hard ceiling is the Anthropic workspace's spend cap.
 
-const WINDOW_MS = Number(process.env.RATE_LIMIT_WINDOW_MS) || 60_000;
+const WINDOW_SECONDS = Number(process.env.RATE_LIMIT_WINDOW_SECONDS) || 60;
+const WINDOW_MS = WINDOW_SECONDS * 1000;
 const MAX_REQUESTS = Number(process.env.RATE_LIMIT_MAX) || 8;
 
 // Once we're tracking this many distinct clients, sweep out the ones whose
