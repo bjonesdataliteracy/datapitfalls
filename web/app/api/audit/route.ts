@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { analyze, imageMediaTypeForExtension } from 'datapitfalls';
 import type { AnalyzeInput, AuditReport, ImageMediaType, ImageSource } from 'datapitfalls';
+import { checkRateLimit, clientKey } from './rate-limit';
 
 // The engine and the Anthropic SDK need the Node runtime, not the edge runtime.
 export const runtime = 'nodejs';
@@ -42,6 +43,14 @@ const TEXT_EXTS = new Set(['.txt', '.md', '.markdown', '.rst']);
 type Parsed = { input: AnalyzeInput } | { error: string; status: number };
 
 export async function POST(req: Request): Promise<NextResponse> {
+  const rate = checkRateLimit(clientKey(req));
+  if (!rate.ok) {
+    return NextResponse.json(
+      { error: `Too many audits — please wait ${rate.retryAfterSeconds}s and try again.` },
+      { status: 429, headers: { 'Retry-After': String(rate.retryAfterSeconds) } }
+    );
+  }
+
   if (!process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json(
       { error: 'Server is missing ANTHROPIC_API_KEY — set it to run audits.' },

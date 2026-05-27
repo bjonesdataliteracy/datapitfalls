@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Document upload in the web app — PDF read natively (prose plus charts and tables), Word `.docx`, Jupyter notebooks, and code files.
 - Multi-chart audit — analyze several charts together to catch cross-chart pitfalls (inconsistent scales, inconsistent encodings, contradictory messages).
 - Taxonomy expanded with domain-extension rules (75 rules across the eight audit domains).
+- Public-launch hardening for the web app — per-IP rate limiting on the audit endpoint (HTTP 429 with `Retry-After`) and a privacy note explaining that input is sent to the Claude API to run the audit and isn't stored by the app.
 
 See the [Roadmap](ROADMAP.md) for what's coming next.
 

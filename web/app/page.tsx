@@ -261,6 +261,16 @@ export default function Home() {
         </p>
       )}
       {state.status === 'done' && <Results report={state.report} />}
+
+      <footer className="privacy">
+        Your input is sent to Anthropic&rsquo;s Claude API to run the audit and isn&rsquo;t stored by
+        this app — please don&rsquo;t upload confidential or personal data. To prevent abuse, audits
+        are rate-limited per visitor. datapitfalls is{' '}
+        <a href="https://github.com/bjonesdataliteracy/datapitfalls" target="_blank" rel="noreferrer">
+          open source
+        </a>
+        .
+      </footer>
     </main>
   );
 }
