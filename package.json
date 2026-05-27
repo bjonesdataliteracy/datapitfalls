@@ -39,6 +39,8 @@
     "test": "node --test test/*.test.mjs",
     "validate": "node scripts/validate-taxonomy.mjs",
     "eval": "node evals/run.mjs",
+    "preverify": "npm run build",
+    "verify": "node verify/run.mjs",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write ."
   },
