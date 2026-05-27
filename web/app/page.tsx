@@ -185,7 +185,7 @@ export default function Home() {
           <a href="https://www.avoidingdatapitfalls.com" target="_blank" rel="noreferrer">
             <em>Avoiding Data Pitfalls</em>
           </a>
-          , across all eight audit domains.{' '}
+          , across all eight pitfall domains.{' '}
           <a href="https://github.com/bjonesdataliteracy/datapitfalls" target="_blank" rel="noreferrer">
             Open source on GitHub
           </a>

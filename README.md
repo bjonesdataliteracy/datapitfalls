@@ -32,7 +32,7 @@ This is not a style checker. It's a thinking partner for anyone who wants to wor
 
 ---
 
-## The 8 Audit Domains
+## The 8 Pitfall Domains
 
 datapitfalls organizes every pitfall into one of eight domains — the pitfall categories from *Avoiding Data Pitfalls*. Together they span the full arc of a data project.
 
@@ -152,7 +152,7 @@ export ANTHROPIC_API_KEY="sk-ant-..."
 ```
 
 1. **You provide input** — a chart, a code snippet, a description, or a document.
-2. **Taxonomy lookup** — datapitfalls pulls the relevant pitfall rules from its catalog of eight audit domains.
+2. **Taxonomy lookup** — datapitfalls pulls the relevant pitfall rules from its catalog of eight pitfall domains.
 3. **Claude API analysis** — Claude reasons over your input *and* the pitfall taxonomy, grounded in the knowledge from *Avoiding Data Pitfalls*.
 4. **Structured pitfall report** — you get back a clear, prioritized list of pitfalls: what was found, how severe it is, why it matters, and how to fix it.
 

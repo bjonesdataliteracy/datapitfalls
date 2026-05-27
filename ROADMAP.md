@@ -12,7 +12,7 @@ Lay the groundwork that everything else stands on.
 
 - [x] Repository setup and project structure
 - [x] Professional documentation (README, Contributing, Code of Conduct, Security, License)
-- [x] Pitfall taxonomy v0.1 — the structured, machine-readable catalog of pitfalls across all eight audit domains
+- [x] Pitfall taxonomy v0.1 — the structured, machine-readable catalog of pitfalls across all eight pitfall domains
 - [x] Taxonomy specification and contribution format
 
 ## ✅ Phase 2 — Analysis Engine & CLI

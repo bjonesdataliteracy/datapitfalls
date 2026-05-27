@@ -27,7 +27,7 @@ datapitfalls takes some piece of data work — a chart, a code snippet, a plain-
              │
              ▼
    ┌────────────────────┐      Relevant rules are pulled from the taxonomy
-   │  TAXONOMY LOOKUP   │      across the eight audit domains. In later phases
+   │  TAXONOMY LOOKUP   │      across the eight pitfall domains. In later phases
    │  retrieve relevant │      this is backed by a vector search over the book's
    │  pitfall rules     │      knowledge (Pinecone) for richer grounding.
    └─────────┬──────────┘
@@ -49,10 +49,10 @@ datapitfalls takes some piece of data work — a chart, a code snippet, a plain-
 ## Components
 
 ### 1. Input processing
-Accepts the four input modes, normalizes them into a common internal representation, and classifies the input so the system knows which audit domains are applicable. Images are prepared for Claude Vision — one chart or several at once, so cross-chart pitfalls can be caught — and PDFs are sent to Claude as native documents, so it reads the prose and sees the charts and tables in place rather than relying on extracted text.
+Accepts the four input modes, normalizes them into a common internal representation, and classifies the input so the system knows which pitfall domains are applicable. Images are prepared for Claude Vision — one chart or several at once, so cross-chart pitfalls can be caught — and PDFs are sent to Claude as native documents, so it reads the prose and sees the charts and tables in place rather than relying on extracted text.
 
 ### 2. Pitfall taxonomy
-The curated catalog of pitfall rules, organized by the eight audit domains from the book. Each rule is a structured object (see [PITFALL_TAXONOMY.md](PITFALL_TAXONOMY.md)). The taxonomy is the project's center of gravity — it's what makes the audits specific and grounded rather than generic.
+The curated catalog of pitfall rules, organized by the eight pitfall domains from the book. Each rule is a structured object (see [PITFALL_TAXONOMY.md](PITFALL_TAXONOMY.md)). The taxonomy is the project's center of gravity — it's what makes the audits specific and grounded rather than generic.
 
 ### 3. Taxonomy lookup / retrieval
 Selects the rules relevant to a given input. In early phases this is a straightforward filter by input type and domain. In later phases (see Roadmap Phase 2+), this is augmented by semantic retrieval over a vectorized representation of the book's content, so the most contextually relevant guidance surfaces for each scan.

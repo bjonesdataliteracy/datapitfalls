@@ -14,7 +14,7 @@ assignees: ""
 
 A short, memorable name for this pitfall (e.g. "Truncated Y-Axis", "Survivorship Bias").
 
-## Audit Domain
+## Pitfall Domain
 
 _Which of the eight domains does this belong to? Choose one:_
 
