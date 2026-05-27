@@ -9,6 +9,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@vercel/analytics": "^1.4.1",
     "datapitfalls": "file:..",
     "mammoth": "^1.8.0",
     "next": "^15.1.6",

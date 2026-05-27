@@ -37,9 +37,24 @@ body {
   letter-spacing: -0.02em;
 }
 
-.masthead p {
+.masthead .tagline {
+  margin: 0 0 0.6rem;
+  color: var(--text);
+}
+
+.masthead .subtag {
   margin: 0 0 2rem;
+  font-size: 0.9rem;
   color: var(--muted);
+}
+
+.masthead a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.masthead a:hover {
+  text-decoration: underline;
 }
 
 .uploader {
@@ -212,6 +227,18 @@ body {
   color: var(--muted);
 }
 
+.linklike {
+  margin-left: auto;
+  padding: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
 .filename {
   display: inline-flex;
   align-items: center;
@@ -340,7 +367,7 @@ body {
   background: var(--info);
 }
 
-.privacy {
+.sitefoot {
   margin-top: 3rem;
   padding-top: 1.5rem;
   border-top: 1px solid var(--border);
@@ -348,6 +375,19 @@ body {
   color: var(--muted);
 }
 
-.privacy a {
+.sitefoot p {
+  margin: 0 0 0.75rem;
+}
+
+.sitefoot p:last-child {
+  margin-bottom: 0;
+}
+
+.sitefoot a {
   color: var(--accent);
+  text-decoration: none;
+}
+
+.sitefoot a:hover {
+  text-decoration: underline;
 }
