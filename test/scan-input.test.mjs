@@ -1,4 +1,4 @@
-// Tests for the CLI's file routing: which AnalyzeInput each file (or set of
+// Tests for the CLI's file routing: which DetectionInput each file (or set of
 // files) becomes. Uses real temp files; no network or API key needed.
 import test from 'node:test';
 import assert from 'node:assert/strict';

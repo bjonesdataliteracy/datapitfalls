@@ -7,7 +7,7 @@
 import { readFileSync } from 'node:fs';
 import { basename, extname } from 'node:path';
 import { imageMediaTypeForExtension } from './analyze.js';
-import type { AnalyzeInput, ImageSource } from './analyze.js';
+import type { DetectionInput, ImageSource } from './analyze.js';
 
 const EXT_LANGUAGE: Record<string, string> = {
   '.py': 'Python',
@@ -20,7 +20,7 @@ const EXT_LANGUAGE: Record<string, string> = {
 // Extensions treated as a plain-English analysis description rather than code.
 const TEXT_EXTS = new Set(['.md', '.markdown', '.txt', '.text', '.rst']);
 
-export type ScanInput = { input: AnalyzeInput } | { error: string };
+export type ScanInput = { input: DetectionInput } | { error: string };
 
 function readImageSource(file: string): { image: ImageSource } | { error: string } {
   const mediaType = imageMediaTypeForExtension(extname(file).toLowerCase());

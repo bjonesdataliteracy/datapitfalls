@@ -1,7 +1,7 @@
 # datapitfalls web app
 
 The browser front end for datapitfalls — a thin Next.js app that reuses the
-engine in [`../src`](../src). It audits the same inputs as the CLI (chart images,
+engine in [`../src`](../src). It detects pitfalls in the same inputs as the CLI (chart images,
 several charts at once, PDFs, Word docs, notebooks, code files, and pasted
 prose/code) through the API route at [`app/api/audit/route.ts`](app/api/audit/route.ts).
 
@@ -23,9 +23,9 @@ The build is wired so the engine is compiled first: `vercel-build` runs
 
 | Variable                    | Required | Purpose                                                  |
 | --------------------------- | -------- | -------------------------------------------------------- |
-| `ANTHROPIC_API_KEY`         | yes      | Server-side key the audit route uses to call Claude.     |
+| `ANTHROPIC_API_KEY`         | yes      | Server-side key the scan route uses to call Claude.      |
 | `ANTHROPIC_MODEL`           | no       | Override the model (defaults to the engine default).     |
-| `RATE_LIMIT_MAX`            | no       | Max audits per window, per IP (default 8).               |
+| `RATE_LIMIT_MAX`            | no       | Max scans per window, per IP (default 8).                |
 | `RATE_LIMIT_WINDOW_SECONDS` | no       | Length of the rate-limit window in seconds (default 60). |
 
 Set these in the Vercel project (Settings → Environment Variables) and redeploy

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { analyze, imageMediaTypeForExtension } from 'datapitfalls';
-import type { AnalyzeInput, AuditReport, ImageMediaType, ImageSource } from 'datapitfalls';
+import { detectPitfalls, imageMediaTypeForExtension } from 'datapitfalls';
+import type { DetectionInput, PitfallReport, ImageMediaType, ImageSource } from 'datapitfalls';
 import { checkRateLimit, clientKey } from './rate-limit';
 
 // The engine and the Anthropic SDK need the Node runtime, not the edge runtime.
@@ -40,20 +40,20 @@ const EXT_LANGUAGE: Record<string, string> = {
 };
 const TEXT_EXTS = new Set(['.txt', '.md', '.markdown', '.rst']);
 
-type Parsed = { input: AnalyzeInput } | { error: string; status: number };
+type Parsed = { input: DetectionInput } | { error: string; status: number };
 
 export async function POST(req: Request): Promise<NextResponse> {
   const rate = checkRateLimit(clientKey(req));
   if (!rate.ok) {
     return NextResponse.json(
-      { error: `Too many audits — please wait ${rate.retryAfterSeconds}s and try again.` },
+      { error: `Too many requests — please wait ${rate.retryAfterSeconds}s and try again.` },
       { status: 429, headers: { 'Retry-After': String(rate.retryAfterSeconds) } }
     );
   }
 
   if (!process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json(
-      { error: 'Server is missing ANTHROPIC_API_KEY — set it to run audits.' },
+      { error: 'Server is missing ANTHROPIC_API_KEY — set it to run scans.' },
       { status: 503 }
     );
   }
@@ -254,12 +254,12 @@ function capitalize(s: string): string {
   return s ? s[0].toUpperCase() + s.slice(1) : s;
 }
 
-async function runAnalysis(input: AnalyzeInput): Promise<NextResponse> {
+async function runAnalysis(input: DetectionInput): Promise<NextResponse> {
   try {
-    const report: AuditReport = await analyze(input);
+    const report: PitfallReport = await detectPitfalls(input);
     return NextResponse.json(report);
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'The audit failed unexpectedly.';
+    const message = err instanceof Error ? err.message : 'The scan failed unexpectedly.';
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

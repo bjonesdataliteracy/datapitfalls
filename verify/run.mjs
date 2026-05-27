@@ -25,7 +25,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join, dirname, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { analyze, imageMediaTypeForExtension } from '../dist/index.js';
+import { detectPitfalls, imageMediaTypeForExtension } from '../dist/index.js';
 
 const fixturesDir = join(dirname(fileURLToPath(import.meta.url)), 'fixtures');
 
@@ -102,10 +102,10 @@ function discoverFixtures() {
   return { images, pdf };
 }
 
-/** Run one analyze() call and check it came back as a usable report. */
+/** Run one detectPitfalls() call and check it came back as a usable report. */
 async function checkEngine(label, input, { expectFindings }) {
   try {
-    const report = await analyze(input);
+    const report = await detectPitfalls(input);
     const okKind = report.kind === input.kind;
     const okRules = report.rulesConsidered > 0;
     const okFindings = Array.isArray(report.findings);
@@ -131,7 +131,7 @@ async function checkEngine(label, input, { expectFindings }) {
 }
 
 async function runEngineChecks(fx) {
-  console.log('\nEngine (analyze() against the live API):');
+  console.log('\nEngine (detectPitfalls() against the live API):');
   await checkEngine(
     'text  — written analysis',
     { kind: 'text', content: readFileSync(join(fixturesDir, 'analysis.txt'), 'utf8') },

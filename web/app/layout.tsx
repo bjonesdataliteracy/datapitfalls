@@ -4,9 +4,9 @@ import type { ReactNode } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 
 const SITE_URL = 'https://www.avoidingdatapitfalls.com';
-const TITLE = 'datapitfalls — audit your data work for common pitfalls';
+const TITLE = 'datapitfalls — detect the pitfalls in your data work';
 const DESCRIPTION =
-  'Audit charts, code, written analysis, and documents for common data pitfalls — from how a question is framed to the final chart. Powered by Claude, grounded in the taxonomy from the book Avoiding Data Pitfalls.';
+  'Detect common data pitfalls in charts, code, written analysis, and documents — from how a question is framed to the final chart. Powered by Claude, grounded in the taxonomy from the book Avoiding Data Pitfalls.';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   keywords: [
     'data pitfalls',
     'data visualization',
-    'chart audit',
+    'pitfall detector',
     'data literacy',
     'data quality',
     'avoiding data pitfalls',
