@@ -14,49 +14,83 @@ function tmp(name, content) {
   return path;
 }
 
-test('a single PDF becomes a native document input', () => {
-  const result = buildScanInput([tmp('report.pdf', Buffer.from('%PDF-1.4 fake'))], false);
+test('a single PDF becomes a native document input', async () => {
+  const result = await buildScanInput([tmp('report.pdf', Buffer.from('%PDF-1.4 fake'))], false);
   assert.ok('input' in result);
   assert.equal(result.input.kind, 'document');
   assert.equal(result.input.mediaType, 'application/pdf');
   assert.equal(result.input.filename, 'report.pdf');
 });
 
-test('a single image becomes a one-image audit', () => {
-  const result = buildScanInput([tmp('chart.png', Buffer.from('\x89PNG fake'))], false);
+test('a single image becomes a one-image audit', async () => {
+  const result = await buildScanInput([tmp('chart.png', Buffer.from('\x89PNG fake'))], false);
   assert.ok('input' in result);
   assert.equal(result.input.kind, 'image');
   assert.equal(result.input.images.length, 1);
   assert.equal(result.input.images[0].mediaType, 'image/png');
 });
 
-test('several images become one multi-image (cross-chart) audit', () => {
-  const result = buildScanInput([tmp('a.png', Buffer.from('a')), tmp('b.jpg', Buffer.from('b'))], false);
+test('several images become one multi-image (cross-chart) audit', async () => {
+  const result = await buildScanInput([tmp('a.png', Buffer.from('a')), tmp('b.jpg', Buffer.from('b'))], false);
   assert.ok('input' in result);
   assert.equal(result.input.kind, 'image');
   assert.equal(result.input.images.length, 2);
   assert.equal(result.input.images[1].mediaType, 'image/jpeg');
 });
 
-test('a non-image among several files is rejected', () => {
-  const result = buildScanInput([tmp('a.png', Buffer.from('a')), tmp('notes.txt', 'hello')], false);
+test('a non-image among several files is rejected', async () => {
+  const result = await buildScanInput([tmp('a.png', Buffer.from('a')), tmp('notes.txt', 'hello')], false);
   assert.ok('error' in result);
 });
 
-test('a code file becomes a code input with an inferred language', () => {
-  const result = buildScanInput([tmp('q.sql', 'SELECT 1')], false);
+test('a code file becomes a code input with an inferred language', async () => {
+  const result = await buildScanInput([tmp('q.sql', 'SELECT 1')], false);
   assert.ok('input' in result);
   assert.equal(result.input.kind, 'code');
   assert.equal(result.input.language, 'SQL');
 });
 
-test('--text forces a single file to be read as prose', () => {
-  const result = buildScanInput([tmp('script.py', 'print(1)')], true);
+test('--text forces a single file to be read as prose', async () => {
+  const result = await buildScanInput([tmp('script.py', 'print(1)')], true);
   assert.ok('input' in result);
   assert.equal(result.input.kind, 'text');
 });
 
-test('--text with several files is rejected', () => {
-  const result = buildScanInput([tmp('a.png', Buffer.from('a')), tmp('c.png', Buffer.from('c'))], true);
+test('--text with several files is rejected', async () => {
+  const result = await buildScanInput([tmp('a.png', Buffer.from('a')), tmp('c.png', Buffer.from('c'))], true);
+  assert.ok('error' in result);
+});
+
+test('a notebook is audited as its extracted code cells', async () => {
+  const nb = JSON.stringify({
+    cells: [
+      { cell_type: 'markdown', source: ['# Title\n', 'narrative prose'] },
+      { cell_type: 'code', source: ['import pandas as pd\n', 'df = pd.read_csv("x.csv")'] },
+      { cell_type: 'code', source: 'df.dropna().mean()' },
+    ],
+    metadata: { kernelspec: { language: 'python' } },
+  });
+  const result = await buildScanInput([tmp('analysis.ipynb', nb)], false);
+  assert.ok('input' in result);
+  assert.equal(result.input.kind, 'code');
+  assert.equal(result.input.language, 'Python');
+  assert.match(result.input.content, /pandas/);
+  assert.match(result.input.content, /dropna/);
+  assert.doesNotMatch(result.input.content, /Title/); // markdown cells are excluded
+});
+
+test('a malformed notebook is rejected', async () => {
+  const result = await buildScanInput([tmp('bad.ipynb', 'not json {')], false);
+  assert.ok('error' in result);
+});
+
+test('a notebook with no code cells is rejected', async () => {
+  const nb = JSON.stringify({ cells: [{ cell_type: 'markdown', source: ['just notes'] }] });
+  const result = await buildScanInput([tmp('notes.ipynb', nb)], false);
+  assert.ok('error' in result);
+});
+
+test('a file that is not a real .docx is rejected gracefully', async () => {
+  const result = await buildScanInput([tmp('fake.docx', 'this is not a real Word document')], false);
   assert.ok('error' in result);
 });

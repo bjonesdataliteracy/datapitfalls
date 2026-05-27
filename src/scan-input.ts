@@ -15,7 +15,6 @@ const EXT_LANGUAGE: Record<string, string> = {
   '.r': 'R',
   '.js': 'JavaScript',
   '.ts': 'TypeScript',
-  '.ipynb': 'Jupyter notebook',
 };
 
 // Extensions treated as a plain-English analysis description rather than code.
@@ -37,8 +36,57 @@ function readImageSource(file: string): { image: ImageSource } | { error: string
   }
 }
 
+function capitalize(value: string): string {
+  return value.length > 0 ? value.charAt(0).toUpperCase() + value.slice(1) : value;
+}
+
+/** A Jupyter notebook → its code cells, joined into one script. */
+function notebookToInput(file: string): ScanInput {
+  let raw: string;
+  try {
+    raw = readFileSync(file, 'utf8');
+  } catch {
+    return { error: `Could not read file: ${file}` };
+  }
+  let nb: {
+    cells?: { cell_type?: string; source?: string | string[] }[];
+    metadata?: { kernelspec?: { language?: string }; language_info?: { name?: string } };
+  };
+  try {
+    nb = JSON.parse(raw);
+  } catch {
+    return { error: `Could not parse that notebook (.ipynb): ${file}` };
+  }
+  const language = nb.metadata?.kernelspec?.language ?? nb.metadata?.language_info?.name ?? 'Python';
+  const code = (nb.cells ?? [])
+    .filter((cell) => cell.cell_type === 'code')
+    .map((cell) => (Array.isArray(cell.source) ? cell.source.join('') : (cell.source ?? '')))
+    .join('\n\n')
+    .trim();
+  if (code === '') return { error: `No code cells found in ${file}.` };
+  return { input: { kind: 'code', content: code, language: capitalize(language), filename: basename(file) } };
+}
+
+/** A Word document → its text, audited as prose. */
+async function docxToInput(file: string): Promise<ScanInput> {
+  let buffer: Buffer;
+  try {
+    buffer = readFileSync(file);
+  } catch {
+    return { error: `Could not read file: ${file}` };
+  }
+  try {
+    const mammoth = (await import('mammoth')).default;
+    const { value } = await mammoth.extractRawText({ buffer });
+    if (value.trim() === '') return { error: `No readable text found in ${file}.` };
+    return { input: { kind: 'text', content: value, filename: basename(file) } };
+  } catch {
+    return { error: `Could not read that Word document: ${file}` };
+  }
+}
+
 /** Turn one or more file paths into an analysis input, or describe what went wrong. */
-export function buildScanInput(files: string[], forceText: boolean): ScanInput {
+export async function buildScanInput(files: string[], forceText: boolean): Promise<ScanInput> {
   // Several files: audit them together as a set of chart images.
   if (files.length > 1) {
     if (forceText) {
@@ -80,6 +128,10 @@ export function buildScanInput(files: string[], forceText: boolean): ScanInput {
         return { error: `Could not read file: ${file}` };
       }
     }
+    // Word document → extract text, audit as prose.
+    if (ext === '.docx') return docxToInput(file);
+    // Jupyter notebook → audit its extracted code cells.
+    if (ext === '.ipynb') return notebookToInput(file);
   }
 
   // Code or plain-English text.
