@@ -881,6 +881,22 @@ export const rules: PitfallRule[] = [
     ]
   },
   {
+    "id": "inconsistent-scales-across-charts",
+    "name": "Inconsistent Scales Across Charts",
+    "domain": "Graphical Gaffes",
+    "severity": "warning",
+    "description": "Several charts that invite comparison — small multiples, a dashboard's panels, a before/after pair — use different axis scales, ranges, or units for the same measure, so equal visual heights or lengths stand for different values. Readers naturally compare the marks across panels and draw conclusions the numbers don't support. It extends the domain's encoding-integrity theme to the relationships *between* charts, which a single-chart review can't catch.\n",
+    "detection_strategy": "Only applies when more than one chart is shown together. For charts that plot the same (or a comparable) quantity, compare their axes: differing y-axis ranges or maxima, one panel truncated while another starts at zero, different units or transforms (counts vs. percentages, linear vs. log), or mismatched bin widths. Flag when a reader comparing marks across the charts would be misled because the scales don't match; name the charts involved. Do not flag charts that legitimately measure different things.\n",
+    "example_bad": "A dashboard shows four regional sales bar charts side by side; three use a 0–100 y-axis but the fourth uses 0–500, so its tall-looking bar actually represents a smaller share — yet at a glance it appears to be the biggest performer.\n",
+    "example_good": "All four regional charts share one fixed y-axis (0–500) and the same units, so bar heights are directly comparable across panels and the largest bar really is the largest value.\n",
+    "remediation": "Put charts meant to be compared on a single shared scale — same axis range, units, and transform — ideally as true small multiples. If a panel genuinely needs its own scale, make that unmistakable (clear per-panel axis labels, or don't place it where readers will compare it directly).\n",
+    "references": [
+      "Edward Tufte, The Visual Display of Quantitative Information (2nd ed., Graphics Press, 2001) — small multiples and consistent scales",
+      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)",
+      "https://www.avoidingdatapitfalls.com"
+    ]
+  },
+  {
     "id": "insufficient-precision-comparison",
     "name": "Insufficient Precision for Comparison",
     "domain": "Graphical Gaffes",
@@ -1030,6 +1046,21 @@ export const rules: PitfallRule[] = [
     "remediation": "Make every color mean exactly one thing across the whole dashboard. Don't reuse a hue or palette for unrelated variables or as two different scales; remove redundant color encodings, and if two charts genuinely need different color meanings, separate them or use clearly distinct schemes.\n",
     "references": [
       "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 7A: Confusing Colors",
+      "https://www.avoidingdatapitfalls.com"
+    ]
+  },
+  {
+    "id": "inconsistent-encoding-across-charts",
+    "name": "Inconsistent Encoding Across Charts",
+    "domain": "Design Dangers",
+    "severity": "warning",
+    "description": "Across a set of charts — a dashboard, a slide sequence, a report's figures — the same visual channel means different things, or the same thing is shown different ways. A color that marks one category here marks another there; a series is blue in one chart and orange in the next; legends or orderings shift between panels. Readers build a mental key from the first chart and the later ones quietly break it, so they misread the data. Unlike inconsistent encoding *within* one chart, this only shows up when the charts are reviewed together.\n",
+    "detection_strategy": "Only applies when more than one chart is shown together. Check whether the encoding is stable across the set: does each category/series keep the same color, shape, and size meaning in every chart? Are legends, category orderings, and units consistent? Flag a reused hue that means different things across charts, a single entity drawn in different colors, or a legend that changes between panels — and name the charts involved.\n",
+    "example_bad": "In a quarterly dashboard, \"Revenue\" is the green line in the first chart but green marks \"Costs\" in the second, while Revenue switches to blue — a reader tracking the green line across panels follows two different metrics.\n",
+    "example_good": "One shared legend governs the whole dashboard: Revenue is always blue, Costs always red, in the same order, with the same units, so a color means exactly one thing across every chart.\n",
+    "remediation": "Define one encoding for the whole set and apply it everywhere: fix each category/series to a single color (and shape/size meaning), keep legend, ordering, and units identical across charts, and surface a shared legend. If two charts genuinely need different encodings, make the schemes visibly distinct so readers don't carry the wrong key over.\n",
+    "references": [
+      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 7: Design Dangers (domain extension — not a specific sub-pitfall example in the book)",
       "https://www.avoidingdatapitfalls.com"
     ]
   },

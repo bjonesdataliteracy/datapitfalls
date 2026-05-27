@@ -1,0 +1,35 @@
+id: inconsistent-scales-across-charts
+name: Inconsistent Scales Across Charts
+domain: Graphical Gaffes
+severity: warning
+description: >
+  Several charts that invite comparison — small multiples, a dashboard's panels, a
+  before/after pair — use different axis scales, ranges, or units for the same measure,
+  so equal visual heights or lengths stand for different values. Readers naturally
+  compare the marks across panels and draw conclusions the numbers don't support. It
+  extends the domain's encoding-integrity theme to the relationships *between* charts,
+  which a single-chart review can't catch.
+detection_strategy: >
+  Only applies when more than one chart is shown together. For charts that plot the same
+  (or a comparable) quantity, compare their axes: differing y-axis ranges or maxima, one
+  panel truncated while another starts at zero, different units or transforms (counts vs.
+  percentages, linear vs. log), or mismatched bin widths. Flag when a reader comparing
+  marks across the charts would be misled because the scales don't match; name the charts
+  involved. Do not flag charts that legitimately measure different things.
+example_bad: >
+  A dashboard shows four regional sales bar charts side by side; three use a 0–100 y-axis
+  but the fourth uses 0–500, so its tall-looking bar actually represents a smaller share —
+  yet at a glance it appears to be the biggest performer.
+example_good: >
+  All four regional charts share one fixed y-axis (0–500) and the same units, so bar
+  heights are directly comparable across panels and the largest bar really is the largest
+  value.
+remediation: >
+  Put charts meant to be compared on a single shared scale — same axis range, units, and
+  transform — ideally as true small multiples. If a panel genuinely needs its own scale,
+  make that unmistakable (clear per-panel axis labels, or don't place it where readers
+  will compare it directly).
+references:
+  - "Edward Tufte, The Visual Display of Quantitative Information (2nd ed., Graphics Press, 2001) — small multiples and consistent scales"
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)"
+  - "https://www.avoidingdatapitfalls.com"

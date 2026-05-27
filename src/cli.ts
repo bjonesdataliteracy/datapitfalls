@@ -103,7 +103,7 @@ async function scan(args: string[]): Promise<void> {
       return;
     }
     report = await analyze(
-      { content: data, kind: 'image', mediaType, filename: basename(file) },
+      { kind: 'image', images: [{ content: data, mediaType, filename: basename(file) }] },
       { model }
     );
   } else {

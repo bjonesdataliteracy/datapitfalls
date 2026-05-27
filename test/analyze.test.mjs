@@ -104,11 +104,31 @@ test('image input grounds on the visual domains plus the data-reality rule', asy
     getRulesByDomain('Design Dangers').length +
     (getRule('data-reality-gap') ? 1 : 0);
   const report = await analyze(
-    { kind: 'image', content: 'AAAA', mediaType: 'image/png', filename: 'c.png' },
+    { kind: 'image', images: [{ content: 'AAAA', mediaType: 'image/png', filename: 'c.png' }] },
     { client: fakeClient([]) }
   );
   assert.equal(report.rulesConsidered, expected);
   assert.equal(report.kind, 'image');
+});
+
+test('multiple images are all sent in one request for a cross-chart audit', async () => {
+  const client = fakeClient([]);
+  const report = await analyze(
+    {
+      kind: 'image',
+      images: [
+        { content: 'AAAA', mediaType: 'image/png', filename: 'a.png' },
+        { content: 'BBBB', mediaType: 'image/jpeg', filename: 'b.jpg' },
+      ],
+    },
+    { client }
+  );
+  assert.equal(report.kind, 'image');
+  const userContent = client.calls[0].messages[0].content;
+  const imageBlocks = userContent.filter((b) => b.type === 'image');
+  assert.equal(imageBlocks.length, 2);
+  assert.equal(imageBlocks[0].source.data, 'AAAA');
+  assert.equal(imageBlocks[1].source.data, 'BBBB');
 });
 
 test('the domains option overrides rule selection', async () => {

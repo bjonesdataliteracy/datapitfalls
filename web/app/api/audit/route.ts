@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
 import { analyze, imageMediaTypeForExtension } from 'datapitfalls';
-import type { AnalyzeInput, AuditReport, ImageMediaType } from 'datapitfalls';
+import type { AnalyzeInput, AuditReport, ImageMediaType, ImageSource } from 'datapitfalls';
 
 // The engine and the Anthropic SDK need the Node runtime, not the edge runtime.
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+const MAX_IMAGES = 8;
 const MAX_BINARY_BYTES = 16 * 1024 * 1024; // PDF / DOCX
 const MAX_TEXT_CHARS = 100_000;
 const ALLOWED_IMAGE_TYPES: ImageMediaType[] = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
@@ -81,7 +82,8 @@ async function parseTextInput(req: Request): Promise<Parsed> {
   return makeTextInput(kind, typeof content === 'string' ? content : '', lang);
 }
 
-/** An uploaded file of any supported type. */
+/** One or more uploaded files. Several files are only accepted when they are all
+ *  chart images, which are then audited together for cross-chart pitfalls. */
 async function parseFileInput(req: Request): Promise<Parsed> {
   let form: FormData;
   try {
@@ -90,27 +92,66 @@ async function parseFileInput(req: Request): Promise<Parsed> {
     return { error: 'Expected a multipart form upload.', status: 400 };
   }
 
-  const file = form.get('file');
-  if (!(file instanceof File)) {
+  const files = form.getAll('file').filter((f): f is File => f instanceof File);
+  if (files.length === 0) {
     return { error: 'No file was uploaded.', status: 400 };
   }
-  const modeHint = form.get('mode');
+  if (files.length > 1) {
+    return parseMultipleImages(files);
+  }
 
+  const modeHint = form.get('mode');
+  return parseSingleFile(files[0], typeof modeHint === 'string' ? modeHint : null);
+}
+
+/** Several chart images, audited together. All must be images. */
+async function parseMultipleImages(files: File[]): Promise<Parsed> {
+  if (files.length > MAX_IMAGES) {
+    return { error: `Too many images (max ${MAX_IMAGES}).`, status: 413 };
+  }
+  const images: ImageSource[] = [];
+  for (const file of files) {
+    const result = await toImageSource(file);
+    if ('error' in result) return result;
+    images.push(result.image);
+  }
+  return { input: { kind: 'image', images } };
+}
+
+/** Read one file as a chart image, or explain why it isn't usable as one. */
+async function toImageSource(
+  file: File
+): Promise<{ image: ImageSource } | { error: string; status: number }> {
+  const dot = file.name.lastIndexOf('.');
+  const ext = dot >= 0 ? file.name.slice(dot).toLowerCase() : '';
+  const mediaType = (ALLOWED_IMAGE_TYPES as string[]).includes(file.type)
+    ? (file.type as ImageMediaType)
+    : imageMediaTypeForExtension(ext);
+  if (!mediaType) {
+    return {
+      error: `"${file.name || 'file'}" isn't a supported image — upload PNG, JPEG, GIF, or WebP charts (other file types one at a time).`,
+      status: 400,
+    };
+  }
+  const bytes = await file.arrayBuffer();
+  if (bytes.byteLength === 0) return { error: `"${file.name || 'file'}" is empty.`, status: 400 };
+  if (bytes.byteLength > MAX_IMAGE_BYTES) {
+    return { error: `"${file.name || 'file'}" is too large (max 8 MB each).`, status: 413 };
+  }
+  return { image: { content: toBase64(bytes), mediaType, filename: file.name || undefined } };
+}
+
+/** A single uploaded file of any supported type. */
+async function parseSingleFile(file: File, modeHint: string | null): Promise<Parsed> {
   const dot = file.name.lastIndexOf('.');
   const ext = dot >= 0 ? file.name.slice(dot).toLowerCase() : '';
   const type = file.type;
 
   // Image → Vision.
-  const imageType = (ALLOWED_IMAGE_TYPES as string[]).includes(type)
-    ? (type as ImageMediaType)
-    : imageMediaTypeForExtension(ext);
-  if (imageType) {
-    const bytes = await file.arrayBuffer();
-    if (bytes.byteLength === 0) return { error: 'The uploaded file is empty.', status: 400 };
-    if (bytes.byteLength > MAX_IMAGE_BYTES) return { error: 'Image is too large (max 8 MB).', status: 413 };
-    return {
-      input: { kind: 'image', content: toBase64(bytes), mediaType: imageType, filename: file.name || undefined },
-    };
+  if ((ALLOWED_IMAGE_TYPES as string[]).includes(type) || imageMediaTypeForExtension(ext)) {
+    const result = await toImageSource(file);
+    if ('error' in result) return result;
+    return { input: { kind: 'image', images: [result.image] } };
   }
 
   // PDF → native document (Claude reads the prose and sees the charts/tables).
