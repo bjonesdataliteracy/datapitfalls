@@ -12,19 +12,51 @@ const bold = (s: string): string => (useColor ? `\x1b[1m${s}\x1b[0m` : s);
 const dim = (s: string): string => (useColor ? `\x1b[2m${s}\x1b[0m` : s);
 const cyan = (s: string): string => (useColor ? `\x1b[38;5;80m${s}\x1b[0m` : s);
 
-// "DATA" stacked over "PITFALLS" in a block font (see scripts; rendered once).
+// "DATA" stacked over "PITFALLS" — figlet "ANSI Shadow", colored two-tone for a
+// retro extruded look (bright face + dark bevel). Rendered once and embedded.
 const WORDMARK = [
-  '████   ███  █████  ███  ',
-  '█   █ █   █   █   █   █ ',
-  '█   █ █████   █   █████ ',
-  '█   █ █   █   █   █   █ ',
-  '████  █   █   █   █   █ ',
-  '████  █████ █████ █████  ███  █     █      ████ ',
-  '█   █   █     █   █     █   █ █     █     █     ',
-  '████    █     █   ████  █████ █     █      ███  ',
-  '█       █     █   █     █   █ █     █         █ ',
-  '█     █████   █   █     █   █ █████ █████ ████ ',
+  '██████╗  █████╗ ████████╗ █████╗ ',
+  '██╔══██╗██╔══██╗╚══██╔══╝██╔══██╗',
+  '██║  ██║███████║   ██║   ███████║',
+  '██║  ██║██╔══██║   ██║   ██╔══██║',
+  '██████╔╝██║  ██║   ██║   ██║  ██║',
+  '╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝',
+  '██████╗ ██╗████████╗███████╗ █████╗ ██╗     ██╗     ███████╗',
+  '██╔══██╗██║╚══██╔══╝██╔════╝██╔══██╗██║     ██║     ██╔════╝',
+  '██████╔╝██║   ██║   █████╗  ███████║██║     ██║     ███████╗',
+  '██╔═══╝ ██║   ██║   ██╔══╝  ██╔══██║██║     ██║     ╚════██║',
+  '██║     ██║   ██║   ██║     ██║  ██║███████╗███████╗███████║',
+  '╚═╝     ╚═╝   ╚═╝   ╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝',
 ];
+
+const FACE_CODE = '\x1b[38;5;214m';
+const SHADOW_CODE = '\x1b[38;5;130m';
+const RESET_CODE = '\x1b[0m';
+
+// Two-tone the block art: solid █ faces in bright orange, the ╗╝║═ bevel edges in
+// a darker orange so the letters look extruded.
+function colorizeWordmark(line: string): string {
+  if (!useColor) return line;
+  let out = '';
+  let cur = '';
+  for (const ch of line) {
+    if (ch === ' ') {
+      if (cur !== '') {
+        out += RESET_CODE;
+        cur = '';
+      }
+      out += ' ';
+      continue;
+    }
+    const want = ch === '█' ? FACE_CODE : SHADOW_CODE;
+    if (want !== cur) {
+      out += want;
+      cur = want;
+    }
+    out += ch;
+  }
+  return cur !== '' ? out + RESET_CODE : out;
+}
 
 function introBox(): string {
   const width = 70;
@@ -40,7 +72,7 @@ function introBox(): string {
 
 function printSplash(): void {
   console.log();
-  for (const line of WORDMARK) console.log('  ' + orange(line));
+  for (const line of WORDMARK) console.log('  ' + colorizeWordmark(line));
   console.log();
   console.log('  ' + dim('Check the data work of humans and AI alike for the pitfalls that mislead.'));
   console.log();
