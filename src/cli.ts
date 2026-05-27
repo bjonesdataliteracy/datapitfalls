@@ -28,8 +28,8 @@ function printHelp(): void {
       '    --json                         Output the full report as JSON\n' +
       '    --ci                           Exit non-zero if an active error/warning is found\n' +
       '\nImage files (.png/.jpg/.jpeg/.gif/.webp) are audited with Claude Vision; pass several to\n' +
-      'audit them as a set. PDF files (.pdf) are sent to Claude as a document, so it reads the\n' +
-      'prose and sees the charts and tables together.\n' +
+      'audit them as a set. PDFs (.pdf) are read as native documents (prose + charts/tables), Word\n' +
+      'docs (.docx) are read as prose, and notebooks (.ipynb) are audited as their extracted code.\n' +
       '\nThe scan command needs an Anthropic API key in ANTHROPIC_API_KEY.\n' +
       'Default model is claude-sonnet-4-6; override with --thorough, --fast, or ANTHROPIC_MODEL.'
   );
@@ -76,7 +76,7 @@ async function scan(args: string[]): Promise<void> {
     return;
   }
 
-  const result = buildScanInput(files, forceText);
+  const result = await buildScanInput(files, forceText);
   if ('error' in result) {
     console.error(result.error);
     process.exitCode = 1;

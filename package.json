@@ -46,7 +46,8 @@
     "node": ">=18"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.39.0"
+    "@anthropic-ai/sdk": "^0.39.0",
+    "mammoth": "^1.8.0"
   },
   "devDependencies": {
     "@types/node": "^22.13.0",
