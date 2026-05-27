@@ -35,19 +35,21 @@ Teach the auditor to see, so it can review the chart itself.
 - [x] Visual pitfall detection (Graphical Gaffes & Design Dangers)
 - [x] Chart-image scanning from the CLI
 
-## 🟢 Phase 4 — Web Experience _(Current)_
+## 🟢 Phase 4 — Web Experience _(Web app live; public domain pending)_
 
 Put the auditor on the web so anyone can use it without a terminal.
 
-- [x] Image upload interface (Next.js app in `web/` — upload a chart, audit it via the engine)
-- [ ] Website deployed at [avoidingdatapitfalls.com](https://www.avoidingdatapitfalls.com)
+- [x] Web auditor app (Next.js in `web/`) — chart-image, written-analysis, and code modes
+- [x] Drag-and-drop and clipboard paste for chart images
+- [ ] Public site at [avoidingdatapitfalls.com](https://www.avoidingdatapitfalls.com)
 
-## ⚪ Phase 5 — Document Analysis
+## 🟢 Phase 5 — Document Analysis _(Current)_
 
 Audit whole bodies of work, in context.
 
-- [ ] Report and slide-deck upload (PDF, PPTX)
-- [ ] Multi-chart audit that understands charts in relation to one another
+- [x] Report upload (web app) — PDF read natively (charts and all), Word `.docx`, Jupyter notebooks, and code files
+- [x] Multi-chart audit that understands charts in relation to one another
+- [ ] Slide-deck upload (PPTX)
 - [ ] Full-document pitfall scanning across the entire data reasoning chain
 
 ## ⚪ Phase 6 — Distribution & Public API

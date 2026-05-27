@@ -78,7 +78,7 @@ datapitfalls organizes every pitfall into one of eight domains — the pitfall c
 
 datapitfalls is designed around **four input modes**, so you can audit your work at whatever stage you're in.
 
-> ⚠️ **Status:** The datapitfalls **analysis engine is live**. From the command line it audits **chart images, code snippets, and plain-English descriptions** today (modes 1–3 below), returning structured reports with a `--ci` exit code for pipelines. A hosted website at [avoidingdatapitfalls.com](https://www.avoidingdatapitfalls.com) and document/slide-deck upload (mode 4) are still planned — see the [Roadmap](ROADMAP.md). Not yet published to npm: run it from a local clone with `npm run build`, then `node dist/cli.js scan <file>`.
+> ⚠️ **Status:** The datapitfalls **analysis engine is live**, and you can use it two ways. The **command line** audits chart images, code snippets, and plain-English descriptions (modes 1–3 below), with a `--ci` exit code for pipelines. A **web app** (in [`web/`](web/)) does all of that in the browser and adds **document upload** — PDF read natively (so Claude audits the prose *and* the charts and tables), Word `.docx`, Jupyter notebooks, and code files — plus **multi-chart audits** that compare several charts at once. Still planned: a public site at [avoidingdatapitfalls.com](https://www.avoidingdatapitfalls.com), slide-deck (PPTX) support, and an npm release — see the [Roadmap](ROADMAP.md). Until then, run from a local clone: `npm run build` then `node dist/cli.js scan <file>`, or `cd web && npm run dev` for the app.
 
 ### 1. Scan a chart image
 
@@ -110,13 +110,9 @@ but only counted users who are still active today."
 
 datapitfalls recognizes the survivorship bias hiding in that sentence.
 
-### 4. Upload a report or slide deck
+### 4. Upload a report — or several charts at once (web app)
 
-```bash
-npx datapitfalls scan ./board-deck.pdf
-```
-
-Audit an entire document — every chart, claim, and comparison — in context.
+In the web app, drop in a **PDF report** and Claude audits the whole thing in context — the written claims *and* the charts and tables on the page (Word `.docx`, Jupyter notebooks, and code files work too). Or add **several chart images** together for a multi-chart audit that catches pitfalls across them: inconsistent scales, inconsistent encodings, and contradictory messages.
 
 ---
 

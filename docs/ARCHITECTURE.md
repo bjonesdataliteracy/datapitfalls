@@ -49,7 +49,7 @@ datapitfalls takes some piece of data work — a chart, a code snippet, a plain-
 ## Components
 
 ### 1. Input processing
-Accepts the four input modes, normalizes them into a common internal representation, and classifies the input so the system knows which audit domains are applicable. Images are prepared for Claude Vision; documents are split into analyzable units (charts, claims, comparisons).
+Accepts the four input modes, normalizes them into a common internal representation, and classifies the input so the system knows which audit domains are applicable. Images are prepared for Claude Vision — one chart or several at once, so cross-chart pitfalls can be caught — and PDFs are sent to Claude as native documents, so it reads the prose and sees the charts and tables in place rather than relying on extracted text.
 
 ### 2. Pitfall taxonomy
 The curated catalog of pitfall rules, organized by the eight audit domains from the book. Each rule is a structured object (see [PITFALL_TAXONOMY.md](PITFALL_TAXONOMY.md)). The taxonomy is the project's center of gravity — it's what makes the audits specific and grounded rather than generic.
