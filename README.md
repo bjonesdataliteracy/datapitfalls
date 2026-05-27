@@ -5,7 +5,7 @@
 ### Helping you steer clear of common blunders when working with data
 
 [![CI](https://github.com/bjonesdataliteracy/datapitfalls/actions/workflows/ci.yml/badge.svg)](https://github.com/bjonesdataliteracy/datapitfalls/actions/workflows/ci.yml)
-[![npm version](https://img.shields.io/badge/npm-v0.1.0-blue.svg)](https://www.npmjs.com/package/datapitfalls)
+[![Status: pre-release](https://img.shields.io/badge/status-pre--release-orange.svg)](ROADMAP.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/bjonesdataliteracy/datapitfalls.svg?style=social)](https://github.com/bjonesdataliteracy/datapitfalls/stargazers)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
@@ -16,15 +16,17 @@
 
 ## What is this?
 
-**datapitfalls** is an open-source tool that audits your data work for the common blunders that trip up even seasoned practitioners — and it does so across the *entire* data reasoning chain, from the question you start with to the chart you finish with.
+**datapitfalls** is an open-source tool that audits your data work for the common blunders that trip up even seasoned practitioners — and its pitfall taxonomy spans the *entire* data reasoning chain, from the question you start with to the chart you finish with, not just the final pixels.
 
 Most "chart linters" stop at the pixels: they'll tell you your axis is truncated or your colors fail a contrast check. That's useful, but it's a sliver of where data work actually goes wrong. The most consequential mistakes happen *upstream* — in how a question is framed, how data is collected, how it's transformed, how it's analyzed, and how the results are finally interpreted and communicated. A perfectly formatted chart built on a cherry-picked timeframe is still misleading. A flawless SQL query that silently drops nulls still lies.
 
-datapitfalls audits the whole chain:
+Its pitfall catalog spans the whole chain:
 
 > **question formulation → data collection → transformation → analysis → visualization → interpretation → communication**
 
 It's powered by the [Claude API](https://www.anthropic.com/) and grounded in the pitfall taxonomy from the book [*Avoiding Data Pitfalls*](https://www.avoidingdatapitfalls.com) (Wiley) by Ben Jones. Give it a chart, a code snippet, a plain-English description of your analysis, or a whole report — and it returns a structured audit that names the pitfalls, explains *why* they matter, and tells you how to fix them.
+
+Today you audit one piece at a time — a chart (or several together), a code snippet, a description, or a single document (a PDF report is read end-to-end, prose and charts alike). Auditing a connected, multi-stage workflow as one linked chain is on the [roadmap](ROADMAP.md).
 
 This is not a style checker. It's a thinking partner for anyone who wants to work with data more honestly.
 
@@ -118,11 +120,20 @@ In the web app, drop in a **PDF report** and Claude audits the whole thing in co
 
 ## Installation
 
-```bash
-# Install as a project dependency
-npm install datapitfalls
+> **Not on npm yet.** Publishing is on the [Roadmap](ROADMAP.md) — until then, run it from a local clone.
 
-# Or run it directly without installing
+```bash
+git clone https://github.com/bjonesdataliteracy/datapitfalls.git
+cd datapitfalls
+npm install
+npm run build
+node dist/cli.js scan ./my-chart.png
+```
+
+Once it's published, installation will be as simple as:
+
+```bash
+npm install datapitfalls      # coming soon
 npx datapitfalls scan ./my-chart.png
 ```
 
