@@ -176,9 +176,8 @@ export default function Home() {
       <header className="masthead">
         <h1>datapitfalls</h1>
         <p className="tagline">
-          Detect the common data pitfalls in your work — a chart (or several at once), a written
-          analysis, analysis code, or a whole document — before they mislead even seasoned
-          practitioners.
+          Check the data work of humans and AI alike — a chart (or several at once), a written
+          analysis, analysis code, or a whole document — for the common pitfalls that mislead.
         </p>
         <p className="subtag">
           Grounded in the taxonomy from{' '}

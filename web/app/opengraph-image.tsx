@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og';
 
-export const alt = 'datapitfalls — detect the data pitfalls in your work';
+export const alt = 'datapitfalls — check the data work of humans and AI alike for pitfalls';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -33,7 +33,7 @@ export default function OpengraphImage() {
             maxWidth: 960,
           }}
         >
-          Detect the common pitfalls in your data work — charts, code, prose, documents.
+          Check the data work of humans and AI alike for the pitfalls that mislead.
         </div>
         <div style={{ display: 'flex', marginTop: 56, fontSize: 28, color: '#5b8cff' }}>
           avoidingdatapitfalls.com

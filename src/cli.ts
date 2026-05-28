@@ -6,6 +6,96 @@ import { detectPitfalls } from './analyze.js';
 import { formatReport, hasBlockingFindings } from './report.js';
 import { buildScanInput } from './scan-input.js';
 
+const useColor = Boolean(process.stdout.isTTY) && !process.env.NO_COLOR;
+
+// Powered By Data palette, as 24-bit truecolor SGR parameters.
+const LEMON = '38;2;226;229;35'; // Electric Lemon #E2E523
+const OCEAN = '38;2;31;134;182'; // Ocean Blue     #1F86B6
+const SKY = '38;2;105;223;250'; // Sky Blue       #69DFFA
+const WHITE = '38;2;243;253;255'; // Floral White  #F3FDFF
+const IRON = '38;2;60;55;68'; // Iron Gray      #3C3744
+const RESET_CODE = '\x1b[0m';
+
+const paint = (code: string, s: string): string => (useColor ? `\x1b[${code}m${s}${RESET_CODE}` : s);
+
+// "DATA" stacked over "PITFALLS" — figlet "ANSI Shadow", colored two-tone for a
+// retro extruded look (bright face + dark bevel). Rendered once and embedded.
+const WORDMARK = [
+  '██████╗  █████╗ ████████╗ █████╗ ',
+  '██╔══██╗██╔══██╗╚══██╔══╝██╔══██╗',
+  '██║  ██║███████║   ██║   ███████║',
+  '██║  ██║██╔══██║   ██║   ██╔══██║',
+  '██████╔╝██║  ██║   ██║   ██║  ██║',
+  '╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝',
+  '██████╗ ██╗████████╗███████╗ █████╗ ██╗     ██╗     ███████╗',
+  '██╔══██╗██║╚══██╔══╝██╔════╝██╔══██╗██║     ██║     ██╔════╝',
+  '██████╔╝██║   ██║   █████╗  ███████║██║     ██║     ███████╗',
+  '██╔═══╝ ██║   ██║   ██╔══╝  ██╔══██║██║     ██║     ╚════██║',
+  '██║     ██║   ██║   ██║     ██║  ██║███████╗███████╗███████║',
+  '╚═╝     ╚═╝   ╚═╝   ╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝',
+];
+
+// Two-tone the block art: solid █ faces in Electric Lemon, the ╗╝║═ bevel edges
+// in Ocean Blue, so the letters look extruded.
+function colorizeWordmark(line: string): string {
+  if (!useColor) return line;
+  let out = '';
+  let cur = '';
+  for (const ch of line) {
+    if (ch === ' ') {
+      if (cur !== '') {
+        out += RESET_CODE;
+        cur = '';
+      }
+      out += ' ';
+      continue;
+    }
+    const want = ch === '█' ? LEMON : OCEAN;
+    if (want !== cur) {
+      out += `\x1b[${want}m`;
+      cur = want;
+    }
+    out += ch;
+  }
+  return cur !== '' ? out + RESET_CODE : out;
+}
+
+function introBox(): string {
+  const width = 70;
+  const lines = [
+    'Catch data pitfalls in any data work — a chart, a code file, a',
+    'report, or a description — whether a person or an AI produced it.',
+    'Get back what is wrong, why it matters, and how to fix it.',
+  ];
+  const horiz = '─'.repeat(width - 2);
+  const edge = (s: string): string => paint(IRON, s);
+  const body = lines.map((l) => '  ' + edge('│') + ' ' + paint(WHITE, l.padEnd(width - 4)) + ' ' + edge('│'));
+  return ['  ' + edge('╭' + horiz + '╮'), ...body, '  ' + edge('╰' + horiz + '╯')].join('\n');
+}
+
+function printSplash(): void {
+  console.log();
+  for (const line of WORDMARK) console.log('  ' + colorizeWordmark(line));
+  console.log();
+  console.log('  ' + paint(WHITE, 'Check the data work of humans and AI alike for the pitfalls that mislead.'));
+  console.log();
+  console.log(introBox());
+  console.log();
+  console.log('  ' + paint(`1;${SKY}`, 'Getting Started:'));
+  console.log(
+    '    ' + paint(`1;${LEMON}`, 'Human:') + '  ' + paint(SKY, 'datapitfalls scan <file>') + '  scan a chart, code, report, or description'
+  );
+  console.log('            ' + paint(OCEAN, 'add --all for every finding, --thorough for the deepest model'));
+  console.log(
+    '    ' + paint(`1;${LEMON}`, 'Agent:') + '  ' + paint(SKY, 'datapitfalls scan --json <file>') + '  machine-readable findings'
+  );
+  console.log('            ' + paint(OCEAN, 'add --ci to exit non-zero when a blocking pitfall is found'));
+  console.log();
+  console.log('  ' + paint(OCEAN, `Run datapitfalls --help for the full command list · v${VERSION}`));
+  console.log('  ' + paint(IRON, 'Made by Data Literacy · github.com/bjonesdataliteracy/datapitfalls'));
+  console.log();
+}
+
 function printStats(): void {
   const counts = ruleCountsByDomain();
   console.log(`datapitfalls v${VERSION} — ${ruleCount()} rules across ${DOMAINS.length} domains\n`);
@@ -93,11 +183,19 @@ async function main(): Promise<void> {
   const [command, ...args] = process.argv.slice(2);
 
   switch (command) {
+    case undefined:
+      printSplash();
+      break;
     case 'stats':
       printStats();
       break;
     case 'scan':
       await scan(args);
+      break;
+    case 'help':
+    case '--help':
+    case '-h':
+      printHelp();
       break;
     default:
       printHelp();

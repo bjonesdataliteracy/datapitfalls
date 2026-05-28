@@ -6,7 +6,7 @@
  * as the project moves through the phases described in ROADMAP.md.
  */
 
-export const VERSION = '0.1.0';
+export const VERSION = '0.2.0';
 
 export const TAGLINE = 'Helping you steer clear of common blunders when working with data.';
 
