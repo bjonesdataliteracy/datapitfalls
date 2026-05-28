@@ -12,11 +12,42 @@ const useColor = Boolean(process.stdout.isTTY) && !process.env.NO_COLOR;
 const LEMON = '38;2;226;229;35'; // Electric Lemon #E2E523
 const OCEAN = '38;2;31;134;182'; // Ocean Blue     #1F86B6
 const SKY = '38;2;105;223;250'; // Sky Blue       #69DFFA
-const WHITE = '38;2;243;253;255'; // Floral White  #F3FDFF
 const IRON = '38;2;60;55;68'; // Iron Gray      #3C3744
 const RESET_CODE = '\x1b[0m';
 
-const paint = (code: string, s: string): string => (useColor ? `\x1b[${code}m${s}${RESET_CODE}` : s);
+const paint = (code: string, s: string): string => (useColor && code ? `\x1b[${code}m${s}${RESET_CODE}` : s);
+const dim = (s: string): string => (useColor ? `\x1b[2m${s}${RESET_CODE}` : s);
+
+// Accent roles per terminal background. Body text is never colored — it uses the
+// terminal's own foreground, so it stays readable on light or dark. A dark terminal
+// gets the bright brand colors; a light one, the darker members of the palette.
+interface Theme {
+  face: string;
+  bevel: string;
+  heading: string;
+  label: string;
+  command: string;
+  hint: string;
+  border: string;
+}
+const DARK_THEME: Theme = {
+  face: LEMON,
+  bevel: OCEAN,
+  heading: `1;${SKY}`,
+  label: `1;${LEMON}`,
+  command: SKY,
+  hint: OCEAN,
+  border: OCEAN,
+};
+const LIGHT_THEME: Theme = {
+  face: OCEAN,
+  bevel: IRON,
+  heading: `1;${OCEAN}`,
+  label: `1;${OCEAN}`,
+  command: OCEAN,
+  hint: IRON,
+  border: IRON,
+};
 
 // "DATA" stacked over "PITFALLS" — figlet "ANSI Shadow", colored two-tone for a
 // retro extruded look (bright face + dark bevel). Rendered once and embedded.
@@ -35,9 +66,9 @@ const WORDMARK = [
   '╚═╝     ╚═╝   ╚═╝   ╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝',
 ];
 
-// Two-tone the block art: solid █ faces in Electric Lemon, the ╗╝║═ bevel edges
-// in Ocean Blue, so the letters look extruded.
-function colorizeWordmark(line: string): string {
+// Two-tone the block art: solid █ faces in one color, the ╗╝║═ bevel edges in
+// another, so the letters look extruded.
+function colorizeWordmark(line: string, face: string, bevel: string): string {
   if (!useColor) return line;
   let out = '';
   let cur = '';
@@ -50,7 +81,7 @@ function colorizeWordmark(line: string): string {
       out += ' ';
       continue;
     }
-    const want = ch === '█' ? LEMON : OCEAN;
+    const want = ch === '█' ? face : bevel;
     if (want !== cur) {
       out += `\x1b[${want}m`;
       cur = want;
@@ -60,7 +91,7 @@ function colorizeWordmark(line: string): string {
   return cur !== '' ? out + RESET_CODE : out;
 }
 
-function introBox(): string {
+function introBox(border: string): string {
   const width = 70;
   const lines = [
     'Catch data pitfalls in any data work — a chart, a code file, a',
@@ -68,32 +99,89 @@ function introBox(): string {
     'Get back what is wrong, why it matters, and how to fix it.',
   ];
   const horiz = '─'.repeat(width - 2);
-  const edge = (s: string): string => paint(IRON, s);
-  const body = lines.map((l) => '  ' + edge('│') + ' ' + paint(WHITE, l.padEnd(width - 4)) + ' ' + edge('│'));
+  const edge = (s: string): string => paint(border, s);
+  const body = lines.map((l) => '  ' + edge('│') + ' ' + l.padEnd(width - 4) + ' ' + edge('│'));
   return ['  ' + edge('╭' + horiz + '╮'), ...body, '  ' + edge('╰' + horiz + '╯')].join('\n');
 }
 
-function printSplash(): void {
+function printSplash(theme: Theme): void {
   console.log();
-  for (const line of WORDMARK) console.log('  ' + colorizeWordmark(line));
+  for (const line of WORDMARK) console.log('  ' + colorizeWordmark(line, theme.face, theme.bevel));
   console.log();
-  console.log('  ' + paint(WHITE, 'Check the data work of humans and AI alike for the pitfalls that mislead.'));
+  console.log('  Check the data work of humans and AI alike for the pitfalls that mislead.');
   console.log();
-  console.log(introBox());
+  console.log(introBox(theme.border));
   console.log();
-  console.log('  ' + paint(`1;${SKY}`, 'Getting Started:'));
+  console.log('  ' + paint(theme.heading, 'Getting Started:'));
   console.log(
-    '    ' + paint(`1;${LEMON}`, 'Human:') + '  ' + paint(SKY, 'datapitfalls scan <file>') + '  scan a chart, code, report, or description'
+    '    ' + paint(theme.label, 'Human:') + '  ' + paint(theme.command, 'datapitfalls scan <file>') + '  scan a chart, code, report, or description'
   );
-  console.log('            ' + paint(OCEAN, 'add --all for every finding, --thorough for the deepest model'));
+  console.log('            ' + paint(theme.hint, 'add --all for every finding, --thorough for the deepest model'));
   console.log(
-    '    ' + paint(`1;${LEMON}`, 'Agent:') + '  ' + paint(SKY, 'datapitfalls scan --json <file>') + '  machine-readable findings'
+    '    ' + paint(theme.label, 'Agent:') + '  ' + paint(theme.command, 'datapitfalls scan --json <file>') + '  machine-readable findings'
   );
-  console.log('            ' + paint(OCEAN, 'add --ci to exit non-zero when a blocking pitfall is found'));
+  console.log('            ' + paint(theme.hint, 'add --ci to exit non-zero when a blocking pitfall is found'));
   console.log();
-  console.log('  ' + paint(OCEAN, `Run datapitfalls --help for the full command list · v${VERSION}`));
-  console.log('  ' + paint(IRON, 'Made by Data Literacy · github.com/bjonesdataliteracy/datapitfalls'));
+  console.log('  ' + paint(theme.hint, `Run datapitfalls --help for the full command list · v${VERSION}`));
+  console.log('  ' + dim('Made by Data Literacy · github.com/bjonesdataliteracy/datapitfalls'));
   console.log();
+}
+
+// Best-effort terminal-background detection so the splash adapts. Order: explicit
+// DATAPITFALLS_THEME override, the COLORFGBG env var, then an OSC 11 query with a
+// short timeout. Falls back to the dark theme.
+type ThemeName = 'light' | 'dark';
+
+function queryBackgroundColor(): Promise<ThemeName> {
+  return new Promise((resolve) => {
+    const stdin = process.stdin;
+    let buf = '';
+    let settled = false;
+    const finish = (name: ThemeName): void => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      stdin.removeListener('data', onData);
+      try {
+        stdin.setRawMode(false);
+      } catch {
+        /* not a raw-capable TTY */
+      }
+      stdin.pause();
+      resolve(name);
+    };
+    const onData = (chunk: Buffer): void => {
+      buf += chunk.toString('latin1');
+      const m = buf.match(/rgb:([0-9a-fA-F]{2,4})\/([0-9a-fA-F]{2,4})\/([0-9a-fA-F]{2,4})/);
+      if (!m) return;
+      const [, r, g, b] = m;
+      if (r === undefined || g === undefined || b === undefined) return;
+      const hi = (h: string): number => parseInt(h.slice(0, 2), 16);
+      const luminance = (0.2126 * hi(r) + 0.7152 * hi(g) + 0.0722 * hi(b)) / 255;
+      finish(luminance > 0.5 ? 'light' : 'dark');
+    };
+    const timer = setTimeout(() => finish('dark'), 150);
+    try {
+      stdin.setRawMode(true);
+      stdin.resume();
+      stdin.on('data', onData);
+      process.stdout.write('\x1b]11;?\x07');
+    } catch {
+      finish('dark');
+    }
+  });
+}
+
+async function detectTheme(): Promise<Theme> {
+  const override = process.env.DATAPITFALLS_THEME;
+  let name: ThemeName | undefined =
+    override === 'light' || override === 'dark' ? override : undefined;
+  if (!name && process.env.COLORFGBG) {
+    const bg = Number(process.env.COLORFGBG.split(';').pop());
+    if (!Number.isNaN(bg)) name = bg === 7 || bg === 15 ? 'light' : 'dark';
+  }
+  if (!name) name = useColor && process.stdin.isTTY ? await queryBackgroundColor() : 'dark';
+  return name === 'light' ? LIGHT_THEME : DARK_THEME;
 }
 
 function printStats(): void {
@@ -119,7 +207,7 @@ function printHelp(): void {
       '    --ci                           Exit non-zero if an active error/warning is found\n' +
       '\nImage files (.png/.jpg/.jpeg/.gif/.webp) are scanned with Claude Vision; pass several to\n' +
       'scan them as a set. PDFs (.pdf) are read as native documents (prose + charts/tables), Word\n' +
-      'docs (.docx) are read as prose, and notebooks (.ipynb) are audited as their extracted code.\n' +
+      'docs (.docx) are read as prose, and notebooks (.ipynb) are scanned as their extracted code.\n' +
       '\nThe scan command needs an Anthropic API key in ANTHROPIC_API_KEY.\n' +
       'Default model is claude-sonnet-4-6; override with --thorough, --fast, or ANTHROPIC_MODEL.'
   );
@@ -184,7 +272,7 @@ async function main(): Promise<void> {
 
   switch (command) {
     case undefined:
-      printSplash();
+      printSplash(await detectTheme());
       break;
     case 'stats':
       printStats();
