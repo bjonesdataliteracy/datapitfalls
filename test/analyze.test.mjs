@@ -138,3 +138,29 @@ test('the domains option overrides rule selection', async () => {
   });
   assert.equal(report.rulesConsidered, getRulesByDomain('Statistical Slip-Ups').length);
 });
+
+test('a chain scans every stage together, grounded on the full catalog', async () => {
+  const client = fakeClient([]);
+  const report = await detectPitfalls(
+    {
+      kind: 'chain',
+      stages: [
+        { role: 'Code (Python): prep.py', artifact: { kind: 'code', content: 'df.dropna().mean()', language: 'Python' } },
+        { role: 'Chart: revenue.png', artifact: { kind: 'image', images: [{ content: 'AAAA', mediaType: 'image/png', filename: 'revenue.png' }] } },
+        { role: 'Written summary', artifact: { kind: 'text', content: 'The typical customer is worth $4,200.' } },
+      ],
+    },
+    { client }
+  );
+
+  // Chains ground on the whole catalog (unlike a lone chart).
+  assert.equal(report.kind, 'chain');
+  assert.equal(report.rulesConsidered, getAllRules().length);
+
+  // The chain system prompt and a per-stage layout (headers + the chart image) are sent.
+  assert.match(client.calls[0].system[0].text, /analytics workflow/);
+  const content = client.calls[0].messages[0].content;
+  const headers = content.filter((b) => b.type === 'text' && b.text.startsWith('=== Stage '));
+  assert.equal(headers.length, 3);
+  assert.equal(content.filter((b) => b.type === 'image').length, 1);
+});

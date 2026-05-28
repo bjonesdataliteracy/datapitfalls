@@ -9,7 +9,7 @@
 
 import { imageMediaTypeForExtension } from './analyze.js';
 import { extractSlides } from './pptx.js';
-import type { DetectionInput, ImageMediaType, ImageSource } from './analyze.js';
+import type { ChainStage, ImageMediaType, ImageSource, SingleArtifactInput } from './analyze.js';
 
 /** Raw file bytes plus the little metadata we route on. */
 export interface FileInput {
@@ -23,7 +23,7 @@ export interface FileInput {
 export type FileInputErrorReason = 'empty' | 'too_large' | 'unsupported' | 'unreadable';
 
 export type FileInputResult =
-  | { input: DetectionInput }
+  | { input: SingleArtifactInput }
   | { error: string; reason: FileInputErrorReason };
 
 export interface FileInputOptions {
@@ -273,4 +273,35 @@ export async function filesToInput(
   const first = files[0];
   if (!first) return { error: 'No file was provided.', reason: 'unsupported' };
   return fileToInput(first, opts);
+}
+
+function roleFor(input: SingleArtifactInput, filename: string): string {
+  const where = filename ? `: ${filename}` : '';
+  switch (input.kind) {
+    case 'code':
+      return `Code${input.language ? ` (${input.language})` : ''}${where}`;
+    case 'image':
+      return `${input.images.length > 1 ? 'Charts' : 'Chart'}${where}`;
+    case 'document':
+      return `Document${where}`;
+    case 'slides':
+      return `Slide deck${where}`;
+    case 'text':
+      return `Written analysis${where}`;
+  }
+}
+
+/** Read one file into a chain stage — its artifact plus an auto-derived role label. */
+export async function fileToStage(
+  file: FileInput,
+  opts: FileInputOptions = {}
+): Promise<{ stage: ChainStage } | { error: string; reason: FileInputErrorReason }> {
+  const result = await fileToInput(file, { fallbackKind: 'code', ...opts });
+  if ('error' in result) return result;
+  return { stage: { role: roleFor(result.input, file.filename), artifact: result.input } };
+}
+
+/** A free-text chain stage (e.g. a pasted written summary or key claim). */
+export function textStage(content: string, role = 'Written analysis'): ChainStage {
+  return { role, artifact: { kind: 'text', content } };
 }
