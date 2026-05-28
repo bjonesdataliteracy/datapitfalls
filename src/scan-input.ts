@@ -7,6 +7,7 @@
 import { readFileSync } from 'node:fs';
 import { basename, extname } from 'node:path';
 import { imageMediaTypeForExtension } from './analyze.js';
+import { extractSlides } from './pptx.js';
 import type { DetectionInput, ImageSource } from './analyze.js';
 
 const EXT_LANGUAGE: Record<string, string> = {
@@ -85,6 +86,20 @@ async function docxToInput(file: string): Promise<ScanInput> {
   }
 }
 
+/** A PowerPoint deck → its slides (text + chart images). */
+function pptxToInput(file: string): ScanInput {
+  let buffer: Buffer;
+  try {
+    buffer = readFileSync(file);
+  } catch {
+    return { error: `Could not read file: ${file}` };
+  }
+  const result = extractSlides(buffer);
+  if ('error' in result) return result;
+  if (result.slides.length === 0) return { error: `No slides found in ${file}.` };
+  return { input: { kind: 'slides', slides: result.slides, filename: basename(file) } };
+}
+
 /** Turn one or more file paths into an analysis input, or describe what went wrong. */
 export async function buildScanInput(files: string[], forceText: boolean): Promise<ScanInput> {
   // Several files: audit them together as a set of chart images.
@@ -130,6 +145,8 @@ export async function buildScanInput(files: string[], forceText: boolean): Promi
     }
     // Word document → extract text, audit as prose.
     if (ext === '.docx') return docxToInput(file);
+    // PowerPoint deck → per-slide text + chart images.
+    if (ext === '.pptx') return pptxToInput(file);
     // Jupyter notebook → audit its extracted code cells.
     if (ext === '.ipynb') return notebookToInput(file);
   }

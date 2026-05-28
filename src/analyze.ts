@@ -10,7 +10,7 @@ import { getAllRules, getRule, getRulesByDomain } from './taxonomy/index.js';
 import type { Domain, PitfallRule, Severity } from './taxonomy/index.js';
 
 /** The kind of artifact being audited. */
-export type InputKind = 'code' | 'text' | 'image' | 'document';
+export type InputKind = 'code' | 'text' | 'image' | 'document' | 'slides';
 
 /** Image media types Claude Vision accepts (matches the SDK's base64 image source). */
 export type ImageMediaType = 'image/png' | 'image/jpeg' | 'image/gif' | 'image/webp';
@@ -58,7 +58,28 @@ export interface DocumentDetectionInput {
   filename?: string;
 }
 
-export type DetectionInput = TextDetectionInput | ImageDetectionInput | DocumentDetectionInput;
+/** One slide's extracted content: its text and any chart/images on it. */
+export interface SlideContent {
+  /** The slide's visible text (titles, bullets, labels). */
+  text: string;
+  /** Chart/screenshot images embedded on the slide. */
+  images: ImageSource[];
+}
+
+/** A slide deck (PPTX) extracted to per-slide text and chart images, so both the
+ *  written claims and the charts on each slide are reviewed. */
+export interface SlidesDetectionInput {
+  kind: 'slides';
+  slides: SlideContent[];
+  /** Optional source filename, surfaced to the model for context. */
+  filename?: string;
+}
+
+export type DetectionInput =
+  | TextDetectionInput
+  | ImageDetectionInput
+  | DocumentDetectionInput
+  | SlidesDetectionInput;
 
 /** Map a file extension (with leading dot, any case) to a Vision media type. */
 export function imageMediaTypeForExtension(ext: string): ImageMediaType | undefined {
@@ -321,6 +342,30 @@ function buildUserContent(input: DetectionInput): Anthropic.MessageParam['conten
       },
     ];
   }
+  if (input.kind === 'slides') {
+    const where = input.filename ? ` (${input.filename})` : '';
+    const content: Anthropic.ContentBlockParam[] = [
+      {
+        type: 'text',
+        text:
+          `You are given the contents of a slide deck${where}, slide by slide — the text on each ` +
+          `slide and any charts or images it contains. Review the whole deck for data pitfalls from ` +
+          `the catalog: the claims in the slide text and the charts themselves. In each finding's ` +
+          `evidence, name the slide it refers to (e.g. "Slide 3"). Report them via the report_findings tool.`,
+      },
+    ];
+    input.slides.forEach((slide, i) => {
+      const text = slide.text.trim();
+      content.push({ type: 'text', text: `--- Slide ${i + 1} ---${text ? `\n${text}` : ' (no text)'}` });
+      for (const img of slide.images) {
+        content.push({
+          type: 'image',
+          source: { type: 'base64', media_type: img.mediaType, data: img.content },
+        });
+      }
+    });
+    return content;
+  }
   return (
     `Review the following ${describeInput(input)} for data pitfalls from the catalog.\n\n` +
     `<artifact>\n${input.content}\n</artifact>`
@@ -392,7 +437,7 @@ export async function detectPitfalls(
   const instructions =
     input.kind === 'image'
       ? IMAGE_SYSTEM_INSTRUCTIONS
-      : input.kind === 'document'
+      : input.kind === 'document' || input.kind === 'slides'
         ? DOCUMENT_SYSTEM_INSTRUCTIONS
         : SYSTEM_INSTRUCTIONS;
   const taxonomyBlock = `# Pitfall catalog (${rules.length} rules)\n\n${serializeRules(rules)}`;

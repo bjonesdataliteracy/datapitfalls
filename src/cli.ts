@@ -207,7 +207,8 @@ function printHelp(): void {
       '    --ci                           Exit non-zero if an active error/warning is found\n' +
       '\nImage files (.png/.jpg/.jpeg/.gif/.webp) are scanned with Claude Vision; pass several to\n' +
       'scan them as a set. PDFs (.pdf) are read as native documents (prose + charts/tables), Word\n' +
-      'docs (.docx) are read as prose, and notebooks (.ipynb) are scanned as their extracted code.\n' +
+      'docs (.docx) as prose, slide decks (.pptx) as per-slide text + charts, and notebooks\n' +
+      '(.ipynb) as their extracted code.\n' +
       '\nThe scan command needs an Anthropic API key in ANTHROPIC_API_KEY.\n' +
       'Default model is claude-sonnet-4-6; override with --thorough, --fast, or ANTHROPIC_MODEL.\n' +
       '\nThe splash adapts to your terminal background; force it with --theme <light|dark>\n' +

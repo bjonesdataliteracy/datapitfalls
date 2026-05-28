@@ -79,7 +79,13 @@ export function formatReport(report: PitfallReport, options: ReportFormatOptions
 
   if (active.length > 0) {
     const source =
-      report.kind === 'image' ? 'chart' : report.kind === 'document' ? 'document' : 'code/description';
+      report.kind === 'image'
+        ? 'chart'
+        : report.kind === 'document'
+          ? 'document'
+          : report.kind === 'slides'
+            ? 'slide deck'
+            : 'code/description';
     lines.push(`Active — evident from the ${source}:`);
     lines.push('');
     for (const finding of active) renderFinding(finding, lines);
