@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ChangeEvent, DragEvent, FormEvent } from 'react';
-import type { AuditReport, Finding } from 'datapitfalls';
+import type { PitfallReport, Finding } from 'datapitfalls';
 
 type Mode = 'image' | 'text' | 'code';
 
@@ -10,7 +10,7 @@ type State =
   | { status: 'idle' }
   | { status: 'loading' }
   | { status: 'error'; message: string }
-  | { status: 'done'; report: AuditReport };
+  | { status: 'done'; report: PitfallReport };
 
 const MODES: { id: Mode; label: string }[] = [
   { id: 'image', label: 'Chart image' },
@@ -160,12 +160,12 @@ export default function Home() {
     setState({ status: 'loading' });
     try {
       const res = await fetch('/api/audit', request);
-      const data = (await res.json()) as AuditReport | { error: string };
+      const data = (await res.json()) as PitfallReport | { error: string };
       if (!res.ok) {
-        setState({ status: 'error', message: 'error' in data ? data.error : 'The audit failed.' });
+        setState({ status: 'error', message: 'error' in data ? data.error : 'The scan failed.' });
         return;
       }
-      setState({ status: 'done', report: data as AuditReport });
+      setState({ status: 'done', report: data as PitfallReport });
     } catch {
       setState({ status: 'error', message: 'Network error — please try again.' });
     }
@@ -176,15 +176,16 @@ export default function Home() {
       <header className="masthead">
         <h1>datapitfalls</h1>
         <p className="tagline">
-          Audit your data work — a chart (or several at once), a written analysis, analysis code, or
-          a whole document — for the common pitfalls that mislead even seasoned practitioners.
+          Detect the common data pitfalls in your work — a chart (or several at once), a written
+          analysis, analysis code, or a whole document — before they mislead even seasoned
+          practitioners.
         </p>
         <p className="subtag">
           Grounded in the taxonomy from{' '}
           <a href="https://www.avoidingdatapitfalls.com" target="_blank" rel="noreferrer">
             <em>Avoiding Data Pitfalls</em>
           </a>
-          , across all eight audit domains.{' '}
+          , across all eight pitfall domains.{' '}
           <a href="https://github.com/bjonesdataliteracy/datapitfalls" target="_blank" rel="noreferrer">
             Open source on GitHub
           </a>
@@ -304,7 +305,7 @@ export default function Home() {
         )}
 
         <button type="submit" disabled={state.status === 'loading'}>
-          {state.status === 'loading' ? 'Auditing…' : 'Audit'}
+          {state.status === 'loading' ? 'Detecting…' : 'Detect pitfalls'}
         </button>
       </form>
 
@@ -349,7 +350,7 @@ function fileBody(file: File, mode: Mode): FormData {
   return body;
 }
 
-function Results({ report }: { report: AuditReport }) {
+function Results({ report }: { report: PitfallReport }) {
   const active = report.findings.filter((f) => f.nature === 'active');
   const latent = report.findings.filter((f) => f.nature === 'latent');
 

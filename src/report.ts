@@ -1,7 +1,7 @@
-// datapitfalls — audit report formatting
+// datapitfalls — pitfall report formatting
 
 import type { Severity } from './taxonomy/index.js';
-import type { AuditReport, Finding } from './analyze.js';
+import type { PitfallReport, Finding } from './analyze.js';
 
 const SEVERITY_RANK: Record<Severity, number> = { error: 0, warning: 1, info: 2 };
 const SEVERITY_LABEL: Record<Severity, string> = {
@@ -25,7 +25,7 @@ function bySeverity(a: Finding, b: Finding): number {
  * active (evident from the artifact, not data-dependent) and severity error or
  * warning. Info-level advisories and all latent findings do not fail the build.
  */
-export function hasBlockingFindings(report: AuditReport): boolean {
+export function hasBlockingFindings(report: PitfallReport): boolean {
   return report.findings.some((f) => f.nature === 'active' && f.severity !== 'info');
 }
 
@@ -48,13 +48,13 @@ export interface ReportFormatOptions {
 }
 
 /**
- * Render an audit report as plain text for the terminal.
+ * Render a pitfall report as plain text for the terminal.
  *
  * By default this shows all active findings plus only high-confidence latent
  * findings — latent findings fire on almost any real code, so the lower-confidence
  * ones are hidden as noise unless `showAll` is set.
  */
-export function formatReport(report: AuditReport, options: ReportFormatOptions = {}): string {
+export function formatReport(report: PitfallReport, options: ReportFormatOptions = {}): string {
   const showAll = options.showAll ?? false;
 
   const active = report.findings.filter((f) => f.nature === 'active').sort(bySeverity);

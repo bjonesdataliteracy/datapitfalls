@@ -16,7 +16,7 @@
 
 ## What is this?
 
-**datapitfalls** is an open-source tool that audits your data work for the common blunders that trip up even seasoned practitioners — and its pitfall taxonomy spans the *entire* data reasoning chain, from the question you start with to the chart you finish with, not just the final pixels.
+**datapitfalls** is an open-source tool that detects the common blunders in your data work that trip up even seasoned practitioners — and its pitfall taxonomy spans the *entire* data reasoning chain, from the question you start with to the chart you finish with, not just the final pixels.
 
 Most "chart linters" stop at the pixels: they'll tell you your axis is truncated or your colors fail a contrast check. That's useful, but it's a sliver of where data work actually goes wrong. The most consequential mistakes happen *upstream* — in how a question is framed, how data is collected, how it's transformed, how it's analyzed, and how the results are finally interpreted and communicated. A perfectly formatted chart built on a cherry-picked timeframe is still misleading. A flawless SQL query that silently drops nulls still lies.
 
@@ -26,13 +26,13 @@ Its pitfall catalog spans the whole chain:
 
 It's powered by the [Claude API](https://www.anthropic.com/) and grounded in the pitfall taxonomy from the book [*Avoiding Data Pitfalls*](https://www.avoidingdatapitfalls.com) (Wiley) by Ben Jones. Give it a chart, a code snippet, a plain-English description of your analysis, or a whole report — and it returns a structured audit that names the pitfalls, explains *why* they matter, and tells you how to fix them.
 
-Today you audit one piece at a time — a chart (or several together), a code snippet, a description, or a single document (a PDF report is read end-to-end, prose and charts alike). Auditing a connected, multi-stage workflow as one linked chain is on the [roadmap](ROADMAP.md).
+Today you scan one piece at a time — a chart (or several together), a code snippet, a description, or a single document (a PDF report is read end-to-end, prose and charts alike). Detecting pitfalls across a connected, multi-stage workflow as one linked chain is on the [roadmap](ROADMAP.md).
 
 This is not a style checker. It's a thinking partner for anyone who wants to work with data more honestly.
 
 ---
 
-## The 8 Audit Domains
+## The 8 Pitfall Domains
 
 datapitfalls organizes every pitfall into one of eight domains — the pitfall categories from *Avoiding Data Pitfalls*. Together they span the full arc of a data project.
 
@@ -78,7 +78,7 @@ datapitfalls organizes every pitfall into one of eight domains — the pitfall c
 
 ## Quick Start
 
-datapitfalls is designed around **four input modes**, so you can audit your work at whatever stage you're in.
+datapitfalls is designed around **four input modes**, so you can scan your work at whatever stage you're in.
 
 > ⚠️ **Status:** The datapitfalls **analysis engine is live**, and you can use it two ways. The **command line** audits chart images, code snippets, and plain-English descriptions (modes 1–3 below), with a `--ci` exit code for pipelines. A **web app** (in [`web/`](web/)) does all of that in the browser and adds **document upload** — PDF read natively (so Claude audits the prose *and* the charts and tables), Word `.docx`, Jupyter notebooks, and code files — plus **multi-chart audits** that compare several charts at once. The web app is per-IP rate-limited, and your input is sent to the Claude API to run the audit but isn't stored by the app. Install the CLI and engine with `npm install datapitfalls`, or run the web app locally with `cd web && npm run dev`. Still planned: a public site at [avoidingdatapitfalls.com](https://www.avoidingdatapitfalls.com) and slide-deck (PPTX) support — see the [Roadmap](ROADMAP.md).
 
@@ -114,7 +114,7 @@ datapitfalls recognizes the survivorship bias hiding in that sentence.
 
 ### 4. Upload a report — or several charts at once (web app)
 
-In the web app, drop in a **PDF report** and Claude audits the whole thing in context — the written claims *and* the charts and tables on the page (Word `.docx`, Jupyter notebooks, and code files work too). Or add **several chart images** together for a multi-chart audit that catches pitfalls across them: inconsistent scales, inconsistent encodings, and contradictory messages.
+In the web app, drop in a **PDF report** and Claude scans the whole thing in context — the written claims *and* the charts and tables on the page (Word `.docx`, Jupyter notebooks, and code files work too). Or add **several chart images** together for a multi-chart scan that catches pitfalls across them: inconsistent scales, inconsistent encodings, and contradictory messages.
 
 ---
 
@@ -143,7 +143,7 @@ export ANTHROPIC_API_KEY="sk-ant-..."
 ```
    ┌──────────────┐     ┌──────────────────┐     ┌──────────────┐     ┌──────────────────┐
    │  Your input  │ ──▶ │  Pitfall         │ ──▶ │  Claude API  │ ──▶ │  Structured      │
-   │              │     │  taxonomy lookup │     │  analysis    │     │  audit report    │
+   │              │     │  taxonomy lookup │     │  analysis    │     │  pitfall report  │
    │  chart       │     │                  │     │              │     │                  │
    │  code        │     │  retrieve the    │     │  reason over │     │  pitfalls found, │
    │  description │     │  relevant rules  │     │  input +     │     │  severity, why   │
@@ -152,9 +152,9 @@ export ANTHROPIC_API_KEY="sk-ant-..."
 ```
 
 1. **You provide input** — a chart, a code snippet, a description, or a document.
-2. **Taxonomy lookup** — datapitfalls pulls the relevant pitfall rules from its catalog of eight audit domains.
+2. **Taxonomy lookup** — datapitfalls pulls the relevant pitfall rules from its catalog of eight pitfall domains.
 3. **Claude API analysis** — Claude reasons over your input *and* the pitfall taxonomy, grounded in the knowledge from *Avoiding Data Pitfalls*.
-4. **Structured audit report** — you get back a clear, prioritized list of pitfalls: what was found, how severe it is, why it matters, and how to fix it.
+4. **Structured pitfall report** — you get back a clear, prioritized list of pitfalls: what was found, how severe it is, why it matters, and how to fix it.
 
 For the full technical picture, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 

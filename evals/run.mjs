@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // datapitfalls eval harness — DEV ONLY benchmark, not part of the shipped tool.
 //
-// Runs analyze() over every fixture in evals/fixtures and scores it against the
+// Runs detectPitfalls() over every fixture in evals/fixtures and scores it against the
 // fixture's expected findings (precision / recall / F1 / active-latent
 // calibration). Use it to compare models and catch regressions when the prompt
 // or catalog changes. It calls the API, so it costs money.
@@ -18,7 +18,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join, dirname, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { analyze } from '../dist/index.js';
+import { detectPitfalls } from '../dist/index.js';
 import { scoreRun, ratio, estimateCostUsd } from './score.mjs';
 
 const fixturesDir = join(dirname(fileURLToPath(import.meta.url)), 'fixtures');
@@ -69,7 +69,7 @@ async function evaluateModel(model, fixtures, repeats) {
     const acc = { tp: 0, fn: 0, activeOff: 0, latentOff: 0 };
     let lastFound = [];
     for (let r = 0; r < repeats; r++) {
-      const report = await analyze(
+      const report = await detectPitfalls(
         {
           content: fx.content,
           kind: 'code',

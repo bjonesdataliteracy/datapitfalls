@@ -1,7 +1,7 @@
-// datapitfalls — analysis engine
+// datapitfalls — pitfall-detection engine
 //
-// Audits a piece of data work (code, or a plain-English description) against the
-// pitfall catalog by grounding Claude on the relevant rules and collecting
+// Detects the data pitfalls in a piece of data work (code, or a plain-English
+// description) against the pitfall catalog by grounding Claude on the relevant rules and collecting
 // structured findings via a forced tool call. Rule ids in the model's output are
 // validated against the catalog, so a finding can only ever reference a real rule.
 
@@ -16,7 +16,7 @@ export type InputKind = 'code' | 'text' | 'image' | 'document';
 export type ImageMediaType = 'image/png' | 'image/jpeg' | 'image/gif' | 'image/webp';
 
 /** A code file or plain-English analysis description. */
-export interface TextAnalyzeInput {
+export interface TextDetectionInput {
   /** Whether `content` is source code or a plain-English analysis description. */
   kind: 'code' | 'text';
   /** The raw artifact to audit. */
@@ -41,14 +41,14 @@ export interface ImageSource {
  *  they are audited together, so pitfalls that only emerge across charts —
  *  inconsistent scales, inconsistent encodings, contradictory messages — can be
  *  detected. */
-export interface ImageAnalyzeInput {
+export interface ImageDetectionInput {
   kind: 'image';
   images: ImageSource[];
 }
 
 /** A PDF report, sent to Claude as a document so it reads the prose *and* sees
  *  the charts and tables on the page. */
-export interface DocumentAnalyzeInput {
+export interface DocumentDetectionInput {
   kind: 'document';
   /** Base64-encoded document bytes. */
   content: string;
@@ -58,7 +58,7 @@ export interface DocumentAnalyzeInput {
   filename?: string;
 }
 
-export type AnalyzeInput = TextAnalyzeInput | ImageAnalyzeInput | DocumentAnalyzeInput;
+export type DetectionInput = TextDetectionInput | ImageDetectionInput | DocumentDetectionInput;
 
 /** Map a file extension (with leading dot, any case) to a Vision media type. */
 export function imageMediaTypeForExtension(ext: string): ImageMediaType | undefined {
@@ -80,7 +80,7 @@ export function imageMediaTypeForExtension(ext: string): ImageMediaType | undefi
 export type Confidence = 'low' | 'medium' | 'high';
 
 /** Whether a pitfall is evident from the artifact itself ("active") or is a risky
- *  pattern whose impact depends on data the auditor can't see ("latent"). */
+ *  pattern whose impact depends on data the detector can't see ("latent"). */
 export type FindingNature = 'active' | 'latent';
 
 /** One detected pitfall. Catalog fields (name/domain/severity/remediation) are
@@ -100,23 +100,23 @@ export interface Finding {
   remediation: string;
 }
 
-export interface AuditUsage {
+export interface DetectionUsage {
   inputTokens: number;
   outputTokens: number;
   cacheReadInputTokens: number;
   cacheCreationInputTokens: number;
 }
 
-export interface AuditReport {
+export interface PitfallReport {
   findings: Finding[];
-  /** The kind of artifact that was audited, for report phrasing. */
+  /** The kind of artifact that was scanned, for report phrasing. */
   kind: InputKind;
   model: string;
   rulesConsidered: number;
-  usage?: AuditUsage;
+  usage?: DetectionUsage;
 }
 
-export interface AnalyzeOptions {
+export interface DetectionOptions {
   /** Model id. Defaults to ANTHROPIC_MODEL, then claude-sonnet-4-6. */
   model?: string;
   /** API key. Defaults to the ANTHROPIC_API_KEY environment variable. */
@@ -134,7 +134,7 @@ export interface AnalyzeOptions {
 // (Opus, --thorough; Haiku 4.5, --fast).
 export const DEFAULT_MODEL = 'claude-sonnet-4-6';
 
-const SYSTEM_INSTRUCTIONS = `You are datapitfalls, an auditor that reviews data work for known data pitfalls.
+const SYSTEM_INSTRUCTIONS = `You are datapitfalls, a pitfall detector that reviews data work for known data pitfalls.
 
 You are given an artifact — source code or a plain-English description of a data analysis — and a catalog of pitfall rules. Identify which pitfalls from the catalog the artifact actually exhibits.
 
@@ -151,7 +151,7 @@ Rules of engagement:
 
 Return your results by calling the report_findings tool.`;
 
-const IMAGE_SYSTEM_INSTRUCTIONS = `You are datapitfalls, an auditor that reviews data visualizations for known data pitfalls.
+const IMAGE_SYSTEM_INSTRUCTIONS = `You are datapitfalls, a pitfall detector that reviews data visualizations for known data pitfalls.
 
 You are shown one or more chart images — and a catalog of pitfall rules. Identify which pitfalls from the catalog the charts actually exhibit.
 
@@ -169,9 +169,9 @@ Rules of engagement:
 
 Return your results by calling the report_findings tool.`;
 
-const DOCUMENT_SYSTEM_INSTRUCTIONS = `You are datapitfalls, an auditor that reviews data work for known data pitfalls.
+const DOCUMENT_SYSTEM_INSTRUCTIONS = `You are datapitfalls, a pitfall detector that reviews data work for known data pitfalls.
 
-You are given a report document — which may mix written analysis, tables, and charts — and a catalog of pitfall rules. Audit the whole document: the reasoning and claims in the prose, and any charts or tables it contains. Identify which pitfalls from the catalog the document actually exhibits.
+You are given a report document — which may mix written analysis, tables, and charts — and a catalog of pitfall rules. Review the whole document: the reasoning and claims in the prose, and any charts or tables it contains. Identify which pitfalls from the catalog the document actually exhibits.
 
 You can see the document but not the underlying data or the code that produced it. Many pitfalls are patterns whose real-world impact depends on values you cannot inspect. Classify every finding by its nature:
 - "active": the pitfall is evident from the document itself, regardless of the unseen data (e.g. a chart with a truncated baseline, a mean reported as the "typical" value, a claim that confuses correlation with causation). State these directly.
@@ -188,7 +188,7 @@ Return your results by calling the report_findings tool.`;
 
 const REPORT_TOOL: Anthropic.Tool = {
   name: 'report_findings',
-  description: 'Report the data pitfalls found in the audited artifact.',
+  description: 'Report the data pitfalls found in the artifact.',
   input_schema: {
     type: 'object',
     properties: {
@@ -250,7 +250,7 @@ function serializeRules(rules: readonly PitfallRule[]): string {
     .join('\n');
 }
 
-function describeInput(input: TextAnalyzeInput): string {
+function describeInput(input: TextDetectionInput): string {
   if (input.kind === 'code') {
     const lang = input.language ? ` (${input.language})` : '';
     const file = input.filename ? ` from ${input.filename}` : '';
@@ -265,7 +265,7 @@ function describeInput(input: TextAnalyzeInput): string {
 const IMAGE_DEFAULT_DOMAINS: Domain[] = ['Graphical Gaffes', 'Design Dangers'];
 const IMAGE_EXTRA_RULE_ID = 'data-reality-gap';
 
-function selectRules(input: AnalyzeInput, domains?: Domain[]): PitfallRule[] {
+function selectRules(input: DetectionInput, domains?: Domain[]): PitfallRule[] {
   if (domains) return domains.flatMap((domain) => getRulesByDomain(domain));
   if (input.kind === 'image') {
     const rules = IMAGE_DEFAULT_DOMAINS.flatMap((domain) => getRulesByDomain(domain));
@@ -275,7 +275,7 @@ function selectRules(input: AnalyzeInput, domains?: Domain[]): PitfallRule[] {
   return [...getAllRules()];
 }
 
-function buildUserContent(input: AnalyzeInput): Anthropic.MessageParam['content'] {
+function buildUserContent(input: DetectionInput): Anthropic.MessageParam['content'] {
   if (input.kind === 'image') {
     const images = input.images;
     const multiple = images.length > 1;
@@ -294,7 +294,7 @@ function buildUserContent(input: AnalyzeInput): Anthropic.MessageParam['content'
       type: 'text',
       text: multiple
         ? `These ${images.length} charts are part of one set (e.g. a dashboard or small multiples). ` +
-          `Audit each chart for its own pitfalls, and also check for pitfalls that only emerge across ` +
+          `Review each chart for its own pitfalls, and also check for pitfalls that only emerge across ` +
           `them — inconsistent axis scales/ranges/units that break comparison, the same color/shape/size ` +
           `meaning different things from one chart to the next, or charts whose messages contradict one ` +
           `another. In each finding's evidence, name which chart(s) it refers to (e.g. "Chart 2"). ` +
@@ -315,14 +315,14 @@ function buildUserContent(input: AnalyzeInput): Anthropic.MessageParam['content'
       {
         type: 'text',
         text:
-          `You are given a report document${where}. Audit both its written analysis and any ` +
+          `You are given a report document${where}. Review both its written analysis and any ` +
           `charts or tables it contains for data pitfalls from the catalog, and report them ` +
           `via the report_findings tool.`,
       },
     ];
   }
   return (
-    `Audit the following ${describeInput(input)} for data pitfalls from the catalog.\n\n` +
+    `Review the following ${describeInput(input)} for data pitfalls from the catalog.\n\n` +
     `<artifact>\n${input.content}\n</artifact>`
   );
 }
@@ -374,15 +374,15 @@ function extractFindings(message: Anthropic.Message): Finding[] {
 }
 
 /**
- * Audit an artifact against the pitfall catalog.
+ * Detect the data pitfalls an artifact exhibits, against the pitfall catalog.
  *
  * Requires an Anthropic API key (via options.apiKey, options.client, or the
  * ANTHROPIC_API_KEY environment variable).
  */
-export async function analyze(
-  input: AnalyzeInput,
-  options: AnalyzeOptions = {}
-): Promise<AuditReport> {
+export async function detectPitfalls(
+  input: DetectionInput,
+  options: DetectionOptions = {}
+): Promise<PitfallReport> {
   const rules = selectRules(input, options.domains);
 
   const model = options.model ?? process.env.ANTHROPIC_MODEL ?? DEFAULT_MODEL;

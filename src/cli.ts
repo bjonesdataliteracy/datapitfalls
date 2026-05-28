@@ -2,7 +2,7 @@
 // datapitfalls — command-line entry point
 
 import { DOMAINS, TAGLINE, VERSION, ruleCount, ruleCountsByDomain } from './index.js';
-import { analyze } from './analyze.js';
+import { detectPitfalls } from './analyze.js';
 import { formatReport, hasBlockingFindings } from './report.js';
 import { buildScanInput } from './scan-input.js';
 
@@ -19,16 +19,16 @@ function printHelp(): void {
     `datapitfalls v${VERSION} — ${TAGLINE}\n` +
       'Usage:\n' +
       '  datapitfalls stats               Show the pitfall catalog size by domain\n' +
-      '  datapitfalls scan <file>         Audit a code file, analysis description, chart image, or PDF\n' +
-      '  datapitfalls scan <a.png> <b.png> …  Audit several charts together (cross-chart pitfalls)\n' +
+      '  datapitfalls scan <file>         Scan a code file, analysis description, chart image, or PDF for pitfalls\n' +
+      '  datapitfalls scan <a.png> <b.png> …  Scan several charts together (cross-chart pitfalls)\n' +
       '    --text                         Treat the file as a plain-English analysis description\n' +
       '    --thorough                     Use Opus 4.7 instead of the default Sonnet 4.6\n' +
       '    --fast                         Use Haiku 4.5 (cheapest)\n' +
       '    --all                          Show all findings, incl. lower-confidence latent ones\n' +
       '    --json                         Output the full report as JSON\n' +
       '    --ci                           Exit non-zero if an active error/warning is found\n' +
-      '\nImage files (.png/.jpg/.jpeg/.gif/.webp) are audited with Claude Vision; pass several to\n' +
-      'audit them as a set. PDFs (.pdf) are read as native documents (prose + charts/tables), Word\n' +
+      '\nImage files (.png/.jpg/.jpeg/.gif/.webp) are scanned with Claude Vision; pass several to\n' +
+      'scan them as a set. PDFs (.pdf) are read as native documents (prose + charts/tables), Word\n' +
       'docs (.docx) are read as prose, and notebooks (.ipynb) are audited as their extracted code.\n' +
       '\nThe scan command needs an Anthropic API key in ANTHROPIC_API_KEY.\n' +
       'Default model is claude-sonnet-4-6; override with --thorough, --fast, or ANTHROPIC_MODEL.'
@@ -71,7 +71,7 @@ async function scan(args: string[]): Promise<void> {
     return;
   }
   if (!process.env.ANTHROPIC_API_KEY) {
-    console.error('ANTHROPIC_API_KEY is not set. Export your Anthropic API key to run an audit.');
+    console.error('ANTHROPIC_API_KEY is not set. Export your Anthropic API key to run a scan.');
     process.exitCode = 1;
     return;
   }
@@ -83,7 +83,7 @@ async function scan(args: string[]): Promise<void> {
     return;
   }
 
-  const report = await analyze(result.input, { model });
+  const report = await detectPitfalls(result.input, { model });
   console.log(asJson ? JSON.stringify(report, null, 2) : formatReport(report, { showAll }));
 
   if (ci && hasBlockingFindings(report)) process.exitCode = 1;

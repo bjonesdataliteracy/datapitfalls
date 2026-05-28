@@ -8,7 +8,7 @@ const PRICES = {
   'claude-haiku-4-5': [1, 5],
 };
 
-/** Approximate USD cost of one analyze() call from its usage + model. */
+/** Approximate USD cost of one detectPitfalls() call from its usage + model. */
 export function estimateCostUsd(usage, model) {
   if (!usage) return 0;
   const [pin, pout] = PRICES[model] ?? [0, 0];

@@ -1,9 +1,9 @@
-// Tests for the analysis engine. They inject a fake Anthropic client, so they
+// Tests for the detection engine. They inject a fake Anthropic client, so they
 // run fully offline with no API key and no network.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  analyze,
+  detectPitfalls,
   imageMediaTypeForExtension,
   getAllRules,
   getRule,
@@ -46,25 +46,25 @@ test('imageMediaTypeForExtension maps image extensions and rejects others', () =
   assert.equal(imageMediaTypeForExtension('.txt'), undefined);
 });
 
-test('analyze drops findings that do not reference a real catalog rule', async () => {
+test('detectPitfalls drops findings that do not reference a real catalog rule', async () => {
   const realRule = getAllRules()[0];
   const client = fakeClient([
     { rule_id: realRule.id, confidence: 'high', nature: 'active', evidence: 'x', explanation: 'y' },
     { rule_id: '__not_a_real_rule__', confidence: 'high', nature: 'active', evidence: 'x', explanation: 'y' },
   ]);
-  const report = await analyze(textInput, { client });
+  const report = await detectPitfalls(textInput, { client });
   assert.equal(report.findings.length, 1);
   assert.equal(report.findings[0].ruleId, realRule.id);
 });
 
-test('analyze takes authoritative rule fields from the catalog, not the model', async () => {
+test('detectPitfalls takes authoritative rule fields from the catalog, not the model', async () => {
   const realRule = getAllRules()[0];
   // The model supplies only rule_id and commentary; name/domain/severity/remediation
   // must come from the catalog so a model can never misreport them.
   const client = fakeClient([
     { rule_id: realRule.id, confidence: 'high', nature: 'active', evidence: 'x', explanation: 'y' },
   ]);
-  const report = await analyze(textInput, { client });
+  const report = await detectPitfalls(textInput, { client });
   const f = report.findings[0];
   assert.equal(f.name, realRule.name);
   assert.equal(f.domain, realRule.domain);
@@ -72,29 +72,29 @@ test('analyze takes authoritative rule fields from the catalog, not the model', 
   assert.equal(f.remediation, realRule.remediation.trim());
 });
 
-test('analyze normalizes a bad confidence and a missing nature', async () => {
+test('detectPitfalls normalizes a bad confidence and a missing nature', async () => {
   const realRule = getAllRules()[0];
   const client = fakeClient([{ rule_id: realRule.id, confidence: 'bogus', evidence: '', explanation: '' }]);
-  const report = await analyze(textInput, { client });
+  const report = await detectPitfalls(textInput, { client });
   assert.equal(report.findings[0].confidence, 'medium');
   assert.equal(report.findings[0].nature, 'active');
 });
 
-test('analyze returns an empty report when the model finds nothing', async () => {
-  const report = await analyze(textInput, { client: fakeClient([]) });
+test('detectPitfalls returns an empty report when the model finds nothing', async () => {
+  const report = await detectPitfalls(textInput, { client: fakeClient([]) });
   assert.deepEqual(report.findings, []);
   assert.equal(report.kind, 'code');
 });
 
-test('analyze echoes the requested model and surfaces usage', async () => {
-  const report = await analyze(textInput, { client: fakeClient([]), model: 'claude-test-9' });
+test('detectPitfalls echoes the requested model and surfaces usage', async () => {
+  const report = await detectPitfalls(textInput, { client: fakeClient([]), model: 'claude-test-9' });
   assert.equal(report.model, 'claude-test-9');
   assert.equal(report.usage.inputTokens, 100);
   assert.equal(report.usage.cacheReadInputTokens, 80);
 });
 
 test('code and text input ground on the entire catalog', async () => {
-  const report = await analyze(textInput, { client: fakeClient([]) });
+  const report = await detectPitfalls(textInput, { client: fakeClient([]) });
   assert.equal(report.rulesConsidered, ruleCount());
 });
 
@@ -103,7 +103,7 @@ test('image input grounds on the visual domains plus the data-reality rule', asy
     getRulesByDomain('Graphical Gaffes').length +
     getRulesByDomain('Design Dangers').length +
     (getRule('data-reality-gap') ? 1 : 0);
-  const report = await analyze(
+  const report = await detectPitfalls(
     { kind: 'image', images: [{ content: 'AAAA', mediaType: 'image/png', filename: 'c.png' }] },
     { client: fakeClient([]) }
   );
@@ -113,7 +113,7 @@ test('image input grounds on the visual domains plus the data-reality rule', asy
 
 test('multiple images are all sent in one request for a cross-chart audit', async () => {
   const client = fakeClient([]);
-  const report = await analyze(
+  const report = await detectPitfalls(
     {
       kind: 'image',
       images: [
@@ -132,7 +132,7 @@ test('multiple images are all sent in one request for a cross-chart audit', asyn
 });
 
 test('the domains option overrides rule selection', async () => {
-  const report = await analyze(textInput, {
+  const report = await detectPitfalls(textInput, {
     client: fakeClient([]),
     domains: ['Statistical Slip-Ups'],
   });

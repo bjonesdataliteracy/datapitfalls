@@ -30,7 +30,7 @@
     },
     "domain": {
       "type": "string",
-      "description": "The single audit domain this pitfall belongs to.",
+      "description": "The single pitfall domain this pitfall belongs to.",
       "enum": [
         "Epistemic Errors",
         "Technical Trespasses",

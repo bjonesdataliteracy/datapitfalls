@@ -1,6 +1,6 @@
 // datapitfalls — taxonomy types
 
-/** The eight audit domains, in canonical order. */
+/** The eight pitfall domains, in canonical order. */
 export const DOMAINS = [
   'Epistemic Errors',
   'Technical Trespasses',

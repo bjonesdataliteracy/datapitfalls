@@ -14,7 +14,7 @@ What problem are you trying to solve? What's frustrating or missing today?
 
 Describe the solution you'd like. What should datapitfalls do?
 
-## Which audit domain does this relate to?
+## Which pitfall domain does this relate to?
 
 _Choose the one that fits best (or "Other"):_
 

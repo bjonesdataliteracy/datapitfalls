@@ -7,11 +7,11 @@ treat anything here as sacred.
 
 ## What this is
 
-datapitfalls audits data work (charts, code, prose, documents) against a taxonomy
-of data pitfalls, powered by the Claude API. Three parts:
+datapitfalls detects data pitfalls in data work (charts, code, prose, documents) against
+a taxonomy of data pitfalls, powered by the Claude API. Three parts:
 
-- **Engine** (`src/`) — `analyze()` audits code, text, one or several chart images
-  (cross-chart audit), and PDFs (native document). The taxonomy lives as YAML in
+- **Engine** (`src/`) — `detectPitfalls()` scans code, text, one or several chart images
+  (cross-chart detection), and PDFs (native document). The taxonomy lives as YAML in
   `src/taxonomy/<domain>/` (with `extensions/` subfolders); `npm run build`
   regenerates `src/taxonomy/data.ts` and `npm run validate` checks the rules.
 - **CLI** — `datapitfalls scan`; file routing in `src/scan-input.ts`.
@@ -56,11 +56,11 @@ the code gate.)
 
 - The engine's `dist/` is gitignored; the web build runs a `vercel-build` script that
   builds the engine first.
-- Image audits ground only on Graphical Gaffes + Design Dangers + the
+- Image scans ground only on Graphical Gaffes + Design Dangers + the
   `data-reality-gap` rule.
 
 ## Verification honesty
 
 A cloud session typically has no live Anthropic API key and no browser. Don't claim a
-real audit or the web UI "works" if you couldn't actually run it — say what you
+real scan or the web UI "works" if you couldn't actually run it — say what you
 verified (build, types, tests) and clearly flag what you couldn't.
