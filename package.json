@@ -1,6 +1,6 @@
 {
   "name": "datapitfalls",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Helping you steer clear of common blunders when working with data. Based on Avoiding Data Pitfalls by Ben Jones.",
   "author": "Ben Jones <bjones@dataliteracy.com> (https://dataliteracy.com)",
   "license": "MIT",
