@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { detectPitfalls, filesToInput } from 'datapitfalls';
-import type { DetectionInput, FileInput, PitfallReport } from 'datapitfalls';
+import { detectPitfalls, fileToStage, filesToInput, textStage } from 'datapitfalls';
+import type { ChainStage, DetectionInput, FileInput, PitfallReport } from 'datapitfalls';
 import { checkRateLimit, clientKey } from './rate-limit';
 
 // The engine and the Anthropic SDK need the Node runtime, not the edge runtime.
@@ -11,6 +11,7 @@ const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const MAX_BINARY_BYTES = 16 * 1024 * 1024; // PDF / DOCX / PPTX
 const MAX_TEXT_CHARS = 100_000;
 const MAX_IMAGES = 8;
+const MAX_CHAIN_FILES = 10;
 
 type Parsed = { input: DetectionInput } | { error: string; status: number };
 
@@ -80,11 +81,15 @@ async function parseFileInput(req: Request): Promise<Parsed> {
   }
 
   const files = form.getAll('file').filter((f): f is File => f instanceof File);
+  const modeHint = form.get('mode');
+
+  if (modeHint === 'chain') {
+    return parseChainInput(form, files);
+  }
   if (files.length === 0) {
     return { error: 'No file was uploaded.', status: 400 };
   }
 
-  const modeHint = form.get('mode');
   const fallbackKind = modeHint === 'code' || modeHint === 'text' ? modeHint : undefined;
 
   const inputs: FileInput[] = [];
@@ -107,6 +112,41 @@ async function parseFileInput(req: Request): Promise<Parsed> {
     return { error: result.error, status: result.reason === 'too_large' ? 413 : 400 };
   }
   return result;
+}
+
+/** A whole-analysis chain: several uploaded files (each a stage) plus an optional
+ *  pasted written summary, scanned together for cross-stage pitfalls. */
+async function parseChainInput(form: FormData, files: File[]): Promise<Parsed> {
+  if (files.length > MAX_CHAIN_FILES) {
+    return { error: `Too many files (max ${MAX_CHAIN_FILES}).`, status: 413 };
+  }
+  const stages: ChainStage[] = [];
+  for (const file of files) {
+    const result = await fileToStage(
+      { bytes: new Uint8Array(await file.arrayBuffer()), filename: file.name, mimeType: file.type },
+      { maxImageBytes: MAX_IMAGE_BYTES, maxBinaryBytes: MAX_BINARY_BYTES, maxTextChars: MAX_TEXT_CHARS }
+    );
+    if ('error' in result) {
+      return { error: result.error, status: result.reason === 'too_large' ? 413 : 400 };
+    }
+    stages.push(result.stage);
+  }
+
+  const narrative = form.get('narrative');
+  if (typeof narrative === 'string' && narrative.trim() !== '') {
+    if (narrative.length > MAX_TEXT_CHARS) {
+      return { error: `Written summary is too long (max ${MAX_TEXT_CHARS.toLocaleString()} characters).`, status: 413 };
+    }
+    stages.push(textStage(narrative, 'Written summary'));
+  }
+
+  if (stages.length < 2) {
+    return {
+      error: 'A full-analysis scan needs at least two pieces — e.g. your prep code, a chart, and a written summary.',
+      status: 400,
+    };
+  }
+  return { input: { kind: 'chain', stages } };
 }
 
 async function runAnalysis(input: DetectionInput): Promise<NextResponse> {

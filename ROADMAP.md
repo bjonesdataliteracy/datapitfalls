@@ -35,25 +35,25 @@ Teach the detector to see, so it can review the chart itself.
 - [x] Visual pitfall detection (Graphical Gaffes & Design Dangers)
 - [x] Chart-image scanning from the CLI
 
-## 🟢 Phase 4 — Web Experience _(Web app live; public domain pending)_
+## ✅ Phase 4 — Web Experience
 
 Put the detector on the web so anyone can use it without a terminal.
 
 - [x] Web detector app (Next.js in `web/`) — chart-image, written-analysis, and code modes
 - [x] Drag-and-drop and clipboard paste for chart images
 - [x] Public-launch hardening — per-IP rate limiting on the scan endpoint and a privacy note
-- [ ] Public site at [avoidingdatapitfalls.com](https://www.avoidingdatapitfalls.com)
+- [x] Public site live at [avoidingdatapitfalls.com](https://www.avoidingdatapitfalls.com)
 
-## 🟢 Phase 5 — Document Analysis _(Current)_
+## ✅ Phase 5 — Document Analysis
 
 Detect pitfalls across whole bodies of work, in context.
 
 - [x] Report upload (web app) — PDF read natively (charts and all), Word `.docx`, Jupyter notebooks, and code files
 - [x] Multi-chart detection that understands charts in relation to one another
 - [x] Slide-deck upload (PPTX) — per-slide text and chart images
-- [ ] Full-document pitfall scanning across the entire data reasoning chain
+- [x] Whole-chain scanning — submit the steps of one analysis (code, charts, prose) together and detect pitfalls that only emerge across stages (CLI `--chain`, web "Full analysis" mode)
 
-## 🟢 Phase 6 — Distribution & Public API
+## 🟢 Phase 6 — Distribution & Public API _(Current)_
 
 Make datapitfalls easy to install and build on.
 

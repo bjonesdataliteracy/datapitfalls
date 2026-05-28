@@ -2,8 +2,9 @@
 
 The browser front end for datapitfalls — a thin Next.js app that reuses the
 engine in [`../src`](../src). It detects pitfalls in the same inputs as the CLI (chart images,
-several charts at once, PDFs, Word docs, notebooks, code files, and pasted
-prose/code) through the API route at [`app/api/audit/route.ts`](app/api/audit/route.ts).
+several charts at once, PDFs, Word docs, slide decks, notebooks, code files, pasted
+prose/code, and whole analysis chains — code, charts, and prose scanned together) through the
+API route at [`app/api/audit/route.ts`](app/api/audit/route.ts).
 
 ## Local development
 

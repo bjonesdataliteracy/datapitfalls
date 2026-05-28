@@ -10,7 +10,7 @@ import { getAllRules, getRule, getRulesByDomain } from './taxonomy/index.js';
 import type { Domain, PitfallRule, Severity } from './taxonomy/index.js';
 
 /** The kind of artifact being audited. */
-export type InputKind = 'code' | 'text' | 'image' | 'document' | 'slides';
+export type InputKind = 'code' | 'text' | 'image' | 'document' | 'slides' | 'chain';
 
 /** Image media types Claude Vision accepts (matches the SDK's base64 image source). */
 export type ImageMediaType = 'image/png' | 'image/jpeg' | 'image/gif' | 'image/webp';
@@ -75,11 +75,32 @@ export interface SlidesDetectionInput {
   filename?: string;
 }
 
-export type DetectionInput =
+/** A single, self-contained artifact — anything that can be scanned on its own. */
+export type SingleArtifactInput =
   | TextDetectionInput
   | ImageDetectionInput
   | DocumentDetectionInput
   | SlidesDetectionInput;
+
+/** One stage of an analytics workflow: an artifact plus where it sits in the chain. */
+export interface ChainStage {
+  /** A short label for this stage's role, e.g. "Data prep (Python)", "Chart", "Summary". */
+  role: string;
+  /** The artifact at this stage. */
+  artifact: SingleArtifactInput;
+}
+
+/** A whole analytics workflow as an ordered set of stages (data → processing →
+ *  analysis → visualization → narrative), scanned together so pitfalls that only
+ *  emerge in the *relationships between* stages can be detected — a transform that
+ *  biases a later chart, a metric computed one way and described another, a chart
+ *  choice the narrative over-claims. */
+export interface ChainDetectionInput {
+  kind: 'chain';
+  stages: ChainStage[];
+}
+
+export type DetectionInput = SingleArtifactInput | ChainDetectionInput;
 
 /** Map a file extension (with leading dot, any case) to a Vision media type. */
 export function imageMediaTypeForExtension(ext: string): ImageMediaType | undefined {
@@ -207,6 +228,30 @@ Rules of engagement:
 
 Return your results by calling the report_findings tool.`;
 
+const CHAIN_SYSTEM_INSTRUCTIONS = `You are datapitfalls, a pitfall detector that reviews a complete analytics workflow for known data pitfalls.
+
+You are given one piece of data work as an ordered sequence of stages — the steps of a single analysis, which may mix source code, chart images, and written analysis (for example: data preparation code → an analysis script → a chart → a written summary). You are also given a catalog of pitfall rules. Identify which pitfalls from the catalog the work actually exhibits.
+
+Review each stage for its own pitfalls, and — most importantly — look for pitfalls that only emerge in the *relationships between* stages, because these are invisible when any single stage is viewed alone:
+- a data transformation in an early stage (a filter, a dropped-null, a join, a recoding) that biases what a later chart or claim shows;
+- a metric computed one way in code but described differently in prose (e.g. a mean computed in code and called the "typical" value in the summary);
+- a chart choice (a truncated axis, a cherry-picked window) that a later narrative then over-claims or treats as fact;
+- a caveat, exclusion, or assumption introduced in one stage that a downstream conclusion ignores.
+
+You can see only the artifacts, never the underlying data. Classify every finding by its nature:
+- "active": evident from the artifacts themselves, regardless of the unseen data. State these directly.
+- "latent": a risky pattern whose real-world impact depends on data you cannot see. Phrase these conditionally, do NOT assert the pitfall is definitely biting, and fill in "condition" with what must be true of the data for it to occur.
+
+Rules of engagement:
+- Only report pitfalls that appear in the catalog below, and cite each by its exact \`id\`.
+- Report a finding only when the work shows real evidence of the pitfall (active) or a genuinely risky pattern (latent). Be conservative: avoid speculation and false positives.
+- For each finding, provide the rule id, confidence (low/medium/high), nature (active/latent), the specific evidence, a concise explanation, and — for latent findings — the data condition under which it bites.
+- In each finding's evidence, name the stage(s) involved (e.g. "Stage 1"); for a cross-stage pitfall, trace how it flows from one stage to the next (e.g. "Stage 1 drops nulls → Stage 3 chart → Stage 4 claim").
+- The workflow may exhibit several pitfalls, one, or none. If none apply, return an empty findings list.
+- Do not invent rule ids. Do not report a pitfall that is not in the catalog.
+
+Return your results by calling the report_findings tool.`;
+
 const REPORT_TOOL: Anthropic.Tool = {
   name: 'report_findings',
   description: 'Report the data pitfalls found in the artifact.',
@@ -296,7 +341,60 @@ function selectRules(input: DetectionInput, domains?: Domain[]): PitfallRule[] {
   return [...getAllRules()];
 }
 
+// The content blocks for a single artifact, without any call-to-action — used to
+// lay out each stage of a chain. (The standalone single-artifact branches below
+// keep their own tuned framing.)
+function rawArtifactBlocks(input: SingleArtifactInput): Anthropic.ContentBlockParam[] {
+  if (input.kind === 'image') {
+    const multiple = input.images.length > 1;
+    const blocks: Anthropic.ContentBlockParam[] = [];
+    input.images.forEach((img, i) => {
+      if (multiple) {
+        const where = img.filename ? ` — ${img.filename}` : '';
+        blocks.push({ type: 'text', text: `Chart ${i + 1}${where}:` });
+      }
+      blocks.push({ type: 'image', source: { type: 'base64', media_type: img.mediaType, data: img.content } });
+    });
+    return blocks;
+  }
+  if (input.kind === 'document') {
+    return [{ type: 'document', source: { type: 'base64', media_type: input.mediaType, data: input.content } }];
+  }
+  if (input.kind === 'slides') {
+    const blocks: Anthropic.ContentBlockParam[] = [];
+    input.slides.forEach((slide, i) => {
+      const text = slide.text.trim();
+      blocks.push({ type: 'text', text: `Slide ${i + 1}:${text ? `\n${text}` : ' (no text)'}` });
+      for (const img of slide.images) {
+        blocks.push({ type: 'image', source: { type: 'base64', media_type: img.mediaType, data: img.content } });
+      }
+    });
+    return blocks;
+  }
+  return [{ type: 'text', text: `<artifact>\n${input.content}\n</artifact>` }];
+}
+
 function buildUserContent(input: DetectionInput): Anthropic.MessageParam['content'] {
+  if (input.kind === 'chain') {
+    const content: Anthropic.ContentBlockParam[] = [
+      {
+        type: 'text',
+        text:
+          `You are given one analysis as an ordered sequence of ${input.stages.length} stages, below. ` +
+          `Review each stage for its own pitfalls, and — most importantly — for pitfalls that only emerge ` +
+          `across stages: a transformation that biases a later chart or claim, a metric computed one way ` +
+          `and described another, a chart choice the narrative over-claims, or a caveat a conclusion ` +
+          `ignores. In each finding's evidence name the stage(s) involved (e.g. "Stage 1") and, for a ` +
+          `cross-stage pitfall, trace how it flows from one stage to the next. Report all pitfalls via the ` +
+          `report_findings tool.`,
+      },
+    ];
+    input.stages.forEach((stage, i) => {
+      content.push({ type: 'text', text: `=== Stage ${i + 1} — ${stage.role} ===` });
+      content.push(...rawArtifactBlocks(stage.artifact));
+    });
+    return content;
+  }
   if (input.kind === 'image') {
     const images = input.images;
     const multiple = images.length > 1;
@@ -437,9 +535,11 @@ export async function detectPitfalls(
   const instructions =
     input.kind === 'image'
       ? IMAGE_SYSTEM_INSTRUCTIONS
-      : input.kind === 'document' || input.kind === 'slides'
-        ? DOCUMENT_SYSTEM_INSTRUCTIONS
-        : SYSTEM_INSTRUCTIONS;
+      : input.kind === 'chain'
+        ? CHAIN_SYSTEM_INSTRUCTIONS
+        : input.kind === 'document' || input.kind === 'slides'
+          ? DOCUMENT_SYSTEM_INSTRUCTIONS
+          : SYSTEM_INSTRUCTIONS;
   const taxonomyBlock = `# Pitfall catalog (${rules.length} rules)\n\n${serializeRules(rules)}`;
 
   const message = await client.messages.create({

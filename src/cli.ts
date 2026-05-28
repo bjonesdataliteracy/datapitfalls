@@ -4,7 +4,7 @@
 import { DOMAINS, TAGLINE, VERSION, ruleCount, ruleCountsByDomain } from './index.js';
 import { detectPitfalls } from './analyze.js';
 import { formatReport, hasBlockingFindings } from './report.js';
-import { buildScanInput } from './scan-input.js';
+import { buildScanInput, buildChainInput } from './scan-input.js';
 
 const useColor = Boolean(process.stdout.isTTY) && !process.env.NO_COLOR;
 
@@ -228,6 +228,7 @@ async function scan(args: string[]): Promise<void> {
   let asJson = false;
   let ci = false;
   let forceText = false;
+  let chain = false;
   for (const arg of args) {
     if (arg in MODEL_FLAGS) {
       model = MODEL_FLAGS[arg];
@@ -239,6 +240,8 @@ async function scan(args: string[]): Promise<void> {
       ci = true;
     } else if (arg === '--text') {
       forceText = true;
+    } else if (arg === '--chain') {
+      chain = true;
     } else if (arg.startsWith('-')) {
       console.error(`Unknown option: ${arg}`);
       process.exitCode = 1;
@@ -247,7 +250,7 @@ async function scan(args: string[]): Promise<void> {
   }
 
   if (files.length === 0) {
-    console.error('Usage: datapitfalls scan [--thorough|--fast] <file> [more charts…]');
+    console.error('Usage: datapitfalls scan [--thorough|--fast] [--chain] <file> [more files…]');
     process.exitCode = 1;
     return;
   }
@@ -257,7 +260,7 @@ async function scan(args: string[]): Promise<void> {
     return;
   }
 
-  const result = await buildScanInput(files, forceText);
+  const result = chain ? await buildChainInput(files) : await buildScanInput(files, forceText);
   if ('error' in result) {
     console.error(result.error);
     process.exitCode = 1;

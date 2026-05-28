@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ChangeEvent, DragEvent, FormEvent } from 'react';
 import type { PitfallReport, Finding } from 'datapitfalls';
 
-type Mode = 'image' | 'text' | 'slides' | 'code';
+type Mode = 'image' | 'text' | 'slides' | 'code' | 'chain';
 
 type State =
   | { status: 'idle' }
@@ -17,9 +17,16 @@ const MODES: { id: Mode; label: string }[] = [
   { id: 'text', label: 'Written analysis' },
   { id: 'slides', label: 'Slide deck' },
   { id: 'code', label: 'Analysis code' },
+  { id: 'chain', label: 'Full analysis' },
 ];
 
 const DECK_ACCEPT = '.pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation';
+
+// Full-analysis mode takes any supported artifact type as a stage of the chain.
+const CHAIN_ACCEPT =
+  'image/png,image/jpeg,image/gif,image/webp,.pdf,.docx,application/pdf,' +
+  DECK_ACCEPT +
+  ',.py,.ipynb,.r,.sql,.js,.mjs,.jsx,.ts,.tsx,.java,.scala,.go,.rb,.jl,.m,.sas,.do,.cpp,.c,.cs,.php,.kt,.rs,.txt,.md,.markdown,.rst';
 
 const UPLOAD_ACCEPT: Record<'text' | 'code', string> = {
   text: '.pdf,.docx,.txt,.md,.markdown,.rst,application/pdf',
@@ -70,6 +77,9 @@ export default function Home() {
   const [language, setLanguage] = useState('');
   const [docFile, setDocFile] = useState<File | null>(null);
 
+  const [chainFiles, setChainFiles] = useState<File[]>([]);
+  const [narrative, setNarrative] = useState('');
+
   const addImages = useCallback((files: File[]) => {
     const images = files.filter((f) => f.type.startsWith('image/'));
     if (images.length === 0) return;
@@ -108,7 +118,28 @@ export default function Home() {
   function changeMode(m: Mode) {
     setMode(m);
     setDocFile(null);
+    setChainFiles([]);
+    setNarrative('');
     setState({ status: 'idle' });
+  }
+
+  function addChainFiles(files: File[]) {
+    if (files.length > 0) setChainFiles((prev) => [...prev, ...files]);
+  }
+
+  function removeChainFile(index: number) {
+    setChainFiles((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function onChainChange(e: ChangeEvent<HTMLInputElement>) {
+    addChainFiles(Array.from(e.target.files ?? []));
+    e.target.value = '';
+  }
+
+  function onChainDrop(e: DragEvent<HTMLLabelElement>) {
+    e.preventDefault();
+    setDragging(false);
+    addChainFiles(Array.from(e.dataTransfer.files ?? []));
   }
 
   function loadSample() {
@@ -158,6 +189,20 @@ export default function Home() {
         return;
       }
       request = { method: 'POST', body: fileBody(docFile, 'slides') };
+    } else if (mode === 'chain') {
+      const stages = chainFiles.length + (narrative.trim() ? 1 : 0);
+      if (stages < 2) {
+        setState({
+          status: 'error',
+          message: 'Add at least two pieces — e.g. your prep code, a chart, and a written summary.',
+        });
+        return;
+      }
+      const body = new FormData();
+      chainFiles.forEach((file) => body.append('file', file));
+      if (narrative.trim()) body.append('narrative', narrative);
+      body.append('mode', 'chain');
+      request = { method: 'POST', body };
     } else if (docFile) {
       request = { method: 'POST', body: fileBody(docFile, mode) };
     } else {
@@ -300,6 +345,58 @@ export default function Home() {
           </>
         )}
 
+        {mode === 'chain' && (
+          <>
+            <p className="chainintro">
+              Add the pieces of one analysis — the prep/analysis code, the chart(s), a PDF/Word/deck —
+              and we&rsquo;ll check the whole chain, including pitfalls that only surface across steps
+              (a transform that biases a later chart, a metric described differently than it&rsquo;s
+              computed, a chart the summary over-claims).
+            </p>
+            <label
+              className={dragging ? 'filefield dragging' : 'filefield'}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragging(true);
+              }}
+              onDragLeave={() => setDragging(false)}
+              onDrop={onChainDrop}
+            >
+              <input type="file" multiple accept={CHAIN_ACCEPT} onChange={onChainChange} />
+              <span>
+                {chainFiles.length === 0
+                  ? 'Choose or drop the files of your analysis — code, charts, a PDF/Word/deck (add several)'
+                  : `${chainFiles.length} file${chainFiles.length > 1 ? 's' : ''} added — add more, or scan the chain`}
+              </span>
+            </label>
+            {chainFiles.length > 0 && (
+              <ul className="chainlist">
+                {chainFiles.map((file, i) => (
+                  <li key={`${file.name}-${i}`}>
+                    <span className="stage-role">{roleHint(file)}</span>
+                    <span className="stage-name">{file.name}</span>
+                    <button
+                      type="button"
+                      className="clearfile"
+                      onClick={() => removeChainFile(i)}
+                      aria-label={`Remove ${file.name}`}
+                    >
+                      ×
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <textarea
+              className="editor"
+              value={narrative}
+              onChange={(e) => setNarrative(e.target.value)}
+              placeholder="Optional: paste the written summary or key claim from this analysis…"
+              rows={5}
+            />
+          </>
+        )}
+
         {(mode === 'text' || mode === 'code') && (
           <>
             {mode === 'code' && (
@@ -395,6 +492,18 @@ function fileBody(file: File, mode: Mode): FormData {
   body.append('file', file);
   body.append('mode', mode);
   return body;
+}
+
+// A display-only guess at a chain file's role; the server re-derives it authoritatively.
+function roleHint(file: File): string {
+  const name = file.name.toLowerCase();
+  if (file.type.startsWith('image/')) return 'Chart';
+  if (name.endsWith('.pptx')) return 'Slide deck';
+  if (name.endsWith('.pdf') || name.endsWith('.docx')) return 'Document';
+  if (name.endsWith('.ipynb')) return 'Notebook';
+  if (name.endsWith('.md') || name.endsWith('.markdown') || name.endsWith('.txt') || name.endsWith('.rst'))
+    return 'Notes';
+  return 'Code';
 }
 
 function Results({ report }: { report: PitfallReport }) {

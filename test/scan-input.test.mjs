@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { writeFileSync, mkdtempSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { buildScanInput } from '../dist/scan-input.js';
+import { buildScanInput, buildChainInput } from '../dist/scan-input.js';
 
 const dir = mkdtempSync(join(tmpdir(), 'dpf-scan-'));
 function tmp(name, content) {
@@ -92,5 +92,26 @@ test('a notebook with no code cells is rejected', async () => {
 
 test('a file that is not a real .docx is rejected gracefully', async () => {
   const result = await buildScanInput([tmp('fake.docx', 'this is not a real Word document')], false);
+  assert.ok('error' in result);
+});
+
+test('several mixed files become one whole-analysis chain', async () => {
+  const result = await buildChainInput([
+    tmp('prep.sql', 'SELECT AVG(amount) FROM orders'),
+    tmp('revenue.png', Buffer.from('\x89PNG fake')),
+    tmp('summary.md', 'The typical customer is worth $4,200.'),
+  ]);
+  assert.ok('input' in result);
+  assert.equal(result.input.kind, 'chain');
+  assert.equal(result.input.stages.length, 3);
+  assert.equal(result.input.stages[0].artifact.kind, 'code');
+  assert.match(result.input.stages[0].role, /SQL/);
+  assert.equal(result.input.stages[1].artifact.kind, 'image');
+  assert.match(result.input.stages[1].role, /Chart/);
+  assert.equal(result.input.stages[2].artifact.kind, 'text');
+});
+
+test('a chain of fewer than two files is rejected', async () => {
+  const result = await buildChainInput([tmp('only.py', 'print(1)')]);
   assert.ok('error' in result);
 });
