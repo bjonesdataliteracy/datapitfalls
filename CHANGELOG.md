@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Verification kit (`npm run verify`) — runs `detectPitfalls()` once per input mode against a live key, can check a deployed `/api/audit` and the rate limiter, and ships a browser click-through checklist.
 - Launch surface for the web app — a fuller landing page (whole-chain framing, links to the book and GitHub, one-click sample audits), build-time Open Graph preview card and favicon, privacy-friendly cookieless analytics, and a `web/README.md` covering env vars and pointing the public domain at the deploy.
 - Published to npm as [`datapitfalls`](https://www.npmjs.com/package/datapitfalls) — `npm install datapitfalls` for the engine API, or `npx datapitfalls scan` for the CLI.
-- CLI splash screen — a colored ANSI block-art banner with a Human/Agent quick-start, in the Powered By Data palette, that adapts to light or dark terminals (auto-detected, with a `DATAPITFALLS_THEME=light|dark` override). Body text uses the terminal's own foreground so it stays readable on any background.
+- CLI splash screen — a colored ANSI block-art banner with a Human/Agent quick-start, in the Powered By Data palette, that adapts to light or dark terminals (auto-detected, with a `--theme light|dark` flag or `DATAPITFALLS_THEME` env override). Body text uses the terminal's own foreground so it stays readable on any background.
 
 ### Changed
 

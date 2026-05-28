@@ -172,8 +172,8 @@ function queryBackgroundColor(): Promise<ThemeName> {
   });
 }
 
-async function detectTheme(): Promise<Theme> {
-  const override = process.env.DATAPITFALLS_THEME;
+async function detectTheme(explicit?: ThemeName): Promise<Theme> {
+  const override = explicit ?? process.env.DATAPITFALLS_THEME;
   let name: ThemeName | undefined =
     override === 'light' || override === 'dark' ? override : undefined;
   if (!name && process.env.COLORFGBG) {
@@ -209,7 +209,9 @@ function printHelp(): void {
       'scan them as a set. PDFs (.pdf) are read as native documents (prose + charts/tables), Word\n' +
       'docs (.docx) are read as prose, and notebooks (.ipynb) are scanned as their extracted code.\n' +
       '\nThe scan command needs an Anthropic API key in ANTHROPIC_API_KEY.\n' +
-      'Default model is claude-sonnet-4-6; override with --thorough, --fast, or ANTHROPIC_MODEL.'
+      'Default model is claude-sonnet-4-6; override with --thorough, --fast, or ANTHROPIC_MODEL.\n' +
+      '\nThe splash adapts to your terminal background; force it with --theme <light|dark>\n' +
+      'or the DATAPITFALLS_THEME env var.'
   );
 }
 
@@ -267,12 +269,38 @@ async function scan(args: string[]): Promise<void> {
   if (ci && hasBlockingFindings(report)) process.exitCode = 1;
 }
 
+/** Pull a `--theme light|dark` (or `--theme=light`) flag out of argv, returning it
+ *  plus the remaining args. The splash is the only themed output. */
+function extractThemeFlag(argv: string[]): { theme?: ThemeName; rest: string[] } {
+  const rest: string[] = [];
+  let theme: ThemeName | undefined;
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    if (arg === '--theme') {
+      const value = argv[i + 1];
+      if (value === 'light' || value === 'dark') {
+        theme = value;
+        i += 1;
+      }
+      continue;
+    }
+    if (arg !== undefined && arg.startsWith('--theme=')) {
+      const value = arg.slice('--theme='.length);
+      if (value === 'light' || value === 'dark') theme = value;
+      continue;
+    }
+    if (arg !== undefined) rest.push(arg);
+  }
+  return { theme, rest };
+}
+
 async function main(): Promise<void> {
-  const [command, ...args] = process.argv.slice(2);
+  const { theme, rest } = extractThemeFlag(process.argv.slice(2));
+  const [command, ...args] = rest;
 
   switch (command) {
     case undefined:
-      printSplash(await detectTheme());
+      printSplash(await detectTheme(theme));
       break;
     case 'stats':
       printStats();
