@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Published to npm as [`datapitfalls`](https://www.npmjs.com/package/datapitfalls) — `npm install datapitfalls` for the engine API, or `npx datapitfalls scan` for the CLI.
 - CLI splash screen — a colored ANSI block-art banner with a Human/Agent quick-start, in the Powered By Data palette, that adapts to light or dark terminals (auto-detected, with a `--theme light|dark` flag or `DATAPITFALLS_THEME` env override). Body text uses the terminal's own foreground so it stays readable on any background.
 - Slide-deck scanning (`.pptx`) — extracts each slide's text and embedded chart images and reviews the whole deck against the full catalog (CLI and web). New engine input kind `slides` and an `extractSlides()` helper.
+- Shared file router in the package — `fileToInput()` / `filesToInput()` turn an uploaded or loaded file (bytes + filename + MIME) into a `DetectionInput`, covering images (one or several), PDF, `.pptx`, `.docx`, notebooks, and code/prose in one place. The CLI and the web app now both route through it, so a new input format is wired up once and every surface (and future site) gets it on a version bump.
 
 ### Changed
 
