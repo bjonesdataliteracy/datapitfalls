@@ -7,10 +7,16 @@ import { formatReport, hasBlockingFindings } from './report.js';
 import { buildScanInput } from './scan-input.js';
 
 const useColor = Boolean(process.stdout.isTTY) && !process.env.NO_COLOR;
-const orange = (s: string): string => (useColor ? `\x1b[38;5;214m${s}\x1b[0m` : s);
-const bold = (s: string): string => (useColor ? `\x1b[1m${s}\x1b[0m` : s);
-const dim = (s: string): string => (useColor ? `\x1b[2m${s}\x1b[0m` : s);
-const cyan = (s: string): string => (useColor ? `\x1b[38;5;80m${s}\x1b[0m` : s);
+
+// Powered By Data palette, as 24-bit truecolor SGR parameters.
+const LEMON = '38;2;226;229;35'; // Electric Lemon #E2E523
+const OCEAN = '38;2;31;134;182'; // Ocean Blue     #1F86B6
+const SKY = '38;2;105;223;250'; // Sky Blue       #69DFFA
+const WHITE = '38;2;243;253;255'; // Floral White  #F3FDFF
+const IRON = '38;2;60;55;68'; // Iron Gray      #3C3744
+const RESET_CODE = '\x1b[0m';
+
+const paint = (code: string, s: string): string => (useColor ? `\x1b[${code}m${s}${RESET_CODE}` : s);
 
 // "DATA" stacked over "PITFALLS" — figlet "ANSI Shadow", colored two-tone for a
 // retro extruded look (bright face + dark bevel). Rendered once and embedded.
@@ -29,12 +35,8 @@ const WORDMARK = [
   '╚═╝     ╚═╝   ╚═╝   ╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝',
 ];
 
-const FACE_CODE = '\x1b[38;5;214m';
-const SHADOW_CODE = '\x1b[38;5;130m';
-const RESET_CODE = '\x1b[0m';
-
-// Two-tone the block art: solid █ faces in bright orange, the ╗╝║═ bevel edges in
-// a darker orange so the letters look extruded.
+// Two-tone the block art: solid █ faces in Electric Lemon, the ╗╝║═ bevel edges
+// in Ocean Blue, so the letters look extruded.
 function colorizeWordmark(line: string): string {
   if (!useColor) return line;
   let out = '';
@@ -48,9 +50,9 @@ function colorizeWordmark(line: string): string {
       out += ' ';
       continue;
     }
-    const want = ch === '█' ? FACE_CODE : SHADOW_CODE;
+    const want = ch === '█' ? LEMON : OCEAN;
     if (want !== cur) {
-      out += want;
+      out += `\x1b[${want}m`;
       cur = want;
     }
     out += ch;
@@ -66,30 +68,31 @@ function introBox(): string {
     'Get back what is wrong, why it matters, and how to fix it.',
   ];
   const horiz = '─'.repeat(width - 2);
-  const body = lines.map((l) => '  ' + orange('│') + ' ' + l.padEnd(width - 4) + ' ' + orange('│'));
-  return ['  ' + orange('╭' + horiz + '╮'), ...body, '  ' + orange('╰' + horiz + '╯')].join('\n');
+  const edge = (s: string): string => paint(IRON, s);
+  const body = lines.map((l) => '  ' + edge('│') + ' ' + paint(WHITE, l.padEnd(width - 4)) + ' ' + edge('│'));
+  return ['  ' + edge('╭' + horiz + '╮'), ...body, '  ' + edge('╰' + horiz + '╯')].join('\n');
 }
 
 function printSplash(): void {
   console.log();
   for (const line of WORDMARK) console.log('  ' + colorizeWordmark(line));
   console.log();
-  console.log('  ' + dim('Check the data work of humans and AI alike for the pitfalls that mislead.'));
+  console.log('  ' + paint(WHITE, 'Check the data work of humans and AI alike for the pitfalls that mislead.'));
   console.log();
   console.log(introBox());
   console.log();
-  console.log('  ' + bold(cyan('Getting Started:')));
+  console.log('  ' + paint(`1;${SKY}`, 'Getting Started:'));
   console.log(
-    '    ' + bold('Human:') + '  ' + cyan('datapitfalls scan <file>') + '  scan a chart, code, report, or description'
+    '    ' + paint(`1;${LEMON}`, 'Human:') + '  ' + paint(SKY, 'datapitfalls scan <file>') + '  scan a chart, code, report, or description'
   );
-  console.log('            add ' + dim('--all') + ' for every finding, ' + dim('--thorough') + ' for the deepest model');
+  console.log('            ' + paint(OCEAN, 'add --all for every finding, --thorough for the deepest model'));
   console.log(
-    '    ' + bold('Agent:') + '  ' + cyan('datapitfalls scan --json <file>') + '  machine-readable findings'
+    '    ' + paint(`1;${LEMON}`, 'Agent:') + '  ' + paint(SKY, 'datapitfalls scan --json <file>') + '  machine-readable findings'
   );
-  console.log('            add ' + dim('--ci') + ' to exit non-zero when a blocking pitfall is found');
+  console.log('            ' + paint(OCEAN, 'add --ci to exit non-zero when a blocking pitfall is found'));
   console.log();
-  console.log('  ' + dim(`Run datapitfalls --help for the full command list · v${VERSION}`));
-  console.log('  ' + dim('Made by Data Literacy · github.com/bjonesdataliteracy/datapitfalls'));
+  console.log('  ' + paint(OCEAN, `Run datapitfalls --help for the full command list · v${VERSION}`));
+  console.log('  ' + paint(IRON, 'Made by Data Literacy · github.com/bjonesdataliteracy/datapitfalls'));
   console.log();
 }
 
