@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { detectPitfalls, imageMediaTypeForExtension } from 'datapitfalls';
+import { detectPitfalls, extractSlides, imageMediaTypeForExtension } from 'datapitfalls';
 import type { DetectionInput, PitfallReport, ImageMediaType, ImageSource } from 'datapitfalls';
 import { checkRateLimit, clientKey } from './rate-limit';
 
@@ -13,6 +13,7 @@ const MAX_BINARY_BYTES = 16 * 1024 * 1024; // PDF / DOCX
 const MAX_TEXT_CHARS = 100_000;
 const ALLOWED_IMAGE_TYPES: ImageMediaType[] = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
 const DOCX_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+const PPTX_MIME = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
 
 const EXT_LANGUAGE: Record<string, string> = {
   '.py': 'Python',
@@ -189,6 +190,17 @@ async function parseSingleFile(file: File, modeHint: string | null): Promise<Par
     } catch {
       return { error: 'Could not read that Word document.', status: 400 };
     }
+  }
+
+  // PowerPoint deck → per-slide text + chart images.
+  if (ext === '.pptx' || type === PPTX_MIME) {
+    const bytes = await file.arrayBuffer();
+    if (bytes.byteLength === 0) return { error: 'The uploaded deck is empty.', status: 400 };
+    if (bytes.byteLength > MAX_BINARY_BYTES) return { error: 'Deck is too large (max 16 MB).', status: 413 };
+    const result = extractSlides(new Uint8Array(bytes));
+    if ('error' in result) return { error: result.error, status: 400 };
+    if (result.slides.length === 0) return { error: 'No slides found in that deck.', status: 400 };
+    return { input: { kind: 'slides', slides: result.slides, filename: file.name || undefined } };
   }
 
   // Jupyter notebook → pull out the code cells.

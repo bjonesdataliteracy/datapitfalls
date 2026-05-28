@@ -50,7 +50,7 @@ Detect pitfalls across whole bodies of work, in context.
 
 - [x] Report upload (web app) — PDF read natively (charts and all), Word `.docx`, Jupyter notebooks, and code files
 - [x] Multi-chart detection that understands charts in relation to one another
-- [ ] Slide-deck upload (PPTX)
+- [x] Slide-deck upload (PPTX) — per-slide text and chart images
 - [ ] Full-document pitfall scanning across the entire data reasoning chain
 
 ## 🟢 Phase 6 — Distribution & Public API

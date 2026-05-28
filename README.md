@@ -80,7 +80,7 @@ datapitfalls organizes every pitfall into one of eight domains — the pitfall c
 
 datapitfalls is designed around **four input modes**, so you can scan your work at whatever stage you're in.
 
-> ⚠️ **Status:** The datapitfalls **analysis engine is live**, and you can use it two ways. The **command line** audits chart images, code snippets, and plain-English descriptions (modes 1–3 below), with a `--ci` exit code for pipelines. A **web app** (in [`web/`](web/)) does all of that in the browser and adds **document upload** — PDF read natively (so Claude audits the prose *and* the charts and tables), Word `.docx`, Jupyter notebooks, and code files — plus **multi-chart audits** that compare several charts at once. The web app is per-IP rate-limited, and your input is sent to the Claude API to run the audit but isn't stored by the app. Install the CLI and engine with `npm install datapitfalls`, or run the web app locally with `cd web && npm run dev`. Still planned: a public site at [avoidingdatapitfalls.com](https://www.avoidingdatapitfalls.com) and slide-deck (PPTX) support — see the [Roadmap](ROADMAP.md).
+> ⚠️ **Status:** The datapitfalls **detection engine is live**, and you can use it two ways. The **command line** scans chart images, code snippets, and plain-English descriptions (modes 1–3 below), with a `--ci` exit code for pipelines. A **web app** (in [`web/`](web/)) does all of that in the browser and adds **document upload** — PDF read natively (so Claude reviews the prose *and* the charts and tables), Word `.docx`, **PowerPoint `.pptx` decks**, Jupyter notebooks, and code files — plus **multi-chart scans** that compare several charts at once. The web app is per-IP rate-limited, and your input is sent to the Claude API to run the scan but isn't stored by the app. Install the CLI and engine with `npm install datapitfalls`, or run the web app locally with `cd web && npm run dev`. Still planned: a public site at [avoidingdatapitfalls.com](https://www.avoidingdatapitfalls.com) — see the [Roadmap](ROADMAP.md).
 
 ### 1. Scan a chart image
 
@@ -114,7 +114,7 @@ datapitfalls recognizes the survivorship bias hiding in that sentence.
 
 ### 4. Upload a report — or several charts at once (web app)
 
-In the web app, drop in a **PDF report** and Claude scans the whole thing in context — the written claims *and* the charts and tables on the page (Word `.docx`, Jupyter notebooks, and code files work too). Or add **several chart images** together for a multi-chart scan that catches pitfalls across them: inconsistent scales, inconsistent encodings, and contradictory messages.
+In the web app, drop in a **PDF report** and Claude scans the whole thing in context — the written claims *and* the charts and tables on the page (Word `.docx`, **PowerPoint `.pptx` decks**, Jupyter notebooks, and code files work too). Or add **several chart images** together for a multi-chart scan that catches pitfalls across them: inconsistent scales, inconsistent encodings, and contradictory messages.
 
 ---
 

@@ -19,12 +19,12 @@ const MODES: { id: Mode; label: string }[] = [
 ];
 
 const UPLOAD_ACCEPT: Record<Exclude<Mode, 'image'>, string> = {
-  text: '.pdf,.docx,.txt,.md,.markdown,.rst,application/pdf',
+  text: '.pdf,.docx,.pptx,.txt,.md,.markdown,.rst,application/pdf',
   code: '.py,.ipynb,.r,.sql,.js,.mjs,.jsx,.ts,.tsx,.java,.scala,.go,.rb,.jl,.m,.sas,.do,.cpp,.c,.cs,.php,.kt,.rs,.txt',
 };
 
 const UPLOAD_HINT: Record<Exclude<Mode, 'image'>, string> = {
-  text: '.pdf, .docx, .txt, .md',
+  text: '.pdf, .docx, .pptx, .txt, .md',
   code: '.py, .ipynb, .sql, .r, .js …',
 };
 
