@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ChangeEvent, DragEvent, FormEvent } from 'react';
 import type { PitfallReport, Finding } from 'datapitfalls';
 
-type Mode = 'image' | 'text' | 'code';
+type Mode = 'image' | 'text' | 'slides' | 'code';
 
 type State =
   | { status: 'idle' }
@@ -15,16 +15,19 @@ type State =
 const MODES: { id: Mode; label: string }[] = [
   { id: 'image', label: 'Chart image' },
   { id: 'text', label: 'Written analysis' },
+  { id: 'slides', label: 'Slide deck' },
   { id: 'code', label: 'Analysis code' },
 ];
 
-const UPLOAD_ACCEPT: Record<Exclude<Mode, 'image'>, string> = {
-  text: '.pdf,.docx,.pptx,.txt,.md,.markdown,.rst,application/pdf',
+const DECK_ACCEPT = '.pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation';
+
+const UPLOAD_ACCEPT: Record<'text' | 'code', string> = {
+  text: '.pdf,.docx,.txt,.md,.markdown,.rst,application/pdf',
   code: '.py,.ipynb,.r,.sql,.js,.mjs,.jsx,.ts,.tsx,.java,.scala,.go,.rb,.jl,.m,.sas,.do,.cpp,.c,.cs,.php,.kt,.rs,.txt',
 };
 
-const UPLOAD_HINT: Record<Exclude<Mode, 'image'>, string> = {
-  text: '.pdf, .docx, .pptx, .txt, .md',
+const UPLOAD_HINT: Record<'text' | 'code', string> = {
+  text: '.pdf, .docx, .txt, .md',
   code: '.py, .ipynb, .sql, .r, .js …',
 };
 
@@ -129,6 +132,13 @@ export default function Home() {
     addImages(Array.from(e.dataTransfer.files ?? []));
   }
 
+  function onDeckDrop(e: DragEvent<HTMLLabelElement>) {
+    e.preventDefault();
+    setDragging(false);
+    const file = Array.from(e.dataTransfer.files ?? [])[0];
+    if (file) setDocFile(file);
+  }
+
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
@@ -142,6 +152,12 @@ export default function Home() {
       imageFiles.forEach((file) => body.append('file', file));
       body.append('mode', 'image');
       request = { method: 'POST', body };
+    } else if (mode === 'slides') {
+      if (!docFile) {
+        setState({ status: 'error', message: 'Choose or drop a PowerPoint deck (.pptx) first.' });
+        return;
+      }
+      request = { method: 'POST', body: fileBody(docFile, 'slides') };
     } else if (docFile) {
       request = { method: 'POST', body: fileBody(docFile, mode) };
     } else {
@@ -177,7 +193,8 @@ export default function Home() {
         <h1>datapitfalls</h1>
         <p className="tagline">
           Check the data work of humans and AI alike — a chart (or several at once), a written
-          analysis, analysis code, or a whole document — for the common pitfalls that mislead.
+          analysis, a slide deck, analysis code, or a document — for the common pitfalls that
+          mislead.
         </p>
         <p className="subtag">
           Grounded in the taxonomy from{' '}
@@ -252,7 +269,38 @@ export default function Home() {
           </>
         )}
 
-        {mode !== 'image' && (
+        {mode === 'slides' && (
+          <>
+            <label
+              className={dragging ? 'filefield dragging' : 'filefield'}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragging(true);
+              }}
+              onDragLeave={() => setDragging(false)}
+              onDrop={onDeckDrop}
+            >
+              <input type="file" accept={DECK_ACCEPT} onChange={(e) => setDocFile(e.target.files?.[0] ?? null)} />
+              <span>
+                {docFile
+                  ? `Deck selected: ${docFile.name} — choose or drop another to replace it`
+                  : 'Choose or drop a PowerPoint deck (.pptx) — we’ll check each slide’s text and its charts'}
+              </span>
+            </label>
+            {docFile && (
+              <div className="uploadrow">
+                <span className="filename">
+                  Auditing {docFile.name}
+                  <button type="button" className="clearfile" onClick={() => setDocFile(null)} aria-label="Remove deck">
+                    ×
+                  </button>
+                </span>
+              </div>
+            )}
+          </>
+        )}
+
+        {(mode === 'text' || mode === 'code') && (
           <>
             {mode === 'code' && (
               <input
