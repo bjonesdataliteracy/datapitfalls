@@ -1,0 +1,66 @@
+name: Release
+
+# Cuts a release when a version tag is pushed. The flow:
+#   1. run the same gate as CI,
+#   2. verify the tag matches package.json,
+#   3. publish the package to npm (with provenance),
+#   4. create a GitHub Release using notes pulled from CHANGELOG.md.
+#
+# To release: bump the version + roll CHANGELOG's [Unreleased] into a dated
+# section on `main`, then `git tag vX.Y.Z && git push origin vX.Y.Z`.
+# See CONTRIBUTING.md → "Cutting a release".
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write # create the GitHub Release
+  id-token: write # npm provenance (OIDC)
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          registry-url: "https://registry.npmjs.org"
+
+      - run: npm ci
+
+      # The gate — never publish something that wouldn't pass CI.
+      - run: npm run lint
+      - run: npm run validate
+      - run: npm test # `pretest` builds first, then runs the suite
+
+      - name: Verify tag matches package.json version
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          PKG="$(node -p "require('./package.json').version")"
+          if [ "$TAG" != "$PKG" ]; then
+            echo "::error::Tag v$TAG does not match package.json version $PKG" >&2
+            exit 1
+          fi
+
+      # `prepack` rebuilds dist/ before publishing. NPM_TOKEN must be an
+      # "Automation" token stored in repo secrets.
+      - name: Publish to npm
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Extract release notes from CHANGELOG
+        run: node scripts/changelog-notes.mjs "$GITHUB_REF_NAME" > RELEASE_NOTES.md
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --title "$GITHUB_REF_NAME" \
+            --notes-file RELEASE_NOTES.md

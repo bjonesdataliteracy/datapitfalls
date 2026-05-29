@@ -84,6 +84,49 @@ Reference any related issue in your PR description (e.g. `Closes #42`). A mainta
 
 ---
 
+## Cutting a release
+
+_Maintainers only._ Releases are automated: pushing a `vX.Y.Z` tag triggers
+[`.github/workflows/release.yml`](.github/workflows/release.yml), which runs the
+gate, verifies the tag matches `package.json`, publishes the package to
+[npm](https://www.npmjs.com/package/datapitfalls) (with provenance), and creates
+a [GitHub Release](https://github.com/bjonesdataliteracy/datapitfalls/releases)
+whose notes are pulled straight from `CHANGELOG.md`.
+
+We follow [Semantic Versioning](https://semver.org/) and
+[Keep a Changelog](https://keepachangelog.com/). The CHANGELOG is the source of
+truth — keep the `[Unreleased]` section current as you merge PRs, so releasing is
+just a matter of stamping a date.
+
+To ship version `X.Y.Z` from an up-to-date `main`:
+
+1. **Roll the changelog.** Rename `## [Unreleased]` to `## [X.Y.Z] - YYYY-MM-DD`,
+   add a fresh empty `[Unreleased]` above it, and update the link references at
+   the bottom of the file.
+2. **Bump the version** to match: `npm version X.Y.Z --no-git-tag-version`.
+   (The tag must equal `package.json`'s `version`, or the release job fails.)
+3. **Commit** (`chore: release vX.Y.Z`), open a PR, and merge it once green.
+4. **Tag and push** from `main`:
+   ```bash
+   git checkout main && git pull
+   git tag vX.Y.Z
+   git push origin vX.Y.Z
+   ```
+
+The release workflow takes it from there. Preview the notes for a version
+locally with:
+
+```bash
+node scripts/changelog-notes.mjs X.Y.Z
+```
+
+> **One-time setup:** the workflow needs an npm **Automation** token stored as
+> the `NPM_TOKEN` repository secret. The `0.1.0` release predates this
+> automation and was never tagged; tag it retroactively if you want its compare
+> link to resolve (`git tag v0.1.0 <commit> && git push origin v0.1.0`).
+
+---
+
 ## Code style and conventions
 
 datapitfalls is written in **TypeScript**, with **Prettier** for formatting and **ESLint** for linting. The configs live at the repo root.
