@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Nothing yet. See the [Roadmap](ROADMAP.md) for what's coming next.
+
+## [0.5.0] - 2026-05-29
+
 ### Added
 
 - Analysis engine and `datapitfalls scan` CLI — audits chart images (Claude Vision), code (Python / SQL / R and more), and plain-English descriptions, grounded on the pitfall catalog and returning structured findings, with a `--ci` exit code for pipelines.
@@ -28,8 +32,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Rebranded to a "pitfall detector" vocabulary. The public API is renamed (breaking, bumps to `0.2.0`): `analyze()` → `detectPitfalls()`, `AuditReport` → `PitfallReport`, `AnalyzeInput` → `DetectionInput`, `AnalyzeOptions` → `DetectionOptions`, `AuditUsage` → `DetectionUsage`. The CLI commands and the `Finding` shape are unchanged.
 
-See the [Roadmap](ROADMAP.md) for what's coming next.
-
 ## [0.1.0] - 2026-05-24
 
 ### Added
@@ -38,5 +40,6 @@ See the [Roadmap](ROADMAP.md) for what's coming next.
 - Pitfall taxonomy v0.1 structure, organized around the eight audit domains from _Avoiding Data Pitfalls_.
 - Project roadmap outlining the path from foundation through developer tools and community ecosystem.
 
-[Unreleased]: https://github.com/bjonesdataliteracy/datapitfalls/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/bjonesdataliteracy/datapitfalls/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/bjonesdataliteracy/datapitfalls/compare/v0.1.0...v0.5.0
 [0.1.0]: https://github.com/bjonesdataliteracy/datapitfalls/releases/tag/v0.1.0
