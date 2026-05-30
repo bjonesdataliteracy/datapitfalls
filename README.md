@@ -16,6 +16,12 @@
 [![GitHub stars](https://img.shields.io/github/stars/bjonesdataliteracy/datapitfalls.svg?style=social)](https://github.com/bjonesdataliteracy/datapitfalls/stargazers)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
+<br>
+
+[![Try it in your browser](https://img.shields.io/badge/▶_Try_it_in_your_browser-2ea44f?style=for-the-badge)](https://avoidingdatapitfalls.com)
+
+**[avoidingdatapitfalls.com](https://avoidingdatapitfalls.com)** — run a scan right now, no install required.
+
 </div>
 
 ---
