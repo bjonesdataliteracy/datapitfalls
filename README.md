@@ -4,6 +4,8 @@
 
 ### Helping you steer clear of common blunders when working with data
 
+<img src="docs/datapitfalls-cli-dark.png" alt="datapitfalls CLI welcome screen" width="640">
+
 [![CI](https://github.com/bjonesdataliteracy/datapitfalls/actions/workflows/ci.yml/badge.svg)](https://github.com/bjonesdataliteracy/datapitfalls/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/datapitfalls.svg)](https://www.npmjs.com/package/datapitfalls)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
