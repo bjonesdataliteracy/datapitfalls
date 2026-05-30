@@ -53,14 +53,14 @@ Detect pitfalls across whole bodies of work, in context.
 - [x] Slide-deck upload (PPTX) — per-slide text and chart images
 - [x] Whole-chain scanning — submit the steps of one analysis (code, charts, prose) together and detect pitfalls that only emerge across stages (CLI `--chain`, web "Full analysis" mode)
 
-## 🟢 Phase 6 — Distribution & Public API _(Current)_
+## ✅ Phase 6 — Distribution & Public API
 
 Make datapitfalls easy to install and build on.
 
 - [x] Published npm package — [`datapitfalls`](https://www.npmjs.com/package/datapitfalls) (`npm install datapitfalls`)
-- [ ] Public API for tool builders
+- [x] Public API for tool builders — documented, stable library surface ([docs/API.md](docs/API.md))
 
-## ⚪ Phase 7 — Community & Ecosystem
+## 🟢 Phase 7 — Community & Ecosystem _(Current)_
 
 Open the doors and grow.
 
