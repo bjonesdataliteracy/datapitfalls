@@ -4,6 +4,12 @@
 
 ### Helping you steer clear of common blunders when working with data
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/datapitfalls-cli-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="docs/datapitfalls-cli.png">
+  <img src="docs/datapitfalls-cli-dark.png" alt="datapitfalls CLI welcome screen" width="640">
+</picture>
+
 [![CI](https://github.com/bjonesdataliteracy/datapitfalls/actions/workflows/ci.yml/badge.svg)](https://github.com/bjonesdataliteracy/datapitfalls/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/datapitfalls.svg)](https://www.npmjs.com/package/datapitfalls)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
