@@ -7,7 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Nothing yet. See the [Roadmap](ROADMAP.md) for what's coming next.
+### Added
+
+- Public API reference ([docs/API.md](docs/API.md)) documenting the supported
+  library surface — `detectPitfalls()`, input/report types, `formatReport`,
+  file routing, and taxonomy queries — plus an API-stability and semver policy,
+  with a "Programmatic API" section linked from the README. Completes Phase 6 of
+  the [Roadmap](ROADMAP.md).
+
+### Fixed
+
+- `VERSION` is now read from `package.json` at runtime instead of a hardcoded
+  literal, so the library and CLI always report the real published version.
 
 ## [0.5.0] - 2026-05-29
 

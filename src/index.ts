@@ -2,11 +2,20 @@
 
 /**
  * datapitfalls detects common pitfalls in data work across the entire data
- * reasoning chain. This is the library entry point; the public API will grow
- * as the project moves through the phases described in ROADMAP.md.
+ * reasoning chain. This is the library entry point and the supported public
+ * API — see docs/API.md for the stable surface and the API-stability policy.
  */
 
-export const VERSION = '0.5.0';
+import { createRequire } from 'node:module';
+
+// Read the version from package.json at runtime so it can never drift from the
+// published package. A static `import` would break `rootDir: src`, so we use a
+// runtime require, which also resolves correctly from dist/ in the npm tarball
+// (dist/index.js → ../package.json).
+const pkg = createRequire(import.meta.url)('../package.json') as { version: string };
+
+/** The installed datapitfalls version (read from package.json). */
+export const VERSION: string = pkg.version;
 
 export const TAGLINE = 'Helping you steer clear of common blunders when working with data.';
 

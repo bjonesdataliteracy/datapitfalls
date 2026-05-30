@@ -144,6 +144,30 @@ export ANTHROPIC_API_KEY="sk-ant-..."
 
 ---
 
+## Programmatic API
+
+Beyond the CLI, datapitfalls is a library you can build on. The core is
+`detectPitfalls()`, which scans an artifact (or a whole analysis chain) and
+returns a structured report:
+
+```ts
+import { detectPitfalls, formatReport, hasBlockingFindings } from 'datapitfalls';
+
+const report = await detectPitfalls(
+  { kind: 'code', content: 'SELECT AVG(rate) FROM metrics;', language: 'SQL' },
+  { apiKey: process.env.ANTHROPIC_API_KEY }
+);
+
+console.log(formatReport(report));
+if (hasBlockingFindings(report)) process.exit(1);
+```
+
+The package is ESM-only and ships its own TypeScript types. See the **[API
+reference](docs/API.md)** for the full supported surface — inputs, report
+shape, file routing, taxonomy queries — and the API-stability policy.
+
+---
+
 ## How It Works
 
 ```
