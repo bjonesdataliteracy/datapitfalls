@@ -17,7 +17,7 @@ on:
 
 permissions:
   contents: write # create the GitHub Release
-  id-token: write # npm provenance (OIDC)
+  id-token: write # OIDC: npm Trusted Publishing + provenance
 
 jobs:
   release:
@@ -30,6 +30,10 @@ jobs:
           node-version: 20
           cache: npm
           registry-url: "https://registry.npmjs.org"
+
+      # Trusted Publishing needs npm >= 11.5.1; Node 20 ships npm 10, so bump it.
+      - name: Upgrade npm for Trusted Publishing
+        run: npm install -g npm@latest
 
       - run: npm ci
 
@@ -47,12 +51,14 @@ jobs:
             exit 1
           fi
 
-      # `prepack` rebuilds dist/ before publishing. NPM_TOKEN must be an
-      # "Automation" token stored in repo secrets.
+      # `prepack` rebuilds dist/ before publishing. Auth is via Trusted
+      # Publishing (OIDC) — no token: npm verifies this workflow against the
+      # trusted publisher registered for the package on npmjs.com, using the
+      # `id-token: write` permission above. Provenance is generated
+      # automatically, so no `--provenance` flag is needed. See CONTRIBUTING.md
+      # → "Cutting a release".
       - name: Publish to npm
-        run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
 
       - name: Extract release notes from CHANGELOG
         run: node scripts/changelog-notes.mjs "$GITHUB_REF_NAME" > RELEASE_NOTES.md

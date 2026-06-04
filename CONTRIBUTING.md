@@ -120,10 +120,18 @@ locally with:
 node scripts/changelog-notes.mjs X.Y.Z
 ```
 
-> **One-time setup:** the workflow needs an npm **Automation** token stored as
-> the `NPM_TOKEN` repository secret. The `0.1.0` release predates this
-> automation and was never tagged; tag it retroactively if you want its compare
-> link to resolve (`git tag v0.1.0 <commit> && git push origin v0.1.0`).
+> **One-time setup:** publishing uses npm **Trusted Publishing** (OIDC) — no
+> token to store or rotate. On [npmjs.com](https://www.npmjs.com/package/datapitfalls)
+> → the package's **Settings → Trusted Publisher**, register GitHub Actions with
+> organization/repo `bjonesdataliteracy/datapitfalls` and workflow
+> `release.yml`. The release job authenticates via its `id-token: write`
+> permission; npm generates provenance automatically. (No `NPM_TOKEN` secret is
+> needed — if one lingers in repo secrets from the old token-based flow, you can
+> delete it.)
+>
+> The `0.1.0` release predates this automation and was never tagged; tag it
+> retroactively if you want its compare link to resolve
+> (`git tag v0.1.0 <commit> && git push origin v0.1.0`).
 
 ---
 
