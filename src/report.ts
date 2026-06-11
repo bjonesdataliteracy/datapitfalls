@@ -29,9 +29,17 @@ export function hasBlockingFindings(report: PitfallReport): boolean {
   return report.findings.some((f) => f.nature === 'active' && f.severity !== 'info');
 }
 
+// EXPERIMENTAL — human labels for the consequence rating (variant runs only).
+const CONSEQUENCE_LABEL: Record<string, string> = {
+  'changes-takeaway': 'changes the takeaway',
+  'weakens-support': 'weakens support',
+  polish: 'polish',
+};
+
 function renderFinding(finding: Finding, lines: string[]): void {
+  const consequence = finding.consequence ? ` · ${CONSEQUENCE_LABEL[finding.consequence]}` : '';
   lines.push(
-    `[${SEVERITY_LABEL[finding.severity]}] ${finding.name}  (${finding.domain} · ${finding.ruleId} · ${finding.confidence} confidence)`
+    `[${SEVERITY_LABEL[finding.severity]}] ${finding.name}  (${finding.domain} · ${finding.ruleId} · ${finding.confidence} confidence${consequence})`
   );
   lines.push(`  Why: ${finding.explanation}`);
   if (finding.nature === 'latent' && finding.condition) {
@@ -62,16 +70,25 @@ export function formatReport(report: PitfallReport, options: ReportFormatOptions
   const latent = showAll ? allLatent : allLatent.filter((f) => f.confidence === 'high');
   const hiddenLatent = allLatent.length - latent.length;
 
+  // EXPERIMENTAL — verdict/strengths lead the report when a variant produced them.
+  const preamble: string[] = [];
+  if (report.verdict) preamble.push(`Verdict: ${report.verdict}`);
+  if (report.strengths) preamble.push(`Done well: ${report.strengths}`);
+  if (preamble.length > 0) preamble.push('');
+
   if (active.length === 0 && latent.length === 0) {
     const base =
       hiddenLatent > 0
         ? `No active pitfalls detected — ${hiddenLatent} lower-confidence latent note(s) hidden (use --all to show).`
         : 'No pitfalls detected.';
-    return `${base} Considered ${report.rulesConsidered} rules, model ${report.model}.`;
+    return [...preamble, `${base} Considered ${report.rulesConsidered} rules, model ${report.model}.`].join(
+      '\n'
+    );
   }
 
   const counts = countBySeverity([...active, ...latent]);
   const lines: string[] = [
+    ...preamble,
     `${active.length + latent.length} pitfall(s) shown — ${active.length} active, ${latent.length} latent · ` +
       `${counts.error} error / ${counts.warning} warning / ${counts.info} info (model ${report.model}):`,
     '',

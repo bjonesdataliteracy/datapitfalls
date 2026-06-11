@@ -51,6 +51,9 @@ Thumbs.db
 .tmp/
 tmp/
 
+# Generated A/B comparison output (evals/compare.mjs)
+evals/compare-report.md
+
 # Private source material — book text, manuscripts, licensed PDFs.
 # Keep "Avoiding Data Pitfalls" content OUT of the public repo. Use these
 # local-only locations for raw source text; only original, distilled taxonomy

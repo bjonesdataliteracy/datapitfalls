@@ -68,3 +68,19 @@ test('formatReport notes the hidden count when every finding is filtered out', (
   assert.match(text, /No active pitfalls detected/);
   assert.match(text, /1 lower-confidence latent note/);
 });
+
+test('formatReport leads with verdict and strengths when a variant produced them', () => {
+  const text = formatReport(
+    report([finding()], { verdict: 'Fundamentally sound.', strengths: 'Clear axis labels.' })
+  );
+  assert.match(text, /^Verdict: Fundamentally sound\.\nDone well: Clear axis labels\./);
+
+  const clean = formatReport(report([], { verdict: 'Nothing to fix.' }));
+  assert.match(clean, /^Verdict: Nothing to fix\./);
+  assert.match(clean, /No pitfalls detected/);
+});
+
+test('formatReport shows a consequence rating in the finding header when present', () => {
+  const text = formatReport(report([finding({ consequence: 'changes-takeaway' })]));
+  assert.match(text, /changes the takeaway/);
+});

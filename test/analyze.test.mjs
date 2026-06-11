@@ -12,8 +12,9 @@ import {
 } from '../dist/index.js';
 
 // A stand-in for the Anthropic client: messages.create returns the given
-// findings as a report_findings tool call and records the params it was given.
-function fakeClient(findings) {
+// findings (plus any extra top-level tool-input fields, e.g. a variant's
+// verdict/strengths) as a report_findings tool call and records the params.
+function fakeClient(findings, extra = {}) {
   const calls = [];
   return {
     calls,
@@ -21,7 +22,7 @@ function fakeClient(findings) {
       create: async (params) => {
         calls.push(params);
         return {
-          content: [{ type: 'tool_use', id: 't', name: 'report_findings', input: { findings } }],
+          content: [{ type: 'tool_use', id: 't', name: 'report_findings', input: { findings, ...extra } }],
           usage: {
             input_tokens: 100,
             output_tokens: 20,
@@ -163,4 +164,70 @@ test('a chain scans every stage together, grounded on the full catalog', async (
   const headers = content.filter((b) => b.type === 'text' && b.text.startsWith('=== Stage '));
   assert.equal(headers.length, 3);
   assert.equal(content.filter((b) => b.type === 'image').length, 1);
+});
+
+// EXPERIMENTAL presentation variants (see evals/compare.mjs).
+
+test('baseline keeps the shipped request and ignores stray verdict fields', async () => {
+  const client = fakeClient([], { verdict: 'looks fine', strengths: 'nice axis' });
+  const report = await detectPitfalls(textInput, { client });
+
+  assert.equal(report.verdict, undefined);
+  assert.equal(report.strengths, undefined);
+  const schema = client.calls[0].tools[0].input_schema;
+  assert.equal(schema.properties.verdict, undefined);
+  assert.ok(!schema.required.includes('verdict'));
+  assert.doesNotMatch(client.calls[0].system[0].text, /verdict/);
+});
+
+test('the verdict variant asks for and surfaces a verdict and per-finding consequence', async () => {
+  const realRule = getAllRules()[0];
+  const client = fakeClient(
+    [
+      {
+        rule_id: realRule.id,
+        confidence: 'high',
+        nature: 'active',
+        evidence: 'x',
+        explanation: 'y',
+        consequence: 'changes-takeaway',
+      },
+    ],
+    { verdict: '  Fundamentally sound; fix the legend.  ', strengths: 'should be ignored' }
+  );
+  const report = await detectPitfalls(textInput, { client, variant: 'verdict' });
+
+  assert.equal(report.verdict, 'Fundamentally sound; fix the legend.');
+  assert.equal(report.strengths, undefined); // strengths only in verdict-strengths
+  assert.equal(report.findings[0].consequence, 'changes-takeaway');
+
+  const schema = client.calls[0].tools[0].input_schema;
+  assert.ok(schema.required.includes('verdict'));
+  assert.equal(schema.properties.strengths, undefined);
+  assert.ok(schema.properties.findings.items.required.includes('consequence'));
+  assert.match(client.calls[0].system[0].text, /"verdict"/);
+});
+
+test('a bogus consequence is dropped rather than surfaced', async () => {
+  const realRule = getAllRules()[0];
+  const client = fakeClient(
+    [{ rule_id: realRule.id, confidence: 'high', nature: 'active', evidence: 'x', explanation: 'y', consequence: 'huge' }],
+    { verdict: 'ok' }
+  );
+  const report = await detectPitfalls(textInput, { client, variant: 'verdict' });
+  assert.equal(report.findings[0].consequence, undefined);
+});
+
+test('verdict-strengths surfaces strengths but drops an empty one', async () => {
+  const withStrengths = await detectPitfalls(textInput, {
+    client: fakeClient([], { verdict: 'ok', strengths: 'Clear, unit-labeled axes.' }),
+    variant: 'verdict-strengths',
+  });
+  assert.equal(withStrengths.strengths, 'Clear, unit-labeled axes.');
+
+  const empty = await detectPitfalls(textInput, {
+    client: fakeClient([], { verdict: 'ok', strengths: '   ' }),
+    variant: 'verdict-strengths',
+  });
+  assert.equal(empty.strengths, undefined);
 });

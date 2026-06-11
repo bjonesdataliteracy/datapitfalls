@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- EXPERIMENTAL presentation variants for `detectPitfalls()` —
+  `variant: 'verdict'` adds a one-to-two-sentence overall verdict and a
+  per-finding `consequence` rating (changes-takeaway / weakens-support /
+  polish); `'verdict-strengths'` additionally asks for one line of genuine
+  strengths. Off by default; not yet exposed in the CLI or web app. A new
+  dev-only A/B harness (`evals/compare.mjs`) runs the same artifacts through
+  several variants and writes a side-by-side report, to evaluate fixes for
+  finding-overload feedback before shipping any of them.
+
 - Public API reference ([docs/API.md](docs/API.md)) documenting the supported
   library surface — `detectPitfalls()`, input/report types, `formatReport`,
   file routing, and taxonomy queries — plus an API-stability and semver policy,

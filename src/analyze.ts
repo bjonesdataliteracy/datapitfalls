@@ -121,6 +121,18 @@ export function imageMediaTypeForExtension(ext: string): ImageMediaType | undefi
 
 export type Confidence = 'low' | 'medium' | 'high';
 
+/** EXPERIMENTAL — presentation variants for A/B comparison (see evals/compare.mjs).
+ *  'baseline' is the shipped behavior. 'verdict' adds a one-to-two-sentence overall
+ *  verdict and a per-finding consequence rating. 'verdict-strengths' additionally
+ *  asks for one line of genuine strengths (empty when nothing is notable). */
+export type PresentationVariant = 'baseline' | 'verdict' | 'verdict-strengths';
+
+/** EXPERIMENTAL — how much a finding matters to the artifact's message:
+ *  fixing it would change what a reader concludes ('changes-takeaway'), the
+ *  conclusion may stand but is less supported than presented ('weakens-support'),
+ *  or it improves clarity/craft without changing the message ('polish'). */
+export type Consequence = 'changes-takeaway' | 'weakens-support' | 'polish';
+
 /** Whether a pitfall is evident from the artifact itself ("active") or is a risky
  *  pattern whose impact depends on data the detector can't see ("latent"). */
 export type FindingNature = 'active' | 'latent';
@@ -140,6 +152,8 @@ export interface Finding {
   evidence: string;
   explanation: string;
   remediation: string;
+  /** EXPERIMENTAL — present only when a non-baseline variant is selected. */
+  consequence?: Consequence;
 }
 
 export interface DetectionUsage {
@@ -156,6 +170,11 @@ export interface PitfallReport {
   model: string;
   rulesConsidered: number;
   usage?: DetectionUsage;
+  /** EXPERIMENTAL — one-to-two-sentence overall assessment ('verdict' variants only). */
+  verdict?: string;
+  /** EXPERIMENTAL — one line of genuine strengths ('verdict-strengths' variant only;
+   *  absent when the model found nothing genuinely notable). */
+  strengths?: string;
 }
 
 export interface DetectionOptions {
@@ -169,6 +188,9 @@ export interface DetectionOptions {
   domains?: Domain[];
   /** Max output tokens. Defaults to 16000. */
   maxTokens?: number;
+  /** EXPERIMENTAL — presentation variant to A/B test. Defaults to 'baseline'
+   *  (the shipped behavior). See evals/compare.mjs. */
+  variant?: PresentationVariant;
 }
 
 // claude-sonnet-4-6 is the default: in the eval harness it had the highest active
@@ -301,6 +323,61 @@ const REPORT_TOOL: Anthropic.Tool = {
     required: ['findings'],
   },
 };
+
+// EXPERIMENTAL — appended to the kind-specific system instructions for the
+// non-baseline variants. Note: changing the instructions block changes the
+// prompt-cache prefix, so each variant warms its own cache entry.
+const VERDICT_ADDENDUM = `
+
+Additional reporting requirements:
+- Provide a "verdict": one or two sentences summarizing the overall state of this work for its author. Lead with whether the work is fundamentally sound, then name the single most important thing to address, if any. Keep it proportionate — do not catastrophize work that has only minor issues, and do not soften work with a conclusion-changing flaw.
+- Rate each finding's "consequence": "changes-takeaway" if fixing it would likely change what a reader concludes from the work; "weakens-support" if the conclusion may stand but is less well supported than presented; "polish" if fixing it improves clarity or craft without changing the message.`;
+
+const STRENGTHS_ADDENDUM = `
+- Provide "strengths": at most one sentence naming something this work genuinely does well, citing the specific element (the axis, the labeling, the method, a caveat it states). If nothing is genuinely notable, return an empty string — never pad with generic praise that could apply to any artifact.`;
+
+function variantAddendum(variant: PresentationVariant): string {
+  if (variant === 'baseline') return '';
+  return variant === 'verdict-strengths' ? VERDICT_ADDENDUM + STRENGTHS_ADDENDUM : VERDICT_ADDENDUM;
+}
+
+// EXPERIMENTAL — the report tool with the variant's extra fields. Baseline
+// returns REPORT_TOOL untouched so the shipped request is byte-identical.
+function buildReportTool(variant: PresentationVariant): Anthropic.Tool {
+  if (variant === 'baseline') return REPORT_TOOL;
+  const tool = structuredClone(REPORT_TOOL);
+  const schema = tool.input_schema as unknown as {
+    properties: Record<string, unknown>;
+    required: string[];
+  };
+  const findingSchema = (
+    schema.properties.findings as {
+      items: { properties: Record<string, unknown>; required: string[] };
+    }
+  ).items;
+  findingSchema.properties.consequence = {
+    type: 'string',
+    enum: ['changes-takeaway', 'weakens-support', 'polish'],
+    description:
+      'How much this finding matters to the message: "changes-takeaway" if fixing it would likely change what a reader concludes, "weakens-support" if the conclusion may stand but is less supported than presented, "polish" if it improves clarity or craft without changing the message.',
+  };
+  findingSchema.required.push('consequence');
+  schema.properties.verdict = {
+    type: 'string',
+    description:
+      'One or two sentences summarizing the overall state of the work for its author: whether it is fundamentally sound, and the single most important thing to address, if any.',
+  };
+  schema.required.push('verdict');
+  if (variant === 'verdict-strengths') {
+    schema.properties.strengths = {
+      type: 'string',
+      description:
+        'At most one sentence naming something the work genuinely does well, citing the specific element. Empty string if nothing is genuinely notable.',
+    };
+    schema.required.push('strengths');
+  }
+  return tool;
+}
 
 function serializeRules(rules: readonly PitfallRule[]): string {
   return rules
@@ -478,14 +555,30 @@ function normalizeNature(value: unknown): FindingNature {
   return value === 'latent' ? 'latent' : 'active';
 }
 
-function extractFindings(message: Anthropic.Message): Finding[] {
+function normalizeConsequence(value: unknown): Consequence | undefined {
+  return value === 'changes-takeaway' || value === 'weakens-support' || value === 'polish'
+    ? value
+    : undefined;
+}
+
+/** The raw input of the report_findings tool call, or undefined if absent. */
+function findToolInput(message: Anthropic.Message): Record<string, unknown> | undefined {
   const toolUse = message.content.find(
     (block): block is Anthropic.ToolUseBlock =>
       block.type === 'tool_use' && block.name === REPORT_TOOL.name
   );
-  if (!toolUse) return [];
+  if (!toolUse || typeof toolUse.input !== 'object' || toolUse.input === null) return undefined;
+  return toolUse.input as Record<string, unknown>;
+}
 
-  const input = toolUse.input as { findings?: unknown };
+/** A trimmed, non-empty string from the tool input, or undefined. */
+function nonEmptyString(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined;
+  const trimmed = value.trim();
+  return trimmed === '' ? undefined : trimmed;
+}
+
+function extractFindings(input: Record<string, unknown> | undefined): Finding[] {
   if (!input || !Array.isArray(input.findings)) return [];
 
   const findings: Finding[] = [];
@@ -511,6 +604,7 @@ function extractFindings(message: Anthropic.Message): Finding[] {
       evidence: typeof raw.evidence === 'string' ? raw.evidence : '',
       explanation: typeof raw.explanation === 'string' ? raw.explanation : '',
       remediation: rule.remediation.trim(),
+      consequence: normalizeConsequence(raw.consequence),
     });
   }
   return findings;
@@ -530,6 +624,7 @@ export async function detectPitfalls(
 
   const model = options.model ?? process.env.ANTHROPIC_MODEL ?? DEFAULT_MODEL;
   const maxTokens = options.maxTokens ?? 16000;
+  const variant = options.variant ?? 'baseline';
   const client = options.client ?? new Anthropic(options.apiKey ? { apiKey: options.apiKey } : {});
 
   const instructions =
@@ -541,26 +636,31 @@ export async function detectPitfalls(
           ? DOCUMENT_SYSTEM_INSTRUCTIONS
           : SYSTEM_INSTRUCTIONS;
   const taxonomyBlock = `# Pitfall catalog (${rules.length} rules)\n\n${serializeRules(rules)}`;
+  const reportTool = buildReportTool(variant);
 
   const message = await client.messages.create({
     model,
     max_tokens: maxTokens,
     system: [
-      { type: 'text', text: instructions },
+      { type: 'text', text: instructions + variantAddendum(variant) },
       // The catalog is identical across requests of the same kind — cache it so
       // repeated audits only pay full price for the (small) per-request artifact.
       { type: 'text', text: taxonomyBlock, cache_control: { type: 'ephemeral' } },
     ],
-    tools: [REPORT_TOOL],
-    tool_choice: { type: 'tool', name: REPORT_TOOL.name },
+    tools: [reportTool],
+    tool_choice: { type: 'tool', name: reportTool.name },
     messages: [{ role: 'user', content: buildUserContent(input) }],
   });
 
+  const toolInput = findToolInput(message);
+
   return {
-    findings: extractFindings(message),
+    findings: extractFindings(toolInput),
     kind: input.kind,
     model,
     rulesConsidered: rules.length,
+    verdict: variant === 'baseline' ? undefined : nonEmptyString(toolInput?.verdict),
+    strengths: variant === 'verdict-strengths' ? nonEmptyString(toolInput?.strengths) : undefined,
     usage: message.usage
       ? {
           inputTokens: message.usage.input_tokens,
