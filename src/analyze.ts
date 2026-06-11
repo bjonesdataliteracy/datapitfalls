@@ -123,9 +123,11 @@ export type Confidence = 'low' | 'medium' | 'high';
 
 /** EXPERIMENTAL — presentation variants for A/B comparison (see evals/compare.mjs).
  *  'baseline' is the shipped behavior. 'verdict' adds a one-to-two-sentence overall
- *  verdict and a per-finding consequence rating. 'verdict-strengths' additionally
- *  asks for one line of genuine strengths (empty when nothing is notable). */
-export type PresentationVariant = 'baseline' | 'verdict' | 'verdict-strengths';
+ *  verdict (which may note one genuine strength) and a per-finding consequence
+ *  rating. A separate mandatory strengths field was tried and cut: across the eval
+ *  fixtures it duplicated the verdict, contradicted findings, or padded with
+ *  generic praise — the optional in-verdict mention kept the genuine wins. */
+export type PresentationVariant = 'baseline' | 'verdict';
 
 /** EXPERIMENTAL — how much a finding matters to the artifact's message:
  *  fixing it would change what a reader concludes ('changes-takeaway'), the
@@ -170,11 +172,8 @@ export interface PitfallReport {
   model: string;
   rulesConsidered: number;
   usage?: DetectionUsage;
-  /** EXPERIMENTAL — one-to-two-sentence overall assessment ('verdict' variants only). */
+  /** EXPERIMENTAL — one-to-two-sentence overall assessment ('verdict' variant only). */
   verdict?: string;
-  /** EXPERIMENTAL — one line of genuine strengths ('verdict-strengths' variant only;
-   *  absent when the model found nothing genuinely notable). */
-  strengths?: string;
 }
 
 export interface DetectionOptions {
@@ -325,20 +324,16 @@ const REPORT_TOOL: Anthropic.Tool = {
 };
 
 // EXPERIMENTAL — appended to the kind-specific system instructions for the
-// non-baseline variants. Note: changing the instructions block changes the
+// 'verdict' variant. Note: changing the instructions block changes the
 // prompt-cache prefix, so each variant warms its own cache entry.
 const VERDICT_ADDENDUM = `
 
 Additional reporting requirements:
-- Provide a "verdict": one or two sentences summarizing the overall state of this work for its author. Lead with whether the work is fundamentally sound, then name the single most important thing to address, if any. Keep it proportionate — do not catastrophize work that has only minor issues, and do not soften work with a conclusion-changing flaw.
-- Rate each finding's "consequence": "changes-takeaway" if fixing it would likely change what a reader concludes from the work; "weakens-support" if the conclusion may stand but is less well supported than presented; "polish" if fixing it improves clarity or craft without changing the message.`;
-
-const STRENGTHS_ADDENDUM = `
-- Provide "strengths": at most one sentence naming something this work genuinely does well, citing the specific element (the axis, the labeling, the method, a caveat it states). If nothing is genuinely notable, return an empty string — never pad with generic praise that could apply to any artifact.`;
+- Provide a "verdict": one or two sentences summarizing the overall state of this work for its author. Lead with whether the work is fundamentally sound, then name the single most important thing to address, if any. Distinguish what is evident from what is conditional: if the key flaw is active, say it holds regardless of the unseen data; if every finding is latent, say plainly that nothing is evidently wrong and frame the findings as conditions to verify, not problems. You may note one genuine, specific strength (cite the element — an axis, a label, a stated caveat) when the work has one; never use generic praise that could apply to any artifact, and never praise something your own findings criticize. Keep the verdict proportionate: do not catastrophize work with only minor issues, and do not soften work with a conclusion-changing flaw.
+- Rate each finding's "consequence" — how much it matters to what a reader would conclude. For latent findings, rate the consequence assuming the stated condition actually holds. Reserve "changes-takeaway" for findings whose fix (or whose condition biting) would likely change the conclusion itself (e.g. an unweighted average of rates, a partial final period read as a decline). Use "weakens-support" when the conclusion may stand but is less well supported than presented (e.g. reported counts treated as real-world incidence, a possibly biased subset). Use "polish" when fixing it improves clarity or craft without changing the message (e.g. a clearer label, a better chart type for the same story). Most findings are not "changes-takeaway"; if you rate more than two findings that way, re-check that each one really overturns the conclusion on its own.`;
 
 function variantAddendum(variant: PresentationVariant): string {
-  if (variant === 'baseline') return '';
-  return variant === 'verdict-strengths' ? VERDICT_ADDENDUM + STRENGTHS_ADDENDUM : VERDICT_ADDENDUM;
+  return variant === 'verdict' ? VERDICT_ADDENDUM : '';
 }
 
 // EXPERIMENTAL — the report tool with the variant's extra fields. Baseline
@@ -365,17 +360,9 @@ function buildReportTool(variant: PresentationVariant): Anthropic.Tool {
   schema.properties.verdict = {
     type: 'string',
     description:
-      'One or two sentences summarizing the overall state of the work for its author: whether it is fundamentally sound, and the single most important thing to address, if any.',
+      'One or two sentences summarizing the overall state of the work for its author: whether it is fundamentally sound, and the single most important thing to address, if any. May note one genuine, specific strength.',
   };
   schema.required.push('verdict');
-  if (variant === 'verdict-strengths') {
-    schema.properties.strengths = {
-      type: 'string',
-      description:
-        'At most one sentence naming something the work genuinely does well, citing the specific element. Empty string if nothing is genuinely notable.',
-    };
-    schema.required.push('strengths');
-  }
   return tool;
 }
 
@@ -659,8 +646,7 @@ export async function detectPitfalls(
     kind: input.kind,
     model,
     rulesConsidered: rules.length,
-    verdict: variant === 'baseline' ? undefined : nonEmptyString(toolInput?.verdict),
-    strengths: variant === 'verdict-strengths' ? nonEmptyString(toolInput?.strengths) : undefined,
+    verdict: variant === 'verdict' ? nonEmptyString(toolInput?.verdict) : undefined,
     usage: message.usage
       ? {
           inputTokens: message.usage.input_tokens,

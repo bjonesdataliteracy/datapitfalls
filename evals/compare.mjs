@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 // datapitfalls presentation A/B harness — DEV ONLY, not part of the shipped tool.
 //
-// Runs the same artifacts through two or more presentation variants of
-// detectPitfalls() — baseline (shipped), verdict (adds an overall verdict line
-// and a per-finding consequence rating), verdict-strengths (additionally asks
-// for one line of genuine strengths) — and writes a side-by-side markdown
-// report for human review.
+// Runs the same artifacts through the presentation variants of
+// detectPitfalls() — baseline (shipped) and verdict (adds an overall verdict
+// line, which may note one genuine strength, plus a per-finding consequence
+// rating) — and writes a side-by-side markdown report for human review.
+// (A separate mandatory strengths field was tried and cut after round 1:
+// it duplicated the verdict, contradicted findings, or padded with filler.)
 //
 // The detection task is unchanged across variants; this compares how the same
 // scan READS, which is a judgment call that precision metrics can't answer:
@@ -18,8 +19,7 @@
 // Usage:
 //   ANTHROPIC_API_KEY=... node evals/compare.mjs [--variants a,b] [--model id] [files...]
 //
-//   --variants  comma-separated subset of: baseline,verdict,verdict-strengths
-//               (default: all three)
+//   --variants  comma-separated subset of: baseline,verdict (default: both)
 //   --model     model id (default: the engine default)
 //   files       artifacts to scan — chart images (.png/.jpg/.gif/.webp), code
 //               files, .txt/.md prose, PDFs. Each file is scanned on its own.
@@ -39,7 +39,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const fixturesDir = join(here, 'fixtures');
 const outPath = join(here, 'compare-report.md');
 
-const ALL_VARIANTS = ['baseline', 'verdict', 'verdict-strengths'];
+const ALL_VARIANTS = ['baseline', 'verdict'];
 
 function parseArgs(argv) {
   const opts = { variants: ALL_VARIANTS, model: undefined, files: [] };
@@ -94,18 +94,19 @@ async function loadArtifacts(files) {
   return artifacts;
 }
 
-// Triage order used to nominate the headline finding: consequence first (the
-// variant's whole point), then severity, confidence, and active before latent.
+// Triage order used to nominate the headline finding: active before latent (a
+// definite finding never queues behind a speculative one, however consequential
+// the speculation), then consequence, severity, and confidence.
 const CONSEQUENCE_RANK = { 'changes-takeaway': 0, 'weakens-support': 1, polish: 2 };
 const SEVERITY_RANK = { error: 0, warning: 1, info: 2 };
 const CONFIDENCE_RANK = { high: 0, medium: 1, low: 2 };
 
 function triageOrder(a, b) {
   return (
+    (a.nature === 'latent' ? 1 : 0) - (b.nature === 'latent' ? 1 : 0) ||
     (CONSEQUENCE_RANK[a.consequence] ?? 3) - (CONSEQUENCE_RANK[b.consequence] ?? 3) ||
     SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity] ||
-    CONFIDENCE_RANK[a.confidence] - CONFIDENCE_RANK[b.confidence] ||
-    (a.nature === 'latent' ? 1 : 0) - (b.nature === 'latent' ? 1 : 0)
+    CONFIDENCE_RANK[a.confidence] - CONFIDENCE_RANK[b.confidence]
   );
 }
 
@@ -126,9 +127,6 @@ function renderFinding(f, headline) {
 function renderVariantSection(variant, report, baselineIds) {
   const lines = [`### ${variant}`, ''];
   if (report.verdict) lines.push(`**Verdict:** ${report.verdict}`, '');
-  if (variant === 'verdict-strengths') {
-    lines.push(`**Strengths:** ${report.strengths ?? '*(none reported)*'}`, '');
-  }
   if (report.findings.length === 0) {
     lines.push('No pitfalls detected.', '');
   } else {
@@ -178,7 +176,7 @@ const md = [
   `Generated ${new Date().toISOString()} · variants: ${opts.variants.join(', ')}` +
     `${opts.model ? ` · model: ${opts.model}` : ''}`,
   '',
-  '★ marks the derived headline finding (consequence → severity → confidence → active-first).',
+  '★ marks the derived headline finding (active-first → consequence → severity → confidence).',
   '',
 ];
 const totals = Object.fromEntries(

@@ -86,10 +86,9 @@ interface DetectionOptions {
   domains?: Domain[];
   /** Max output tokens. Defaults to 16000. */
   maxTokens?: number;
-  /** EXPERIMENTAL — presentation variant to A/B test ('baseline' | 'verdict' |
-   *  'verdict-strengths'). Defaults to 'baseline'. Not covered by the
-   *  API-stability policy; may change or be removed once the experiment
-   *  concludes. See evals/compare.mjs. */
+  /** EXPERIMENTAL — presentation variant to A/B test ('baseline' | 'verdict').
+   *  Defaults to 'baseline'. Not covered by the API-stability policy; may
+   *  change or be removed once the experiment concludes. See evals/compare.mjs. */
   variant?: PresentationVariant;
 }
 ```

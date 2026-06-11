@@ -169,11 +169,10 @@ test('a chain scans every stage together, grounded on the full catalog', async (
 // EXPERIMENTAL presentation variants (see evals/compare.mjs).
 
 test('baseline keeps the shipped request and ignores stray verdict fields', async () => {
-  const client = fakeClient([], { verdict: 'looks fine', strengths: 'nice axis' });
+  const client = fakeClient([], { verdict: 'looks fine' });
   const report = await detectPitfalls(textInput, { client });
 
   assert.equal(report.verdict, undefined);
-  assert.equal(report.strengths, undefined);
   const schema = client.calls[0].tools[0].input_schema;
   assert.equal(schema.properties.verdict, undefined);
   assert.ok(!schema.required.includes('verdict'));
@@ -193,41 +192,26 @@ test('the verdict variant asks for and surfaces a verdict and per-finding conseq
         consequence: 'changes-takeaway',
       },
     ],
-    { verdict: '  Fundamentally sound; fix the legend.  ', strengths: 'should be ignored' }
+    { verdict: '  Fundamentally sound; fix the legend.  ' }
   );
   const report = await detectPitfalls(textInput, { client, variant: 'verdict' });
 
   assert.equal(report.verdict, 'Fundamentally sound; fix the legend.');
-  assert.equal(report.strengths, undefined); // strengths only in verdict-strengths
   assert.equal(report.findings[0].consequence, 'changes-takeaway');
 
   const schema = client.calls[0].tools[0].input_schema;
   assert.ok(schema.required.includes('verdict'));
-  assert.equal(schema.properties.strengths, undefined);
   assert.ok(schema.properties.findings.items.required.includes('consequence'));
   assert.match(client.calls[0].system[0].text, /"verdict"/);
 });
 
-test('a bogus consequence is dropped rather than surfaced', async () => {
+test('a bogus consequence and an empty verdict are dropped rather than surfaced', async () => {
   const realRule = getAllRules()[0];
   const client = fakeClient(
     [{ rule_id: realRule.id, confidence: 'high', nature: 'active', evidence: 'x', explanation: 'y', consequence: 'huge' }],
-    { verdict: 'ok' }
+    { verdict: '   ' }
   );
   const report = await detectPitfalls(textInput, { client, variant: 'verdict' });
   assert.equal(report.findings[0].consequence, undefined);
-});
-
-test('verdict-strengths surfaces strengths but drops an empty one', async () => {
-  const withStrengths = await detectPitfalls(textInput, {
-    client: fakeClient([], { verdict: 'ok', strengths: 'Clear, unit-labeled axes.' }),
-    variant: 'verdict-strengths',
-  });
-  assert.equal(withStrengths.strengths, 'Clear, unit-labeled axes.');
-
-  const empty = await detectPitfalls(textInput, {
-    client: fakeClient([], { verdict: 'ok', strengths: '   ' }),
-    variant: 'verdict-strengths',
-  });
-  assert.equal(empty.strengths, undefined);
+  assert.equal(report.verdict, undefined);
 });

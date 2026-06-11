@@ -1,7 +1,7 @@
 // datapitfalls — pitfall report formatting
 
 import type { Severity } from './taxonomy/index.js';
-import type { PitfallReport, Finding } from './analyze.js';
+import type { Consequence, PitfallReport, Finding } from './analyze.js';
 
 const SEVERITY_RANK: Record<Severity, number> = { error: 0, warning: 1, info: 2 };
 const SEVERITY_LABEL: Record<Severity, string> = {
@@ -16,8 +16,22 @@ function countBySeverity(findings: Finding[]): Record<Severity, number> {
   return counts;
 }
 
+// EXPERIMENTAL — within a nature section, a consequence rating (variant runs
+// only) outranks severity; without ratings this reduces to the severity sort.
+const CONSEQUENCE_RANK: Record<Consequence, number> = {
+  'changes-takeaway': 0,
+  'weakens-support': 1,
+  polish: 2,
+};
+
+function consequenceRank(f: Finding): number {
+  return f.consequence ? CONSEQUENCE_RANK[f.consequence] : 3;
+}
+
 function bySeverity(a: Finding, b: Finding): number {
-  return SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity];
+  return (
+    consequenceRank(a) - consequenceRank(b) || SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity]
+  );
 }
 
 /**
@@ -70,11 +84,9 @@ export function formatReport(report: PitfallReport, options: ReportFormatOptions
   const latent = showAll ? allLatent : allLatent.filter((f) => f.confidence === 'high');
   const hiddenLatent = allLatent.length - latent.length;
 
-  // EXPERIMENTAL — verdict/strengths lead the report when a variant produced them.
+  // EXPERIMENTAL — the verdict leads the report when a variant produced one.
   const preamble: string[] = [];
-  if (report.verdict) preamble.push(`Verdict: ${report.verdict}`);
-  if (report.strengths) preamble.push(`Done well: ${report.strengths}`);
-  if (preamble.length > 0) preamble.push('');
+  if (report.verdict) preamble.push(`Verdict: ${report.verdict}`, '');
 
   if (active.length === 0 && latent.length === 0) {
     const base =

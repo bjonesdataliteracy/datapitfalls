@@ -69,11 +69,9 @@ test('formatReport notes the hidden count when every finding is filtered out', (
   assert.match(text, /1 lower-confidence latent note/);
 });
 
-test('formatReport leads with verdict and strengths when a variant produced them', () => {
-  const text = formatReport(
-    report([finding()], { verdict: 'Fundamentally sound.', strengths: 'Clear axis labels.' })
-  );
-  assert.match(text, /^Verdict: Fundamentally sound\.\nDone well: Clear axis labels\./);
+test('formatReport leads with the verdict when a variant produced one', () => {
+  const text = formatReport(report([finding()], { verdict: 'Fundamentally sound.' }));
+  assert.match(text, /^Verdict: Fundamentally sound\./);
 
   const clean = formatReport(report([], { verdict: 'Nothing to fix.' }));
   assert.match(clean, /^Verdict: Nothing to fix\./);
@@ -83,4 +81,14 @@ test('formatReport leads with verdict and strengths when a variant produced them
 test('formatReport shows a consequence rating in the finding header when present', () => {
   const text = formatReport(report([finding({ consequence: 'changes-takeaway' })]));
   assert.match(text, /changes the takeaway/);
+});
+
+test('formatReport sorts by consequence before severity within a section', () => {
+  const text = formatReport(
+    report([
+      finding({ severity: 'error', consequence: 'polish', name: 'Severe Polish' }),
+      finding({ severity: 'info', consequence: 'changes-takeaway', name: 'Mild Takeaway' }),
+    ])
+  );
+  assert.ok(text.indexOf('Mild Takeaway') < text.indexOf('Severe Polish'));
 });
