@@ -118,7 +118,7 @@ function renderFinding(f, headline) {
     `- ${star}**${f.name}** \`${f.ruleId}\` — ${f.severity} · ${f.confidence} confidence · ${f.nature}${consequence}`,
     `  - ${f.explanation}`,
   ];
-  if (f.nature === 'latent' && f.condition) lines.push(`  - Bites if: ${f.condition}`);
+  if (f.nature === 'latent' && f.condition) lines.push(`  - Only a problem if: ${f.condition}`);
   if (f.evidence) lines.push(`  - Evidence: ${truncate(f.evidence, 160)}`);
   return lines.join('\n');
 }

@@ -57,7 +57,7 @@ function renderFinding(finding: Finding, lines: string[]): void {
   );
   lines.push(`  Why it matters: ${finding.explanation}`);
   if (finding.nature === 'latent' && finding.condition) {
-    lines.push(`  Bites if: ${finding.condition}`);
+    lines.push(`  Only a problem if: ${finding.condition}`);
   }
   if (finding.evidence) lines.push(`  Where it shows up: ${finding.evidence}`);
   lines.push(`  How to avoid it: ${finding.remediation}`);
