@@ -84,18 +84,30 @@ export function formatReport(report: PitfallReport, options: ReportFormatOptions
   const latent = showAll ? allLatent : allLatent.filter((f) => f.confidence === 'high');
   const hiddenLatent = allLatent.length - latent.length;
 
-  // EXPERIMENTAL — the summary leads the report when a variant produced one.
+  // EXPERIMENTAL — the summary leads the report when a variant produced one,
+  // and visibly-avoided pitfalls close it.
   const preamble: string[] = [];
   if (report.summary) preamble.push(`Summary: ${report.summary}`, '');
+  const avoidedBlock: string[] = [];
+  if (report.avoided && report.avoided.length > 0) {
+    avoidedBlock.push('Pitfalls avoided — countermeasures visible in the work:');
+    for (const a of report.avoided) {
+      avoidedBlock.push(`  ✓ ${a.name} (${a.ruleId}): ${a.explanation}`);
+      if (a.evidence) avoidedBlock.push(`    Seen in: ${a.evidence}`);
+    }
+  }
 
   if (active.length === 0 && latent.length === 0) {
     const base =
       hiddenLatent > 0
         ? `No pitfalls detected — ${hiddenLatent} lower-confidence potential pitfall(s) hidden (use --all to show).`
         : 'No pitfalls detected.';
-    return [...preamble, `${base} Considered ${report.rulesConsidered} rules, model ${report.model}.`].join(
-      '\n'
-    );
+    const closing = avoidedBlock.length > 0 ? ['', ...avoidedBlock] : [];
+    return [
+      ...preamble,
+      `${base} Considered ${report.rulesConsidered} rules, model ${report.model}.`,
+      ...closing,
+    ].join('\n');
   }
 
   const counts = countBySeverity([...active, ...latent]);
@@ -128,6 +140,11 @@ export function formatReport(report: PitfallReport, options: ReportFormatOptions
 
   if (hiddenLatent > 0) {
     lines.push(`(${hiddenLatent} lower-confidence potential pitfall(s) hidden — use --all to show.)`);
+  }
+
+  if (avoidedBlock.length > 0) {
+    if (lines[lines.length - 1] !== '') lines.push('');
+    lines.push(...avoidedBlock);
   }
 
   return lines.join('\n').trimEnd();

@@ -126,6 +126,13 @@ function renderFinding(f, headline) {
 function renderVariantSection(variant, report, baselineIds) {
   const lines = [`### ${variant}`, ''];
   if (report.summary) lines.push(`**Summary:** ${report.summary}`, '');
+  if (report.avoided?.length) {
+    for (const a of report.avoided) {
+      const seen = a.evidence ? ` *(seen in: ${truncate(a.evidence, 120)})*` : '';
+      lines.push(`- ✓ avoided **${a.name}** \`${a.ruleId}\` — ${a.explanation}${seen}`);
+    }
+    lines.push('');
+  }
   if (report.findings.length === 0) {
     lines.push('No pitfalls detected.', '');
   } else {
@@ -179,8 +186,12 @@ const md = [
   '',
 ];
 const totals = Object.fromEntries(
-  opts.variants.map((v) => [v, { findings: 0, consequence: {}, cost: 0 }])
+  opts.variants.map((v) => [v, { findings: 0, consequence: {}, cost: 0, words: 0, avoided: 0 }])
 );
+
+// Model-generated verbosity per finding (explanation + condition); catalog
+// text (name, remediation) is excluded since it's constant across variants.
+const wordCount = (s) => (s ? s.trim().split(/\s+/).filter(Boolean).length : 0);
 
 for (const artifact of artifacts) {
   console.log(`— ${artifact.name} (${artifact.input.kind})`);
@@ -199,23 +210,26 @@ for (const artifact of artifacts) {
     for (const f of report.findings) {
       const key = f.consequence ?? 'unrated';
       t.consequence[key] = (t.consequence[key] ?? 0) + 1;
+      t.words += wordCount(f.explanation) + wordCount(f.condition);
     }
+    t.avoided += report.avoided?.length ?? 0;
     console.log(`    ${variant}: ${report.findings.length} finding(s) · ~$${cost.toFixed(3)}`);
     md.push(renderVariantSection(variant, report, baselineIds));
   }
 }
 
 md.push('## Summary', '');
-md.push('| variant | findings | avg/artifact | consequence mix | est. cost |');
-md.push('|---|---|---|---|---|');
+md.push('| variant | findings | avg/artifact | avoided | avg words/finding | consequence mix | est. cost |');
+md.push('|---|---|---|---|---|---|---|');
 for (const variant of opts.variants) {
   const t = totals[variant];
   const mix =
     Object.entries(t.consequence)
       .map(([k, n]) => `${k}: ${n}`)
       .join(', ') || '—';
+  const avgWords = t.findings > 0 ? (t.words / t.findings).toFixed(0) : '—';
   md.push(
-    `| ${variant} | ${t.findings} | ${(t.findings / artifacts.length).toFixed(1)} | ${mix} | $${t.cost.toFixed(3)} |`
+    `| ${variant} | ${t.findings} | ${(t.findings / artifacts.length).toFixed(1)} | ${t.avoided} | ${avgWords} | ${mix} | $${t.cost.toFixed(3)} |`
   );
 }
 md.push('');

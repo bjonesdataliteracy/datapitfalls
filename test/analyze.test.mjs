@@ -208,6 +208,44 @@ test('the summary variant asks for and surfaces a summary and per-finding conseq
   assert.match(client.calls[0].system[0].text, /audience/);
 });
 
+test('the summary variant validates avoided pitfalls against the catalog and findings', async () => {
+  const [r0, r1, r2, r3] = getAllRules();
+  const client = fakeClient(
+    [{ rule_id: r0.id, confidence: 'high', nature: 'active', evidence: 'x', explanation: 'y', consequence: 'polish' }],
+    {
+      summary: 'ok',
+      avoided: [
+        { rule_id: r0.id, evidence: 'dup', explanation: 'also a finding — must drop' },
+        { rule_id: '__not_a_real_rule__', evidence: 'n', explanation: 'n' },
+        { rule_id: r1.id, evidence: 'a guard', explanation: 'kept' },
+        { rule_id: r2.id, evidence: 'a caveat', explanation: 'kept' },
+        { rule_id: r3.id, evidence: 'c', explanation: 'over the cap — must drop' },
+      ],
+    }
+  );
+  const report = await detectPitfalls(textInput, { client, variant: 'summary' });
+
+  // Catalog-validated, disjoint from findings, capped at two, names from the catalog.
+  assert.deepEqual(
+    report.avoided.map((a) => a.ruleId),
+    [r1.id, r2.id]
+  );
+  assert.equal(report.avoided[0].name, r1.name);
+  assert.equal(report.avoided[0].evidence, 'a guard');
+
+  const schema = client.calls[0].tools[0].input_schema;
+  assert.ok(schema.required.includes('avoided'));
+});
+
+test('baseline reports no avoided list even if the model volunteers one', async () => {
+  const realRule = getAllRules()[0];
+  const client = fakeClient([], {
+    avoided: [{ rule_id: realRule.id, evidence: 'e', explanation: 'x' }],
+  });
+  const report = await detectPitfalls(textInput, { client });
+  assert.equal(report.avoided, undefined);
+});
+
 test('a bogus consequence and an empty summary are dropped rather than surfaced', async () => {
   const realRule = getAllRules()[0];
   const client = fakeClient(

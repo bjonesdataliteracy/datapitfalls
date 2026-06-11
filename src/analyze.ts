@@ -159,6 +159,19 @@ export interface Finding {
   consequence?: Consequence;
 }
 
+/** EXPERIMENTAL — a pitfall the work visibly avoided ('summary' variant only).
+ *  Counts only when the artifact contains a concrete countermeasure (a guard, a
+ *  stated caveat, a deliberate choice); catalog-validated like findings, and never
+ *  a rule that is also reported as a finding. */
+export interface AvoidedPitfall {
+  ruleId: string;
+  name: string;
+  domain: Domain;
+  /** The specific guard, caveat, or choice in the artifact that constitutes the avoidance. */
+  evidence: string;
+  explanation: string;
+}
+
 export interface DetectionUsage {
   inputTokens: number;
   outputTokens: number;
@@ -175,6 +188,9 @@ export interface PitfallReport {
   usage?: DetectionUsage;
   /** EXPERIMENTAL — one-to-two-sentence overall assessment ('summary' variant only). */
   summary?: string;
+  /** EXPERIMENTAL — up to two pitfalls the work visibly avoided ('summary' variant
+   *  only; possibly empty — zero evidenced avoidances is common and fine). */
+  avoided?: AvoidedPitfall[];
 }
 
 export interface DetectionOptions {
@@ -330,9 +346,11 @@ const REPORT_TOOL: Anthropic.Tool = {
 const SUMMARY_ADDENDUM = `
 
 Additional reporting requirements:
-- Provide a "summary": one or two sentences giving the author the overall state of this work. Lead with whether the work is fundamentally sound, then name the single most important thing to address, if any. Distinguish what is evident from what is conditional: if the key flaw is active, say it holds regardless of the unseen data; if every finding is latent, say plainly that nothing is evidently wrong and frame the findings as conditions to verify, not problems. If the work has one genuine, specific strength (an axis, a label, a stated caveat), you may mention it naturally — but never announce it as "a strength", never use praise that could apply to any artifact, and never praise something your own findings criticize. Most work has no remarkable strength; when nothing stands out, mention nothing — reaching for praise reads as flattery. Keep the summary proportionate: do not catastrophize work with only minor issues, and do not soften work with a conclusion-changing flaw.
+- Provide a "summary": at most two sentences giving the author the overall state of this work. Lead with whether the work is fundamentally sound, then name the single most important thing to address, if any. Distinguish what is evident from what is conditional: if the key flaw is active, say it holds regardless of the unseen data; if every finding is latent, say plainly that nothing is evidently wrong and frame the findings as conditions to verify, not problems. Keep it proportionate: do not catastrophize work with only minor issues, and do not soften work with a conclusion-changing flaw. (It may nod to a notable avoided pitfall in passing, but the "avoided" list is its home.)
+- Report "avoided": up to two pitfalls from the catalog that this work VISIBLY avoided. An avoidance counts only when the artifact contains a concrete countermeasure you can cite as evidence — a guard or assertion, a stated caveat, a deliberate encoding or method choice — and only for a pitfall that commonly bites this kind of work. Never list a rule you also report as a finding. Zero avoidances is common and fine; an empty list is better than a stretch.
 - Rate each finding's "consequence" — how much it matters to what a reader would conclude. For latent findings, rate the consequence assuming the stated condition actually holds. Reserve "changes-takeaway" for findings whose fix (or whose condition biting) would likely change the conclusion itself (e.g. an unweighted average of rates, a partial final period read as a decline). Use "weakens-support" when the conclusion may stand but is less well supported than presented (e.g. reported counts treated as real-world incidence, a possibly biased subset). Use "polish" when fixing it improves clarity or craft without changing the message (e.g. a clearer label, a better chart type for the same story). Most findings are not "changes-takeaway"; if you rate more than two findings that way, re-check that each one really overturns the conclusion on its own.
-- Voice: write the summary and every explanation as a friendly, experienced guide rather than a judge, in plain words. Frame each pitfall around what the work's audience would misperceive or wrongly conclude (e.g. "readers will take 5.0 as the typical energy release"), not around what the author did wrong. These pitfalls catch experienced practitioners every day, so never scold — but never soften the substance either: if a conclusion does not hold, say so plainly.`;
+- Voice: write the summary and every explanation as a friendly, experienced guide rather than a judge, in plain words. Frame each pitfall around what the work's audience would misperceive or wrongly conclude (e.g. "readers will take 5.0 as the typical energy release"), not around what the author did wrong. These pitfalls catch experienced practitioners every day, so never scold — but never soften the substance either: if a conclusion does not hold, say so plainly.
+- Be concise: each finding's explanation is one or two sentences covering only what is specific to THIS artifact — where the pitfall shows up and what the audience would wrongly conclude. Do not restate the rule's general description (the reader has it alongside your finding), do not repeat the quoted evidence in prose, and do not let "condition" restate the explanation — it states only the data condition itself.`;
 
 function variantAddendum(variant: PresentationVariant): string {
   return variant === 'summary' ? SUMMARY_ADDENDUM : '';
@@ -362,9 +380,34 @@ function buildReportTool(variant: PresentationVariant): Anthropic.Tool {
   schema.properties.summary = {
     type: 'string',
     description:
-      'One or two sentences giving the author the overall state of the work: whether it is fundamentally sound, and the single most important thing to address, if any. May naturally mention one genuine, specific strength.',
+      'At most two sentences giving the author the overall state of the work: whether it is fundamentally sound, and the single most important thing to address, if any.',
   };
   schema.required.push('summary');
+  schema.properties.avoided = {
+    type: 'array',
+    description:
+      'Up to two pitfalls from the catalog that the work VISIBLY avoided — only with concrete evidence of a countermeasure, never a rule also reported as a finding. Empty if none; zero is common.',
+    items: {
+      type: 'object',
+      properties: {
+        rule_id: {
+          type: 'string',
+          description: 'The exact id of a rule from the catalog.',
+        },
+        evidence: {
+          type: 'string',
+          description:
+            'The specific guard, caveat, or choice in the artifact that constitutes the avoidance.',
+        },
+        explanation: {
+          type: 'string',
+          description: 'One sentence on why this matters — what usually goes wrong without it.',
+        },
+      },
+      required: ['rule_id', 'evidence', 'explanation'],
+    },
+  };
+  schema.required.push('avoided');
   return tool;
 }
 
@@ -599,6 +642,34 @@ function extractFindings(input: Record<string, unknown> | undefined): Finding[] 
   return findings;
 }
 
+// EXPERIMENTAL — validate the model's avoided list: real catalog rules only,
+// never a rule that is also a finding, at most two.
+function extractAvoided(
+  input: Record<string, unknown> | undefined,
+  findings: Finding[]
+): AvoidedPitfall[] {
+  if (!input || !Array.isArray(input.avoided)) return [];
+  const reported = new Set(findings.map((f) => f.ruleId));
+  const avoided: AvoidedPitfall[] = [];
+  for (const item of input.avoided) {
+    if (avoided.length >= 2) break;
+    if (typeof item !== 'object' || item === null) continue;
+    const raw = item as Record<string, unknown>;
+    const ruleId = typeof raw.rule_id === 'string' ? raw.rule_id : undefined;
+    if (!ruleId) continue;
+    const rule = getRule(ruleId);
+    if (!rule || reported.has(rule.id)) continue;
+    avoided.push({
+      ruleId: rule.id,
+      name: rule.name,
+      domain: rule.domain,
+      evidence: typeof raw.evidence === 'string' ? raw.evidence : '',
+      explanation: typeof raw.explanation === 'string' ? raw.explanation : '',
+    });
+  }
+  return avoided;
+}
+
 /**
  * Detect the data pitfalls an artifact exhibits, against the pitfall catalog.
  *
@@ -642,13 +713,15 @@ export async function detectPitfalls(
   });
 
   const toolInput = findToolInput(message);
+  const findings = extractFindings(toolInput);
 
   return {
-    findings: extractFindings(toolInput),
+    findings,
     kind: input.kind,
     model,
     rulesConsidered: rules.length,
     summary: variant === 'summary' ? nonEmptyString(toolInput?.summary) : undefined,
+    avoided: variant === 'summary' ? extractAvoided(toolInput, findings) : undefined,
     usage: message.usage
       ? {
           inputTokens: message.usage.input_tokens,

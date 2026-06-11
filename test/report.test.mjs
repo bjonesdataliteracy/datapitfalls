@@ -80,6 +80,29 @@ test('formatReport leads with the summary when a variant produced one', () => {
   assert.match(clean, /No pitfalls detected/);
 });
 
+test('formatReport closes with avoided pitfalls, in both report shapes', () => {
+  const avoided = [
+    {
+      ruleId: 'silent-null-drop',
+      name: 'Silently Dropping Null Records',
+      domain: 'Technical Trespasses',
+      evidence: 'assert df["amount"].notna().all()',
+      explanation: 'A null guard protects the aggregate.',
+    },
+  ];
+
+  const withFindings = formatReport(report([finding()], { avoided }));
+  assert.match(withFindings, /Pitfalls avoided/);
+  assert.match(withFindings, /✓ Silently Dropping Null Records \(silent-null-drop\)/);
+  assert.match(withFindings, /Seen in: assert/);
+  // The avoided block closes the report, after the findings.
+  assert.ok(withFindings.indexOf('Demo Pitfall') < withFindings.indexOf('Pitfalls avoided'));
+
+  const clean = formatReport(report([], { avoided }));
+  assert.match(clean, /No pitfalls detected/);
+  assert.match(clean, /Pitfalls avoided/);
+});
+
 test('formatReport shows a consequence rating in the finding header when present', () => {
   const text = formatReport(report([finding({ consequence: 'changes-takeaway' })]));
   assert.match(text, /changes the takeaway/);
