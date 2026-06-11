@@ -13,7 +13,7 @@ import {
 
 // A stand-in for the Anthropic client: messages.create returns the given
 // findings (plus any extra top-level tool-input fields, e.g. a variant's
-// verdict/strengths) as a report_findings tool call and records the params.
+// summary) as a report_findings tool call and records the params.
 function fakeClient(findings, extra = {}) {
   const calls = [];
   return {
@@ -168,18 +168,18 @@ test('a chain scans every stage together, grounded on the full catalog', async (
 
 // EXPERIMENTAL presentation variants (see evals/compare.mjs).
 
-test('baseline keeps the shipped request and ignores stray verdict fields', async () => {
-  const client = fakeClient([], { verdict: 'looks fine' });
+test('baseline keeps the shipped request and ignores stray summary fields', async () => {
+  const client = fakeClient([], { summary: 'looks fine' });
   const report = await detectPitfalls(textInput, { client });
 
-  assert.equal(report.verdict, undefined);
+  assert.equal(report.summary, undefined);
   const schema = client.calls[0].tools[0].input_schema;
-  assert.equal(schema.properties.verdict, undefined);
-  assert.ok(!schema.required.includes('verdict'));
-  assert.doesNotMatch(client.calls[0].system[0].text, /verdict/);
+  assert.equal(schema.properties.summary, undefined);
+  assert.ok(!schema.required.includes('summary'));
+  assert.doesNotMatch(client.calls[0].system[0].text, /"summary"/);
 });
 
-test('the verdict variant asks for and surfaces a verdict and per-finding consequence', async () => {
+test('the summary variant asks for and surfaces a summary and per-finding consequence', async () => {
   const realRule = getAllRules()[0];
   const client = fakeClient(
     [
@@ -192,26 +192,29 @@ test('the verdict variant asks for and surfaces a verdict and per-finding conseq
         consequence: 'changes-takeaway',
       },
     ],
-    { verdict: '  Fundamentally sound; fix the legend.  ' }
+    { summary: '  Fundamentally sound; fix the legend.  ' }
   );
-  const report = await detectPitfalls(textInput, { client, variant: 'verdict' });
+  const report = await detectPitfalls(textInput, { client, variant: 'summary' });
 
-  assert.equal(report.verdict, 'Fundamentally sound; fix the legend.');
+  assert.equal(report.summary, 'Fundamentally sound; fix the legend.');
   assert.equal(report.findings[0].consequence, 'changes-takeaway');
 
   const schema = client.calls[0].tools[0].input_schema;
-  assert.ok(schema.required.includes('verdict'));
+  assert.ok(schema.required.includes('summary'));
   assert.ok(schema.properties.findings.items.required.includes('consequence'));
-  assert.match(client.calls[0].system[0].text, /"verdict"/);
+  // The addendum asks for the summary, the consequence rating, and the
+  // guide-not-judge voice.
+  assert.match(client.calls[0].system[0].text, /"summary"/);
+  assert.match(client.calls[0].system[0].text, /audience/);
 });
 
-test('a bogus consequence and an empty verdict are dropped rather than surfaced', async () => {
+test('a bogus consequence and an empty summary are dropped rather than surfaced', async () => {
   const realRule = getAllRules()[0];
   const client = fakeClient(
     [{ rule_id: realRule.id, confidence: 'high', nature: 'active', evidence: 'x', explanation: 'y', consequence: 'huge' }],
-    { verdict: '   ' }
+    { summary: '   ' }
   );
-  const report = await detectPitfalls(textInput, { client, variant: 'verdict' });
+  const report = await detectPitfalls(textInput, { client, variant: 'summary' });
   assert.equal(report.findings[0].consequence, undefined);
-  assert.equal(report.verdict, undefined);
+  assert.equal(report.summary, undefined);
 });

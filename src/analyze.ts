@@ -122,12 +122,13 @@ export function imageMediaTypeForExtension(ext: string): ImageMediaType | undefi
 export type Confidence = 'low' | 'medium' | 'high';
 
 /** EXPERIMENTAL — presentation variants for A/B comparison (see evals/compare.mjs).
- *  'baseline' is the shipped behavior. 'verdict' adds a one-to-two-sentence overall
- *  verdict (which may note one genuine strength) and a per-finding consequence
- *  rating. A separate mandatory strengths field was tried and cut: across the eval
- *  fixtures it duplicated the verdict, contradicted findings, or padded with
- *  generic praise — the optional in-verdict mention kept the genuine wins. */
-export type PresentationVariant = 'baseline' | 'verdict';
+ *  'baseline' is the shipped behavior. 'summary' adds a one-to-two-sentence overall
+ *  summary (which may naturally mention one genuine strength), a per-finding
+ *  consequence rating, and book-voice/audience-framing instructions for the
+ *  generated prose. (Earlier rounds trialed 'verdict' naming and a separate
+ *  mandatory strengths field; both were cut — "verdict" read as courtroom language,
+ *  and the strengths slot duplicated, contradicted, or padded.) */
+export type PresentationVariant = 'baseline' | 'summary';
 
 /** EXPERIMENTAL — how much a finding matters to the artifact's message:
  *  fixing it would change what a reader concludes ('changes-takeaway'), the
@@ -172,8 +173,8 @@ export interface PitfallReport {
   model: string;
   rulesConsidered: number;
   usage?: DetectionUsage;
-  /** EXPERIMENTAL — one-to-two-sentence overall assessment ('verdict' variant only). */
-  verdict?: string;
+  /** EXPERIMENTAL — one-to-two-sentence overall assessment ('summary' variant only). */
+  summary?: string;
 }
 
 export interface DetectionOptions {
@@ -324,16 +325,17 @@ const REPORT_TOOL: Anthropic.Tool = {
 };
 
 // EXPERIMENTAL — appended to the kind-specific system instructions for the
-// 'verdict' variant. Note: changing the instructions block changes the
+// 'summary' variant. Note: changing the instructions block changes the
 // prompt-cache prefix, so each variant warms its own cache entry.
-const VERDICT_ADDENDUM = `
+const SUMMARY_ADDENDUM = `
 
 Additional reporting requirements:
-- Provide a "verdict": one or two sentences summarizing the overall state of this work for its author. Lead with whether the work is fundamentally sound, then name the single most important thing to address, if any. Distinguish what is evident from what is conditional: if the key flaw is active, say it holds regardless of the unseen data; if every finding is latent, say plainly that nothing is evidently wrong and frame the findings as conditions to verify, not problems. You may note one genuine, specific strength (cite the element — an axis, a label, a stated caveat) when the work has one; never use generic praise that could apply to any artifact, and never praise something your own findings criticize. Keep the verdict proportionate: do not catastrophize work with only minor issues, and do not soften work with a conclusion-changing flaw.
-- Rate each finding's "consequence" — how much it matters to what a reader would conclude. For latent findings, rate the consequence assuming the stated condition actually holds. Reserve "changes-takeaway" for findings whose fix (or whose condition biting) would likely change the conclusion itself (e.g. an unweighted average of rates, a partial final period read as a decline). Use "weakens-support" when the conclusion may stand but is less well supported than presented (e.g. reported counts treated as real-world incidence, a possibly biased subset). Use "polish" when fixing it improves clarity or craft without changing the message (e.g. a clearer label, a better chart type for the same story). Most findings are not "changes-takeaway"; if you rate more than two findings that way, re-check that each one really overturns the conclusion on its own.`;
+- Provide a "summary": one or two sentences giving the author the overall state of this work. Lead with whether the work is fundamentally sound, then name the single most important thing to address, if any. Distinguish what is evident from what is conditional: if the key flaw is active, say it holds regardless of the unseen data; if every finding is latent, say plainly that nothing is evidently wrong and frame the findings as conditions to verify, not problems. If the work has one genuine, specific strength (an axis, a label, a stated caveat), you may mention it naturally — but never announce it as "a strength", never use praise that could apply to any artifact, and never praise something your own findings criticize. Most work has no remarkable strength; when nothing stands out, mention nothing — reaching for praise reads as flattery. Keep the summary proportionate: do not catastrophize work with only minor issues, and do not soften work with a conclusion-changing flaw.
+- Rate each finding's "consequence" — how much it matters to what a reader would conclude. For latent findings, rate the consequence assuming the stated condition actually holds. Reserve "changes-takeaway" for findings whose fix (or whose condition biting) would likely change the conclusion itself (e.g. an unweighted average of rates, a partial final period read as a decline). Use "weakens-support" when the conclusion may stand but is less well supported than presented (e.g. reported counts treated as real-world incidence, a possibly biased subset). Use "polish" when fixing it improves clarity or craft without changing the message (e.g. a clearer label, a better chart type for the same story). Most findings are not "changes-takeaway"; if you rate more than two findings that way, re-check that each one really overturns the conclusion on its own.
+- Voice: write the summary and every explanation as a friendly, experienced guide rather than a judge, in plain words. Frame each pitfall around what the work's audience would misperceive or wrongly conclude (e.g. "readers will take 5.0 as the typical energy release"), not around what the author did wrong. These pitfalls catch experienced practitioners every day, so never scold — but never soften the substance either: if a conclusion does not hold, say so plainly.`;
 
 function variantAddendum(variant: PresentationVariant): string {
-  return variant === 'verdict' ? VERDICT_ADDENDUM : '';
+  return variant === 'summary' ? SUMMARY_ADDENDUM : '';
 }
 
 // EXPERIMENTAL — the report tool with the variant's extra fields. Baseline
@@ -357,12 +359,12 @@ function buildReportTool(variant: PresentationVariant): Anthropic.Tool {
       'How much this finding matters to the message: "changes-takeaway" if fixing it would likely change what a reader concludes, "weakens-support" if the conclusion may stand but is less supported than presented, "polish" if it improves clarity or craft without changing the message.',
   };
   findingSchema.required.push('consequence');
-  schema.properties.verdict = {
+  schema.properties.summary = {
     type: 'string',
     description:
-      'One or two sentences summarizing the overall state of the work for its author: whether it is fundamentally sound, and the single most important thing to address, if any. May note one genuine, specific strength.',
+      'One or two sentences giving the author the overall state of the work: whether it is fundamentally sound, and the single most important thing to address, if any. May naturally mention one genuine, specific strength.',
   };
-  schema.required.push('verdict');
+  schema.required.push('summary');
   return tool;
 }
 
@@ -646,7 +648,7 @@ export async function detectPitfalls(
     kind: input.kind,
     model,
     rulesConsidered: rules.length,
-    verdict: variant === 'verdict' ? nonEmptyString(toolInput?.verdict) : undefined,
+    summary: variant === 'summary' ? nonEmptyString(toolInput?.summary) : undefined,
     usage: message.usage
       ? {
           inputTokens: message.usage.input_tokens,

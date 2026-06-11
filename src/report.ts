@@ -55,12 +55,12 @@ function renderFinding(finding: Finding, lines: string[]): void {
   lines.push(
     `[${SEVERITY_LABEL[finding.severity]}] ${finding.name}  (${finding.domain} · ${finding.ruleId} · ${finding.confidence} confidence${consequence})`
   );
-  lines.push(`  Why: ${finding.explanation}`);
+  lines.push(`  Why it matters: ${finding.explanation}`);
   if (finding.nature === 'latent' && finding.condition) {
     lines.push(`  Bites if: ${finding.condition}`);
   }
-  if (finding.evidence) lines.push(`  Evidence: ${finding.evidence}`);
-  lines.push(`  Fix: ${finding.remediation}`);
+  if (finding.evidence) lines.push(`  Where it shows up: ${finding.evidence}`);
+  lines.push(`  How to avoid it: ${finding.remediation}`);
   lines.push('');
 }
 
@@ -72,9 +72,9 @@ export interface ReportFormatOptions {
 /**
  * Render a pitfall report as plain text for the terminal.
  *
- * By default this shows all active findings plus only high-confidence latent
- * findings — latent findings fire on almost any real code, so the lower-confidence
- * ones are hidden as noise unless `showAll` is set.
+ * By default this shows all detected (active) pitfalls plus only high-confidence
+ * potential (latent) ones — latent findings fire on almost any real code, so the
+ * lower-confidence ones are hidden as noise unless `showAll` is set.
  */
 export function formatReport(report: PitfallReport, options: ReportFormatOptions = {}): string {
   const showAll = options.showAll ?? false;
@@ -84,14 +84,14 @@ export function formatReport(report: PitfallReport, options: ReportFormatOptions
   const latent = showAll ? allLatent : allLatent.filter((f) => f.confidence === 'high');
   const hiddenLatent = allLatent.length - latent.length;
 
-  // EXPERIMENTAL — the verdict leads the report when a variant produced one.
+  // EXPERIMENTAL — the summary leads the report when a variant produced one.
   const preamble: string[] = [];
-  if (report.verdict) preamble.push(`Verdict: ${report.verdict}`, '');
+  if (report.summary) preamble.push(`Summary: ${report.summary}`, '');
 
   if (active.length === 0 && latent.length === 0) {
     const base =
       hiddenLatent > 0
-        ? `No active pitfalls detected — ${hiddenLatent} lower-confidence latent note(s) hidden (use --all to show).`
+        ? `No pitfalls detected — ${hiddenLatent} lower-confidence potential pitfall(s) hidden (use --all to show).`
         : 'No pitfalls detected.';
     return [...preamble, `${base} Considered ${report.rulesConsidered} rules, model ${report.model}.`].join(
       '\n'
@@ -101,7 +101,7 @@ export function formatReport(report: PitfallReport, options: ReportFormatOptions
   const counts = countBySeverity([...active, ...latent]);
   const lines: string[] = [
     ...preamble,
-    `${active.length + latent.length} pitfall(s) shown — ${active.length} active, ${latent.length} latent · ` +
+    `${active.length + latent.length} pitfall(s) shown — ${active.length} detected, ${latent.length} potential · ` +
       `${counts.error} error / ${counts.warning} warning / ${counts.info} info (model ${report.model}):`,
     '',
   ];
@@ -115,19 +115,19 @@ export function formatReport(report: PitfallReport, options: ReportFormatOptions
           : report.kind === 'slides'
             ? 'slide deck'
             : 'code/description';
-    lines.push(`Active — evident from the ${source}:`);
+    lines.push(`Detected Pitfalls — evident from the ${source}:`);
     lines.push('');
     for (const finding of active) renderFinding(finding, lines);
   }
 
   if (latent.length > 0) {
-    lines.push('Latent — risky patterns to verify against your data:');
+    lines.push('Potential Pitfalls — verify these against your data:');
     lines.push('');
     for (const finding of latent) renderFinding(finding, lines);
   }
 
   if (hiddenLatent > 0) {
-    lines.push(`(${hiddenLatent} lower-confidence latent finding(s) hidden — use --all to show.)`);
+    lines.push(`(${hiddenLatent} lower-confidence potential pitfall(s) hidden — use --all to show.)`);
   }
 
   return lines.join('\n').trimEnd();

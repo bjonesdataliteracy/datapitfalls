@@ -41,10 +41,12 @@ test('formatReport reports a clean bill when there are no findings', () => {
   assert.match(text, /test-model/);
 });
 
-test('formatReport always shows active findings', () => {
+test('formatReport always shows detected (active) findings', () => {
   const text = formatReport(report([finding({ nature: 'active', name: 'Active One' })]));
   assert.match(text, /Active One/);
-  assert.match(text, /1 active, 0 latent/);
+  assert.match(text, /1 detected, 0 potential/);
+  assert.match(text, /Detected Pitfalls — evident from the code/);
+  assert.match(text, /How to avoid it:/);
 });
 
 test('formatReport hides low-confidence latent findings unless showAll is set', () => {
@@ -65,16 +67,16 @@ test('formatReport hides low-confidence latent findings unless showAll is set', 
 
 test('formatReport notes the hidden count when every finding is filtered out', () => {
   const text = formatReport(report([finding({ nature: 'latent', confidence: 'low' })]));
-  assert.match(text, /No active pitfalls detected/);
-  assert.match(text, /1 lower-confidence latent note/);
+  assert.match(text, /No pitfalls detected/);
+  assert.match(text, /1 lower-confidence potential pitfall/);
 });
 
-test('formatReport leads with the verdict when a variant produced one', () => {
-  const text = formatReport(report([finding()], { verdict: 'Fundamentally sound.' }));
-  assert.match(text, /^Verdict: Fundamentally sound\./);
+test('formatReport leads with the summary when a variant produced one', () => {
+  const text = formatReport(report([finding()], { summary: 'Fundamentally sound.' }));
+  assert.match(text, /^Summary: Fundamentally sound\./);
 
-  const clean = formatReport(report([], { verdict: 'Nothing to fix.' }));
-  assert.match(clean, /^Verdict: Nothing to fix\./);
+  const clean = formatReport(report([], { summary: 'Nothing to fix.' }));
+  assert.match(clean, /^Summary: Nothing to fix\./);
   assert.match(clean, /No pitfalls detected/);
 });
 

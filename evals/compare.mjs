@@ -2,24 +2,23 @@
 // datapitfalls presentation A/B harness — DEV ONLY, not part of the shipped tool.
 //
 // Runs the same artifacts through the presentation variants of
-// detectPitfalls() — baseline (shipped) and verdict (adds an overall verdict
-// line, which may note one genuine strength, plus a per-finding consequence
-// rating) — and writes a side-by-side markdown report for human review.
-// (A separate mandatory strengths field was tried and cut after round 1:
-// it duplicated the verdict, contradicted findings, or padded with filler.)
+// detectPitfalls() — baseline (shipped) and summary (adds an overall summary
+// line in the book's guide-not-judge voice, which may naturally mention one
+// genuine strength, plus a per-finding consequence rating) — and writes a
+// side-by-side markdown report for human review.
 //
 // The detection task is unchanged across variants; this compares how the same
 // scan READS, which is a judgment call that precision metrics can't answer:
-// Does the verdict feel proportionate? Does the consequence rating triage the
-// list sensibly? Does "strengths" feel genuine, or like flattery that could be
-// pasted under any chart? It also surfaces any drift in WHICH rules fire (the
-// Δ vs baseline lines) so you can spot detection regressions worth a full
-// evals/run.mjs pass. It calls the API, so it costs money.
+// Does the summary feel proportionate? Does the consequence rating triage the
+// list sensibly? Does the voice read like a guide, or does warmth bleed into
+// hedging? It also surfaces any drift in WHICH rules fire (the Δ vs baseline
+// lines) so you can spot detection regressions worth a full evals/run.mjs
+// pass. It calls the API, so it costs money.
 //
 // Usage:
 //   ANTHROPIC_API_KEY=... node evals/compare.mjs [--variants a,b] [--model id] [files...]
 //
-//   --variants  comma-separated subset of: baseline,verdict (default: both)
+//   --variants  comma-separated subset of: baseline,summary (default: both)
 //   --model     model id (default: the engine default)
 //   files       artifacts to scan — chart images (.png/.jpg/.gif/.webp), code
 //               files, .txt/.md prose, PDFs. Each file is scanned on its own.
@@ -39,7 +38,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const fixturesDir = join(here, 'fixtures');
 const outPath = join(here, 'compare-report.md');
 
-const ALL_VARIANTS = ['baseline', 'verdict'];
+const ALL_VARIANTS = ['baseline', 'summary'];
 
 function parseArgs(argv) {
   const opts = { variants: ALL_VARIANTS, model: undefined, files: [] };
@@ -126,7 +125,7 @@ function renderFinding(f, headline) {
 
 function renderVariantSection(variant, report, baselineIds) {
   const lines = [`### ${variant}`, ''];
-  if (report.verdict) lines.push(`**Verdict:** ${report.verdict}`, '');
+  if (report.summary) lines.push(`**Summary:** ${report.summary}`, '');
   if (report.findings.length === 0) {
     lines.push('No pitfalls detected.', '');
   } else {
