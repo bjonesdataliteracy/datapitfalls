@@ -27,6 +27,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   trialed 'verdict' naming and a separate mandatory strengths field; both
   were cut after side-by-side review.)
 
+- The web app now runs every scan with the summary presentation and presents
+  results triaged instead of as a flat list: the overall summary leads, the
+  most important finding is expanded under "Start here", remaining findings
+  collapse to one-line rows grouped as Detected / Potential Pitfalls (with
+  lower-confidence potential ones behind a "show more" toggle, matching the
+  CLI default), consequence chips ("Changes the takeaway" / "Weakens
+  support" / "Polish") replace severity badges, and visibly-avoided pitfalls
+  close the report as earned credit.
+- CLI: `datapitfalls scan --summary` opts a scan into the summary
+  presentation — the report leads with the overall summary, findings carry
+  consequence ratings, and avoided pitfalls close the output.
+
 ### Changed
 
 - Report labels reworded in the book's voice: findings group under "Detected
