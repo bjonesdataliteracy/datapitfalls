@@ -9,6 +9,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- EXPERIMENTAL presentation variant for `detectPitfalls()` —
+  `variant: 'summary'` adds a one-to-two-sentence overall summary in the
+  book's guide-not-judge voice (framing pitfalls around what the work's
+  audience would misperceive, optionally noting one genuine strength) and a
+  per-finding `consequence` rating (changes-takeaway / weakens-support /
+  polish), and an `avoided` list — up to two catalog pitfalls the work
+  *visibly* avoided, evidenced by a concrete countermeasure (a guard, a
+  stated caveat, a deliberate choice), catalog-validated and disjoint from
+  findings, with zero allowed. Explanations are capped at one to two
+  artifact-specific sentences (the rule's general description is not
+  restated per finding). Off by default; not yet exposed in the CLI or web
+  app. A new dev-only A/B harness (`evals/compare.mjs`) runs the same
+  artifacts through the variants and writes a side-by-side report — now
+  including an avg-words-per-finding column — to evaluate fixes for
+  finding-overload feedback before shipping any of them. (Earlier rounds
+  trialed 'verdict' naming and a separate mandatory strengths field; both
+  were cut after side-by-side review.)
+
+### Changed
+
+- Report labels reworded in the book's voice: findings group under "Detected
+  Pitfalls" / "Potential Pitfalls" (instead of active/latent), with
+  "Why it matters" / "Where it shows up" / "How to avoid it" field labels
+  (instead of Why/Evidence/Fix). Machine-facing API fields (`nature`,
+  `severity`, etc.) are unchanged.
+
 - Public API reference ([docs/API.md](docs/API.md)) documenting the supported
   library surface — `detectPitfalls()`, input/report types, `formatReport`,
   file routing, and taxonomy queries — plus an API-stability and semver policy,

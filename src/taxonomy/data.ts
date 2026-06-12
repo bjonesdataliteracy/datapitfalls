@@ -881,6 +881,22 @@ export const rules: PitfallRule[] = [
     ]
   },
   {
+    "id": "encoding-order-mismatch",
+    "name": "Encoding Order Mismatch",
+    "domain": "Graphical Gaffes",
+    "severity": "warning",
+    "description": "An encoding choice expresses an order that is not in the data. Ordered data is shown with a visual channel whose perceived order — most often the lightness or intensity of a color ramp — disagrees with the data's order: a binned palette whose colors get lighter and then darker as values rise, a top class drawn in a less intense color than the class below it, or a pattern fill dropped into the middle of an otherwise ordered ramp. Readers rank values from the encoding preattentively, before they ever consult the legend, so the chart teaches them a ranking the numbers don't support. This extends the domain's encoding theme but is not a specific sub-pitfall in the book.\n",
+    "detection_strategy": "Read the legend in data order and check that perceived intensity follows it: for sequential or binned scales, lightness (or saturation) should change monotonically from the lowest class to the highest. Flag ramps that reverse direction partway, a most-extreme class that is not drawn in the most extreme color, hue changes that scramble the lightness sequence, and pattern or hatch fills mixed into an ordered color ramp. In code, flag hand-assembled palettes for ordered data whose lightness sequence is non-monotonic. A chart whose most visually dominant color does not mark its most extreme class deserves particular suspicion.\n",
+    "example_bad": "A map of confirmed cases by state uses light red for \"1,000,000+\", dark red for \"500,000+\", orange for \"100,000+\", and yellow for \"1,000+\". The darkest, most alarming color marks the second-highest class, so viewers read half-million-case states as worse than million-case states — the perceived color order contradicts the data order.\n",
+    "example_good": "The same map uses a single-hue sequential ramp from pale yellow to deep red in which each higher class is strictly darker, so the states viewers perceive as most intense are exactly the states with the most cases — with or without reading the legend.\n",
+    "remediation": "Make the perceived order of the encoding match the data's order. Use a single-hue or perceptually uniform sequential ramp for ordered data, keep lightness strictly monotonic across bins, keep pattern fills out of color ramps, and give the most extreme class the most extreme color. Before publishing, read the legend top-to-bottom against the data order and squint-test the chart: the values that should dominate visually are the values that dominate numerically.\n",
+    "references": [
+      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)",
+      "Munzner (2014), Visualization Analysis and Design, ch. 5 — channel effectiveness for ordered attributes",
+      "https://www.avoidingdatapitfalls.com"
+    ]
+  },
+  {
     "id": "inconsistent-scales-across-charts",
     "name": "Inconsistent Scales Across Charts",
     "domain": "Graphical Gaffes",

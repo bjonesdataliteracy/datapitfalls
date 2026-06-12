@@ -1,7 +1,7 @@
 // datapitfalls — pitfall report formatting
 
 import type { Severity } from './taxonomy/index.js';
-import type { PitfallReport, Finding } from './analyze.js';
+import type { Consequence, PitfallReport, Finding } from './analyze.js';
 
 const SEVERITY_RANK: Record<Severity, number> = { error: 0, warning: 1, info: 2 };
 const SEVERITY_LABEL: Record<Severity, string> = {
@@ -16,8 +16,22 @@ function countBySeverity(findings: Finding[]): Record<Severity, number> {
   return counts;
 }
 
+// EXPERIMENTAL — within a nature section, a consequence rating (variant runs
+// only) outranks severity; without ratings this reduces to the severity sort.
+const CONSEQUENCE_RANK: Record<Consequence, number> = {
+  'changes-takeaway': 0,
+  'weakens-support': 1,
+  polish: 2,
+};
+
+function consequenceRank(f: Finding): number {
+  return f.consequence ? CONSEQUENCE_RANK[f.consequence] : 3;
+}
+
 function bySeverity(a: Finding, b: Finding): number {
-  return SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity];
+  return (
+    consequenceRank(a) - consequenceRank(b) || SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity]
+  );
 }
 
 /**
@@ -29,16 +43,24 @@ export function hasBlockingFindings(report: PitfallReport): boolean {
   return report.findings.some((f) => f.nature === 'active' && f.severity !== 'info');
 }
 
+// EXPERIMENTAL — human labels for the consequence rating (variant runs only).
+const CONSEQUENCE_LABEL: Record<string, string> = {
+  'changes-takeaway': 'changes the takeaway',
+  'weakens-support': 'weakens support',
+  polish: 'polish',
+};
+
 function renderFinding(finding: Finding, lines: string[]): void {
+  const consequence = finding.consequence ? ` · ${CONSEQUENCE_LABEL[finding.consequence]}` : '';
   lines.push(
-    `[${SEVERITY_LABEL[finding.severity]}] ${finding.name}  (${finding.domain} · ${finding.ruleId} · ${finding.confidence} confidence)`
+    `[${SEVERITY_LABEL[finding.severity]}] ${finding.name}  (${finding.domain} · ${finding.ruleId} · ${finding.confidence} confidence${consequence})`
   );
-  lines.push(`  Why: ${finding.explanation}`);
+  lines.push(`  Why it matters: ${finding.explanation}`);
   if (finding.nature === 'latent' && finding.condition) {
-    lines.push(`  Bites if: ${finding.condition}`);
+    lines.push(`  Only a problem if: ${finding.condition}`);
   }
-  if (finding.evidence) lines.push(`  Evidence: ${finding.evidence}`);
-  lines.push(`  Fix: ${finding.remediation}`);
+  if (finding.evidence) lines.push(`  Where it shows up: ${finding.evidence}`);
+  lines.push(`  How to avoid it: ${finding.remediation}`);
   lines.push('');
 }
 
@@ -50,9 +72,9 @@ export interface ReportFormatOptions {
 /**
  * Render a pitfall report as plain text for the terminal.
  *
- * By default this shows all active findings plus only high-confidence latent
- * findings — latent findings fire on almost any real code, so the lower-confidence
- * ones are hidden as noise unless `showAll` is set.
+ * By default this shows all detected (active) pitfalls plus only high-confidence
+ * potential (latent) ones — latent findings fire on almost any real code, so the
+ * lower-confidence ones are hidden as noise unless `showAll` is set.
  */
 export function formatReport(report: PitfallReport, options: ReportFormatOptions = {}): string {
   const showAll = options.showAll ?? false;
@@ -62,17 +84,36 @@ export function formatReport(report: PitfallReport, options: ReportFormatOptions
   const latent = showAll ? allLatent : allLatent.filter((f) => f.confidence === 'high');
   const hiddenLatent = allLatent.length - latent.length;
 
+  // EXPERIMENTAL — the summary leads the report when a variant produced one,
+  // and visibly-avoided pitfalls close it.
+  const preamble: string[] = [];
+  if (report.summary) preamble.push(`Summary: ${report.summary}`, '');
+  const avoidedBlock: string[] = [];
+  if (report.avoided && report.avoided.length > 0) {
+    avoidedBlock.push('Pitfalls avoided — countermeasures visible in the work:');
+    for (const a of report.avoided) {
+      avoidedBlock.push(`  ✓ ${a.name} (${a.ruleId}): ${a.explanation}`);
+      if (a.evidence) avoidedBlock.push(`    Seen in: ${a.evidence}`);
+    }
+  }
+
   if (active.length === 0 && latent.length === 0) {
     const base =
       hiddenLatent > 0
-        ? `No active pitfalls detected — ${hiddenLatent} lower-confidence latent note(s) hidden (use --all to show).`
+        ? `No pitfalls detected — ${hiddenLatent} lower-confidence potential pitfall(s) hidden (use --all to show).`
         : 'No pitfalls detected.';
-    return `${base} Considered ${report.rulesConsidered} rules, model ${report.model}.`;
+    const closing = avoidedBlock.length > 0 ? ['', ...avoidedBlock] : [];
+    return [
+      ...preamble,
+      `${base} Considered ${report.rulesConsidered} rules, model ${report.model}.`,
+      ...closing,
+    ].join('\n');
   }
 
   const counts = countBySeverity([...active, ...latent]);
   const lines: string[] = [
-    `${active.length + latent.length} pitfall(s) shown — ${active.length} active, ${latent.length} latent · ` +
+    ...preamble,
+    `${active.length + latent.length} pitfall(s) shown — ${active.length} detected, ${latent.length} potential · ` +
       `${counts.error} error / ${counts.warning} warning / ${counts.info} info (model ${report.model}):`,
     '',
   ];
@@ -86,19 +127,24 @@ export function formatReport(report: PitfallReport, options: ReportFormatOptions
           : report.kind === 'slides'
             ? 'slide deck'
             : 'code/description';
-    lines.push(`Active — evident from the ${source}:`);
+    lines.push(`Detected Pitfalls — evident from the ${source}:`);
     lines.push('');
     for (const finding of active) renderFinding(finding, lines);
   }
 
   if (latent.length > 0) {
-    lines.push('Latent — risky patterns to verify against your data:');
+    lines.push('Potential Pitfalls — verify these against your data:');
     lines.push('');
     for (const finding of latent) renderFinding(finding, lines);
   }
 
   if (hiddenLatent > 0) {
-    lines.push(`(${hiddenLatent} lower-confidence latent finding(s) hidden — use --all to show.)`);
+    lines.push(`(${hiddenLatent} lower-confidence potential pitfall(s) hidden — use --all to show.)`);
+  }
+
+  if (avoidedBlock.length > 0) {
+    if (lines[lines.length - 1] !== '') lines.push('');
+    lines.push(...avoidedBlock);
   }
 
   return lines.join('\n').trimEnd();

@@ -121,6 +121,21 @@ export function imageMediaTypeForExtension(ext: string): ImageMediaType | undefi
 
 export type Confidence = 'low' | 'medium' | 'high';
 
+/** EXPERIMENTAL — presentation variants for A/B comparison (see evals/compare.mjs).
+ *  'baseline' is the shipped behavior. 'summary' adds a one-to-two-sentence overall
+ *  summary (which may naturally mention one genuine strength), a per-finding
+ *  consequence rating, and book-voice/audience-framing instructions for the
+ *  generated prose. (Earlier rounds trialed 'verdict' naming and a separate
+ *  mandatory strengths field; both were cut — "verdict" read as courtroom language,
+ *  and the strengths slot duplicated, contradicted, or padded.) */
+export type PresentationVariant = 'baseline' | 'summary';
+
+/** EXPERIMENTAL — how much a finding matters to the artifact's message:
+ *  fixing it would change what a reader concludes ('changes-takeaway'), the
+ *  conclusion may stand but is less supported than presented ('weakens-support'),
+ *  or it improves clarity/craft without changing the message ('polish'). */
+export type Consequence = 'changes-takeaway' | 'weakens-support' | 'polish';
+
 /** Whether a pitfall is evident from the artifact itself ("active") or is a risky
  *  pattern whose impact depends on data the detector can't see ("latent"). */
 export type FindingNature = 'active' | 'latent';
@@ -140,6 +155,21 @@ export interface Finding {
   evidence: string;
   explanation: string;
   remediation: string;
+  /** EXPERIMENTAL — present only when a non-baseline variant is selected. */
+  consequence?: Consequence;
+}
+
+/** EXPERIMENTAL — a pitfall the work visibly avoided ('summary' variant only).
+ *  Counts only when the artifact contains a concrete countermeasure (a guard, a
+ *  stated caveat, a deliberate choice); catalog-validated like findings, and never
+ *  a rule that is also reported as a finding. */
+export interface AvoidedPitfall {
+  ruleId: string;
+  name: string;
+  domain: Domain;
+  /** The specific guard, caveat, or choice in the artifact that constitutes the avoidance. */
+  evidence: string;
+  explanation: string;
 }
 
 export interface DetectionUsage {
@@ -156,6 +186,11 @@ export interface PitfallReport {
   model: string;
   rulesConsidered: number;
   usage?: DetectionUsage;
+  /** EXPERIMENTAL — one-to-two-sentence overall assessment ('summary' variant only). */
+  summary?: string;
+  /** EXPERIMENTAL — up to two pitfalls the work visibly avoided ('summary' variant
+   *  only; possibly empty — zero evidenced avoidances is common and fine). */
+  avoided?: AvoidedPitfall[];
 }
 
 export interface DetectionOptions {
@@ -169,6 +204,9 @@ export interface DetectionOptions {
   domains?: Domain[];
   /** Max output tokens. Defaults to 16000. */
   maxTokens?: number;
+  /** EXPERIMENTAL — presentation variant to A/B test. Defaults to 'baseline'
+   *  (the shipped behavior). See evals/compare.mjs. */
+  variant?: PresentationVariant;
 }
 
 // claude-sonnet-4-6 is the default: in the eval harness it had the highest active
@@ -301,6 +339,77 @@ const REPORT_TOOL: Anthropic.Tool = {
     required: ['findings'],
   },
 };
+
+// EXPERIMENTAL — appended to the kind-specific system instructions for the
+// 'summary' variant. Note: changing the instructions block changes the
+// prompt-cache prefix, so each variant warms its own cache entry.
+const SUMMARY_ADDENDUM = `
+
+Additional reporting requirements:
+- Provide a "summary": at most two sentences giving the author the overall state of this work. Lead with whether the work is fundamentally sound, then name the single most important thing to address, if any. Distinguish what is evident from what is conditional: if the key flaw is active, say it holds regardless of the unseen data; if every finding is latent, say plainly that nothing is evidently wrong and frame the findings as conditions to verify, not problems. Keep it proportionate: do not catastrophize work with only minor issues, and do not soften work with a conclusion-changing flaw. Do not spend summary words re-praising items already in the "avoided" list.
+- Report "avoided": up to two pitfalls from the catalog that this work VISIBLY avoided. An avoidance counts only when the artifact contains a concrete countermeasure you can cite as evidence — a guard or assertion, a stated caveat, a deliberate encoding or method choice — and only for a pitfall that commonly bites this kind of work. The author must realistically have been able to fall in: if the alternative would be unusual or impossible (e.g. clustering on raw text columns), it is not an avoidance. Never list a rule you also report as a finding. Zero avoidances is common and fine; an empty list is better than a stretch.
+- Rate each finding's "consequence" — how much it matters to what a reader would conclude. For latent findings, rate the consequence assuming the stated condition actually holds. Reserve "changes-takeaway" for findings whose fix (or whose condition biting) would likely change the conclusion itself (e.g. an unweighted average of rates, a partial final period read as a decline). Use "weakens-support" when the conclusion may stand but is less well supported than presented (e.g. reported counts treated as real-world incidence, a possibly biased subset). Use "polish" when fixing it improves clarity or craft without changing the message (e.g. a clearer label, a better chart type for the same story). Most findings are not "changes-takeaway"; if you rate more than two findings that way, re-check that each one really overturns the conclusion on its own.
+- Voice: write the summary and every explanation as a friendly, experienced guide rather than a judge, in plain words. Frame each pitfall around what the work's audience would misperceive or wrongly conclude (e.g. "readers will take 5.0 as the typical energy release"), not around what the author did wrong. These pitfalls catch experienced practitioners every day, so never scold — but never soften the substance either: if a conclusion does not hold, say so plainly.
+- Be concise: each finding's explanation is one or two sentences covering only what is specific to THIS artifact — where the pitfall shows up and what the audience would wrongly conclude. Do not restate the rule's general description (the reader has it alongside your finding), do not repeat the quoted evidence in prose, and do not let "condition" restate the explanation — it states only the data condition itself.`;
+
+function variantAddendum(variant: PresentationVariant): string {
+  return variant === 'summary' ? SUMMARY_ADDENDUM : '';
+}
+
+// EXPERIMENTAL — the report tool with the variant's extra fields. Baseline
+// returns REPORT_TOOL untouched so the shipped request is byte-identical.
+function buildReportTool(variant: PresentationVariant): Anthropic.Tool {
+  if (variant === 'baseline') return REPORT_TOOL;
+  const tool = structuredClone(REPORT_TOOL);
+  const schema = tool.input_schema as unknown as {
+    properties: Record<string, unknown>;
+    required: string[];
+  };
+  const findingSchema = (
+    schema.properties.findings as {
+      items: { properties: Record<string, unknown>; required: string[] };
+    }
+  ).items;
+  findingSchema.properties.consequence = {
+    type: 'string',
+    enum: ['changes-takeaway', 'weakens-support', 'polish'],
+    description:
+      'How much this finding matters to the message: "changes-takeaway" if fixing it would likely change what a reader concludes, "weakens-support" if the conclusion may stand but is less supported than presented, "polish" if it improves clarity or craft without changing the message.',
+  };
+  findingSchema.required.push('consequence');
+  schema.properties.summary = {
+    type: 'string',
+    description:
+      'At most two sentences giving the author the overall state of the work: whether it is fundamentally sound, and the single most important thing to address, if any.',
+  };
+  schema.required.push('summary');
+  schema.properties.avoided = {
+    type: 'array',
+    description:
+      'Up to two pitfalls from the catalog that the work VISIBLY avoided — only with concrete evidence of a countermeasure, never a rule also reported as a finding. Empty if none; zero is common.',
+    items: {
+      type: 'object',
+      properties: {
+        rule_id: {
+          type: 'string',
+          description: 'The exact id of a rule from the catalog.',
+        },
+        evidence: {
+          type: 'string',
+          description:
+            'The specific guard, caveat, or choice in the artifact that constitutes the avoidance.',
+        },
+        explanation: {
+          type: 'string',
+          description: 'One sentence on why this matters — what usually goes wrong without it.',
+        },
+      },
+      required: ['rule_id', 'evidence', 'explanation'],
+    },
+  };
+  schema.required.push('avoided');
+  return tool;
+}
 
 function serializeRules(rules: readonly PitfallRule[]): string {
   return rules
@@ -478,14 +587,30 @@ function normalizeNature(value: unknown): FindingNature {
   return value === 'latent' ? 'latent' : 'active';
 }
 
-function extractFindings(message: Anthropic.Message): Finding[] {
+function normalizeConsequence(value: unknown): Consequence | undefined {
+  return value === 'changes-takeaway' || value === 'weakens-support' || value === 'polish'
+    ? value
+    : undefined;
+}
+
+/** The raw input of the report_findings tool call, or undefined if absent. */
+function findToolInput(message: Anthropic.Message): Record<string, unknown> | undefined {
   const toolUse = message.content.find(
     (block): block is Anthropic.ToolUseBlock =>
       block.type === 'tool_use' && block.name === REPORT_TOOL.name
   );
-  if (!toolUse) return [];
+  if (!toolUse || typeof toolUse.input !== 'object' || toolUse.input === null) return undefined;
+  return toolUse.input as Record<string, unknown>;
+}
 
-  const input = toolUse.input as { findings?: unknown };
+/** A trimmed, non-empty string from the tool input, or undefined. */
+function nonEmptyString(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined;
+  const trimmed = value.trim();
+  return trimmed === '' ? undefined : trimmed;
+}
+
+function extractFindings(input: Record<string, unknown> | undefined): Finding[] {
   if (!input || !Array.isArray(input.findings)) return [];
 
   const findings: Finding[] = [];
@@ -511,9 +636,38 @@ function extractFindings(message: Anthropic.Message): Finding[] {
       evidence: typeof raw.evidence === 'string' ? raw.evidence : '',
       explanation: typeof raw.explanation === 'string' ? raw.explanation : '',
       remediation: rule.remediation.trim(),
+      consequence: normalizeConsequence(raw.consequence),
     });
   }
   return findings;
+}
+
+// EXPERIMENTAL — validate the model's avoided list: real catalog rules only,
+// never a rule that is also a finding, at most two.
+function extractAvoided(
+  input: Record<string, unknown> | undefined,
+  findings: Finding[]
+): AvoidedPitfall[] {
+  if (!input || !Array.isArray(input.avoided)) return [];
+  const reported = new Set(findings.map((f) => f.ruleId));
+  const avoided: AvoidedPitfall[] = [];
+  for (const item of input.avoided) {
+    if (avoided.length >= 2) break;
+    if (typeof item !== 'object' || item === null) continue;
+    const raw = item as Record<string, unknown>;
+    const ruleId = typeof raw.rule_id === 'string' ? raw.rule_id : undefined;
+    if (!ruleId) continue;
+    const rule = getRule(ruleId);
+    if (!rule || reported.has(rule.id)) continue;
+    avoided.push({
+      ruleId: rule.id,
+      name: rule.name,
+      domain: rule.domain,
+      evidence: typeof raw.evidence === 'string' ? raw.evidence : '',
+      explanation: typeof raw.explanation === 'string' ? raw.explanation : '',
+    });
+  }
+  return avoided;
 }
 
 /**
@@ -530,6 +684,7 @@ export async function detectPitfalls(
 
   const model = options.model ?? process.env.ANTHROPIC_MODEL ?? DEFAULT_MODEL;
   const maxTokens = options.maxTokens ?? 16000;
+  const variant = options.variant ?? 'baseline';
   const client = options.client ?? new Anthropic(options.apiKey ? { apiKey: options.apiKey } : {});
 
   const instructions =
@@ -541,26 +696,32 @@ export async function detectPitfalls(
           ? DOCUMENT_SYSTEM_INSTRUCTIONS
           : SYSTEM_INSTRUCTIONS;
   const taxonomyBlock = `# Pitfall catalog (${rules.length} rules)\n\n${serializeRules(rules)}`;
+  const reportTool = buildReportTool(variant);
 
   const message = await client.messages.create({
     model,
     max_tokens: maxTokens,
     system: [
-      { type: 'text', text: instructions },
+      { type: 'text', text: instructions + variantAddendum(variant) },
       // The catalog is identical across requests of the same kind — cache it so
       // repeated audits only pay full price for the (small) per-request artifact.
       { type: 'text', text: taxonomyBlock, cache_control: { type: 'ephemeral' } },
     ],
-    tools: [REPORT_TOOL],
-    tool_choice: { type: 'tool', name: REPORT_TOOL.name },
+    tools: [reportTool],
+    tool_choice: { type: 'tool', name: reportTool.name },
     messages: [{ role: 'user', content: buildUserContent(input) }],
   });
 
+  const toolInput = findToolInput(message);
+  const findings = extractFindings(toolInput);
+
   return {
-    findings: extractFindings(message),
+    findings,
     kind: input.kind,
     model,
     rulesConsidered: rules.length,
+    summary: variant === 'summary' ? nonEmptyString(toolInput?.summary) : undefined,
+    avoided: variant === 'summary' ? extractAvoided(toolInput, findings) : undefined,
     usage: message.usage
       ? {
           inputTokens: message.usage.input_tokens,

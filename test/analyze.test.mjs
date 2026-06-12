@@ -12,8 +12,9 @@ import {
 } from '../dist/index.js';
 
 // A stand-in for the Anthropic client: messages.create returns the given
-// findings as a report_findings tool call and records the params it was given.
-function fakeClient(findings) {
+// findings (plus any extra top-level tool-input fields, e.g. a variant's
+// summary) as a report_findings tool call and records the params.
+function fakeClient(findings, extra = {}) {
   const calls = [];
   return {
     calls,
@@ -21,7 +22,7 @@ function fakeClient(findings) {
       create: async (params) => {
         calls.push(params);
         return {
-          content: [{ type: 'tool_use', id: 't', name: 'report_findings', input: { findings } }],
+          content: [{ type: 'tool_use', id: 't', name: 'report_findings', input: { findings, ...extra } }],
           usage: {
             input_tokens: 100,
             output_tokens: 20,
@@ -163,4 +164,95 @@ test('a chain scans every stage together, grounded on the full catalog', async (
   const headers = content.filter((b) => b.type === 'text' && b.text.startsWith('=== Stage '));
   assert.equal(headers.length, 3);
   assert.equal(content.filter((b) => b.type === 'image').length, 1);
+});
+
+// EXPERIMENTAL presentation variants (see evals/compare.mjs).
+
+test('baseline keeps the shipped request and ignores stray summary fields', async () => {
+  const client = fakeClient([], { summary: 'looks fine' });
+  const report = await detectPitfalls(textInput, { client });
+
+  assert.equal(report.summary, undefined);
+  const schema = client.calls[0].tools[0].input_schema;
+  assert.equal(schema.properties.summary, undefined);
+  assert.ok(!schema.required.includes('summary'));
+  assert.doesNotMatch(client.calls[0].system[0].text, /"summary"/);
+});
+
+test('the summary variant asks for and surfaces a summary and per-finding consequence', async () => {
+  const realRule = getAllRules()[0];
+  const client = fakeClient(
+    [
+      {
+        rule_id: realRule.id,
+        confidence: 'high',
+        nature: 'active',
+        evidence: 'x',
+        explanation: 'y',
+        consequence: 'changes-takeaway',
+      },
+    ],
+    { summary: '  Fundamentally sound; fix the legend.  ' }
+  );
+  const report = await detectPitfalls(textInput, { client, variant: 'summary' });
+
+  assert.equal(report.summary, 'Fundamentally sound; fix the legend.');
+  assert.equal(report.findings[0].consequence, 'changes-takeaway');
+
+  const schema = client.calls[0].tools[0].input_schema;
+  assert.ok(schema.required.includes('summary'));
+  assert.ok(schema.properties.findings.items.required.includes('consequence'));
+  // The addendum asks for the summary, the consequence rating, and the
+  // guide-not-judge voice.
+  assert.match(client.calls[0].system[0].text, /"summary"/);
+  assert.match(client.calls[0].system[0].text, /audience/);
+});
+
+test('the summary variant validates avoided pitfalls against the catalog and findings', async () => {
+  const [r0, r1, r2, r3] = getAllRules();
+  const client = fakeClient(
+    [{ rule_id: r0.id, confidence: 'high', nature: 'active', evidence: 'x', explanation: 'y', consequence: 'polish' }],
+    {
+      summary: 'ok',
+      avoided: [
+        { rule_id: r0.id, evidence: 'dup', explanation: 'also a finding — must drop' },
+        { rule_id: '__not_a_real_rule__', evidence: 'n', explanation: 'n' },
+        { rule_id: r1.id, evidence: 'a guard', explanation: 'kept' },
+        { rule_id: r2.id, evidence: 'a caveat', explanation: 'kept' },
+        { rule_id: r3.id, evidence: 'c', explanation: 'over the cap — must drop' },
+      ],
+    }
+  );
+  const report = await detectPitfalls(textInput, { client, variant: 'summary' });
+
+  // Catalog-validated, disjoint from findings, capped at two, names from the catalog.
+  assert.deepEqual(
+    report.avoided.map((a) => a.ruleId),
+    [r1.id, r2.id]
+  );
+  assert.equal(report.avoided[0].name, r1.name);
+  assert.equal(report.avoided[0].evidence, 'a guard');
+
+  const schema = client.calls[0].tools[0].input_schema;
+  assert.ok(schema.required.includes('avoided'));
+});
+
+test('baseline reports no avoided list even if the model volunteers one', async () => {
+  const realRule = getAllRules()[0];
+  const client = fakeClient([], {
+    avoided: [{ rule_id: realRule.id, evidence: 'e', explanation: 'x' }],
+  });
+  const report = await detectPitfalls(textInput, { client });
+  assert.equal(report.avoided, undefined);
+});
+
+test('a bogus consequence and an empty summary are dropped rather than surfaced', async () => {
+  const realRule = getAllRules()[0];
+  const client = fakeClient(
+    [{ rule_id: realRule.id, confidence: 'high', nature: 'active', evidence: 'x', explanation: 'y', consequence: 'huge' }],
+    { summary: '   ' }
+  );
+  const report = await detectPitfalls(textInput, { client, variant: 'summary' });
+  assert.equal(report.findings[0].consequence, undefined);
+  assert.equal(report.summary, undefined);
 });

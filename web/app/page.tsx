@@ -563,7 +563,7 @@ function FindingCard({ finding }: { finding: Finding }) {
       </p>
       {finding.nature === 'latent' && finding.condition && (
         <p>
-          <strong>Bites if:</strong> {finding.condition}
+          <strong>Only a problem if:</strong> {finding.condition}
         </p>
       )}
       {finding.evidence && (
