@@ -151,7 +151,9 @@ async function parseChainInput(form: FormData, files: File[]): Promise<Parsed> {
 
 async function runAnalysis(input: DetectionInput): Promise<NextResponse> {
   try {
-    const report: PitfallReport = await detectPitfalls(input);
+    // The web app uses the summary presentation: an overall summary line,
+    // per-finding consequence ratings, and visibly-avoided pitfalls.
+    const report: PitfallReport = await detectPitfalls(input, { variant: 'summary' });
     return NextResponse.json(report);
   } catch (err) {
     const message = err instanceof Error ? err.message : 'The scan failed unexpectedly.';

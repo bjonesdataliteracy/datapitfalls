@@ -9,6 +9,7 @@
   --error: #ff6b6b;
   --warning: #ffb454;
   --info: #5bc8ff;
+  --good: #5fd49a;
 }
 
 * {
@@ -414,6 +415,94 @@ body {
 }
 .badge.sev-info {
   background: var(--info);
+}
+
+/* Consequence chips: how much the finding matters to the message. */
+.badge.cons-changes-takeaway {
+  background: var(--error);
+}
+.badge.cons-weakens-support {
+  background: var(--warning);
+}
+.badge.cons-polish {
+  background: var(--muted);
+}
+
+/* The scan's overall summary leads the results. */
+.scan-summary {
+  margin: 0 0 1rem;
+  padding: 1rem 1.1rem;
+  font-size: 1.02rem;
+  line-height: 1.6;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: 8px;
+}
+
+/* The headline finding gets the full card treatment. */
+.finding.headline {
+  border-color: var(--accent);
+  border-left-width: 4px;
+}
+
+/* Remaining findings collapse to one line; details are a click away. */
+details.finding.collapsed {
+  padding: 0.65rem 0.9rem;
+}
+
+details.finding.collapsed summary {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+details.finding.collapsed summary::-webkit-details-marker {
+  display: none;
+}
+
+details.finding.collapsed summary::after {
+  content: '▸';
+  margin-left: auto;
+  color: var(--muted);
+}
+
+details.finding.collapsed[open] summary::after {
+  content: '▾';
+}
+
+.collapsed-name {
+  font-weight: 600;
+}
+
+.showmore {
+  display: block;
+  margin: 0.25rem 0 0;
+}
+
+/* Pitfalls the work visibly avoided — the report's closing credit. */
+.avoided-item {
+  padding: 0.85rem 1.1rem;
+  margin-bottom: 0.85rem;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--good);
+  border-radius: 8px;
+}
+
+.avoided-item p {
+  margin: 0.35rem 0 0;
+}
+
+.avoided-item .avoided-head {
+  margin: 0;
+}
+
+.avoided-item .check {
+  color: var(--good);
+  font-weight: 700;
 }
 
 .sitefoot {

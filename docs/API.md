@@ -202,6 +202,9 @@ interface PitfallReport {
   model: string; // the model id that produced the report
   rulesConsidered: number; // how many catalog rules were in scope
   usage?: DetectionUsage; // token counts, when the SDK reports them
+  // EXPERIMENTAL — present only with variant: 'summary' (not yet API-stable):
+  summary?: string; // at most two sentences: overall state + top priority
+  avoided?: AvoidedPitfall[]; // up to two pitfalls visibly avoided (may be empty)
 }
 
 interface Finding {
@@ -212,10 +215,21 @@ interface Finding {
   confidence: 'low' | 'medium' | 'high';
   /** 'active' = evident from the artifact; 'latent' = depends on unseen data. */
   nature: 'active' | 'latent';
-  condition: string; // for latent findings: when the pitfall bites
+  condition: string; // for latent findings: when the pitfall becomes a problem
   evidence: string;
   explanation: string;
   remediation: string;
+  // EXPERIMENTAL — present only with variant: 'summary' (not yet API-stable):
+  consequence?: 'changes-takeaway' | 'weakens-support' | 'polish';
+}
+
+// EXPERIMENTAL — a pitfall the work visibly avoided ('summary' variant only).
+interface AvoidedPitfall {
+  ruleId: string; // always a real catalog rule id, never one also in findings
+  name: string;
+  domain: Domain;
+  evidence: string; // the guard, caveat, or choice that constitutes the avoidance
+  explanation: string;
 }
 ```
 

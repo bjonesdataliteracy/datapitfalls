@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ChangeEvent, DragEvent, FormEvent } from 'react';
-import type { PitfallReport, Finding } from 'datapitfalls';
+import type { PitfallReport, Finding, AvoidedPitfall, Consequence } from 'datapitfalls';
 
 type Mode = 'image' | 'text' | 'slides' | 'code' | 'chain';
 
@@ -506,60 +506,150 @@ function roleHint(file: File): string {
   return 'Code';
 }
 
+// Triage order: a definite (active) finding never queues behind a speculative
+// (latent) one; within that, consequence outranks severity, then confidence.
+const CONSEQUENCE_RANK: Record<Consequence, number> = {
+  'changes-takeaway': 0,
+  'weakens-support': 1,
+  polish: 2,
+};
+const SEVERITY_RANK = { error: 0, warning: 1, info: 2 } as const;
+const CONFIDENCE_RANK = { high: 0, medium: 1, low: 2 } as const;
+
+const CONSEQUENCE_LABEL: Record<Consequence, string> = {
+  'changes-takeaway': 'Changes the takeaway',
+  'weakens-support': 'Weakens support',
+  polish: 'Polish',
+};
+
+function triageOrder(a: Finding, b: Finding): number {
+  return (
+    (a.nature === 'latent' ? 1 : 0) - (b.nature === 'latent' ? 1 : 0) ||
+    (a.consequence ? CONSEQUENCE_RANK[a.consequence] : 3) -
+      (b.consequence ? CONSEQUENCE_RANK[b.consequence] : 3) ||
+    SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity] ||
+    CONFIDENCE_RANK[a.confidence] - CONFIDENCE_RANK[b.confidence]
+  );
+}
+
 function Results({ report }: { report: PitfallReport }) {
-  const active = report.findings.filter((f) => f.nature === 'active');
-  const latent = report.findings.filter((f) => f.nature === 'latent');
+  const [showAllPotential, setShowAllPotential] = useState(false);
+
+  const sorted = [...report.findings].sort(triageOrder);
+  const headline = sorted[0];
+  const rest = sorted.slice(1);
+  const detected = rest.filter((f) => f.nature === 'active');
+  const allPotential = rest.filter((f) => f.nature === 'latent');
+  // Same default as the CLI: lower-confidence potential pitfalls fire on almost
+  // any real work, so they stay behind a toggle.
+  const potential = showAllPotential
+    ? allPotential
+    : allPotential.filter((f) => f.confidence === 'high');
+  const hiddenCount = allPotential.length - potential.length;
+
+  const detectedCount = report.findings.filter((f) => f.nature === 'active').length;
+  const potentialCount = report.findings.length - detectedCount;
 
   if (report.findings.length === 0) {
     return (
       <section className="results">
+        {report.summary && <p className="scan-summary">{report.summary}</p>}
         <p className="clean">
           No pitfalls detected. Considered {report.rulesConsidered} rules · model {report.model}.
         </p>
+        <AvoidedSection avoided={report.avoided} />
       </section>
     );
   }
 
   return (
     <section className="results">
+      {report.summary && <p className="scan-summary">{report.summary}</p>}
       <p className="summary">
-        {report.findings.length} finding(s) — {active.length} active, {latent.length} latent · model{' '}
-        {report.model}
+        {report.findings.length} pitfall{report.findings.length > 1 ? 's' : ''} — {detectedCount}{' '}
+        detected, {potentialCount} potential · model {report.model}
       </p>
 
-      {active.length > 0 && (
+      {headline && (
         <>
-          <h2>Active — evident from the artifact</h2>
-          {active.map((f, i) => (
-            <FindingCard key={`active-${i}`} finding={f} />
+          <h2>Start here</h2>
+          <FindingCard finding={headline} headline />
+        </>
+      )}
+
+      {detected.length > 0 && (
+        <>
+          <h2>More Detected Pitfalls — evident from what you shared</h2>
+          {detected.map((f, i) => (
+            <CollapsedFinding key={`d-${f.ruleId}-${i}`} finding={f} />
           ))}
         </>
       )}
 
-      {latent.length > 0 && (
+      {(potential.length > 0 || hiddenCount > 0) && (
         <>
-          <h2>Latent — verify against your data</h2>
-          {latent.map((f, i) => (
-            <FindingCard key={`latent-${i}`} finding={f} />
+          <h2>Potential Pitfalls — verify these against your data</h2>
+          {potential.map((f, i) => (
+            <CollapsedFinding key={`p-${f.ruleId}-${i}`} finding={f} />
           ))}
+          {hiddenCount > 0 && (
+            <button
+              type="button"
+              className="linklike showmore"
+              onClick={() => setShowAllPotential(true)}
+            >
+              Show {hiddenCount} more lower-confidence note{hiddenCount > 1 ? 's' : ''}
+            </button>
+          )}
         </>
       )}
+
+      <AvoidedSection avoided={report.avoided} />
     </section>
   );
 }
 
-function FindingCard({ finding }: { finding: Finding }) {
+function AvoidedSection({ avoided }: { avoided?: AvoidedPitfall[] }) {
+  if (!avoided || avoided.length === 0) return null;
   return (
-    <article className={`finding sev-${finding.severity}`}>
-      <div className="finding-head">
-        <span className={`badge sev-${finding.severity}`}>{finding.severity.toUpperCase()}</span>
-        <h3>{finding.name}</h3>
-      </div>
+    <>
+      <h2>Pitfalls Avoided — countermeasures visible in your work</h2>
+      {avoided.map((a) => (
+        <article className="avoided-item" key={a.ruleId}>
+          <p className="avoided-head">
+            <span className="check" aria-hidden>
+              ✓
+            </span>{' '}
+            <strong>{a.name}</strong> <span className="meta">{a.domain}</span>
+          </p>
+          <p>{a.explanation}</p>
+          {a.evidence && <p className="meta">Seen in: {a.evidence}</p>}
+        </article>
+      ))}
+    </>
+  );
+}
+
+function ConsequenceChip({ finding }: { finding: Finding }) {
+  if (finding.consequence) {
+    return (
+      <span className={`badge cons-${finding.consequence}`}>
+        {CONSEQUENCE_LABEL[finding.consequence]}
+      </span>
+    );
+  }
+  // Reports without consequence ratings (baseline engine runs) fall back to severity.
+  return <span className={`badge sev-${finding.severity}`}>{finding.severity.toUpperCase()}</span>;
+}
+
+function FindingBody({ finding }: { finding: Finding }) {
+  return (
+    <>
       <p className="meta">
         {finding.domain} · {finding.ruleId} · {finding.confidence} confidence
       </p>
       <p>
-        <strong>Why:</strong> {finding.explanation}
+        <strong>Why it matters:</strong> {finding.explanation}
       </p>
       {finding.nature === 'latent' && finding.condition && (
         <p>
@@ -568,12 +658,38 @@ function FindingCard({ finding }: { finding: Finding }) {
       )}
       {finding.evidence && (
         <p>
-          <strong>Evidence:</strong> {finding.evidence}
+          <strong>Where it shows up:</strong> {finding.evidence}
         </p>
       )}
       <p>
-        <strong>Fix:</strong> {finding.remediation}
+        <strong>How to avoid it:</strong> {finding.remediation}
       </p>
+    </>
+  );
+}
+
+function FindingCard({ finding, headline = false }: { finding: Finding; headline?: boolean }) {
+  return (
+    <article className={`finding sev-${finding.severity}${headline ? ' headline' : ''}`}>
+      <div className="finding-head">
+        <ConsequenceChip finding={finding} />
+        <h3>{finding.name}</h3>
+      </div>
+      <FindingBody finding={finding} />
     </article>
+  );
+}
+
+// A one-line row that expands on click — the name and chip carry the triage;
+// the full details are a click away for whoever wants them.
+function CollapsedFinding({ finding }: { finding: Finding }) {
+  return (
+    <details className={`finding collapsed sev-${finding.severity}`}>
+      <summary>
+        <ConsequenceChip finding={finding} />
+        <span className="collapsed-name">{finding.name}</span>
+      </summary>
+      <FindingBody finding={finding} />
+    </details>
   );
 }

@@ -203,6 +203,7 @@ function printHelp(): void {
       '    --thorough                     Use Opus 4.7 instead of the default Sonnet 4.6\n' +
       '    --fast                         Use Haiku 4.5 (cheapest)\n' +
       '    --all                          Show all findings, incl. lower-confidence latent ones\n' +
+      '    --summary                      Lead with an overall summary, consequence ratings, and avoided pitfalls\n' +
       '    --json                         Output the full report as JSON\n' +
       '    --ci                           Exit non-zero if an active error/warning is found\n' +
       '\nImage files (.png/.jpg/.jpeg/.gif/.webp) are scanned with Claude Vision; pass several to\n' +
@@ -229,11 +230,14 @@ async function scan(args: string[]): Promise<void> {
   let ci = false;
   let forceText = false;
   let chain = false;
+  let summary = false;
   for (const arg of args) {
     if (arg in MODEL_FLAGS) {
       model = MODEL_FLAGS[arg];
     } else if (arg === '--all') {
       showAll = true;
+    } else if (arg === '--summary') {
+      summary = true;
     } else if (arg === '--json') {
       asJson = true;
     } else if (arg === '--ci') {
@@ -267,7 +271,10 @@ async function scan(args: string[]): Promise<void> {
     return;
   }
 
-  const report = await detectPitfalls(result.input, { model });
+  const report = await detectPitfalls(result.input, {
+    model,
+    ...(summary ? { variant: 'summary' as const } : {}),
+  });
   console.log(asJson ? JSON.stringify(report, null, 2) : formatReport(report, { showAll }));
 
   if (ci && hasBlockingFindings(report)) process.exitCode = 1;
