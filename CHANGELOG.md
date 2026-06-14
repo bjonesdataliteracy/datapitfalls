@@ -40,6 +40,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CLI: `datapitfalls scan --summary` opts a scan into the summary
   presentation — the report leads with the overall summary, findings carry
   consequence ratings, and avoided pitfalls close the output.
+- Public API reference ([docs/API.md](docs/API.md)) documenting the supported
+  library surface — `detectPitfalls()`, input/report types, `formatReport`,
+  file routing, and taxonomy queries — plus an API-stability and semver policy,
+  with a "Programmatic API" section linked from the README. Completes Phase 6 of
+  the [Roadmap](ROADMAP.md).
 
 ### Changed
 
@@ -48,12 +53,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   "Why it matters" / "Where it shows up" / "How to avoid it" field labels
   (instead of Why/Evidence/Fix). Machine-facing API fields (`nature`,
   `severity`, etc.) are unchanged.
-
-- Public API reference ([docs/API.md](docs/API.md)) documenting the supported
-  library surface — `detectPitfalls()`, input/report types, `formatReport`,
-  file routing, and taxonomy queries — plus an API-stability and semver policy,
-  with a "Programmatic API" section linked from the README. Completes Phase 6 of
-  the [Roadmap](ROADMAP.md).
 
 ### Fixed
 
