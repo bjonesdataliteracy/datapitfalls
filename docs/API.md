@@ -21,6 +21,7 @@ import { detectPitfalls, formatReport, hasBlockingFindings } from 'datapitfalls'
 - [Inputs](#inputs) — what you can scan
 - [Reports](#reports) — what you get back
 - [Formatting a report](#formatting-a-report)
+- [Bridging to Semiotic](#bridging-to-semiotic) — render findings as chart annotations
 - [Routing files to inputs](#routing-files-to-inputs)
 - [Querying the taxonomy](#querying-the-taxonomy)
 - [Extracting slide decks](#extracting-slide-decks)
@@ -265,6 +266,109 @@ advisories and all latent findings do not block.
 const report = await detectPitfalls(input, { apiKey });
 console.log(formatReport(report));
 if (hasBlockingFindings(report)) process.exit(1);
+```
+
+---
+
+## Bridging to Semiotic
+
+A dependency-free bridge that turns a `PitfallReport` into the plain objects
+[Semiotic](https://github.com/nteract/semiotic)'s `annotations` prop consumes
+(react-annotation "note" specs), so a chart you audited can render its own
+warnings. It's the structural mirror of
+[nteract/semiotic#1030](https://github.com/nteract/semiotic/pull/1030), which
+bridges the other direction (Semiotic → datapitfalls): that one lives in their
+repo, emits *our* shape, and never imports us; this one lives in our repo, emits
+*their* shape, and never imports Semiotic. It adds **zero runtime dependencies**
+— it imports only local types.
+
+```ts
+function toSemioticAnnotations(
+  report: PitfallReport,
+  opts?: SemioticAnnotationOptions
+): SemioticAnnotation[];
+
+function buildSemioticAnnotationBridge(
+  report: PitfallReport,
+  opts?: SemioticAnnotationOptions
+): SemioticAnnotationBridge; // { annotations, meta: { count, kind } }
+```
+
+`toSemioticAnnotations` maps each finding, in order, to one annotation.
+`buildSemioticAnnotationBridge` mirrors Semiotic's `build*` + `to*` pairing and
+also returns `meta` (see below).
+
+```ts
+import { detectPitfalls, buildSemioticAnnotationBridge } from 'datapitfalls';
+
+const report = await detectPitfalls({ kind: 'image', images }, { apiKey });
+const { annotations, meta } = buildSemioticAnnotationBridge(report);
+
+// In your Semiotic frame:
+// <XYFrame ... annotations={annotations} />
+if (meta.count > annotations.length) {
+  // a `max` cap dropped some findings — surface the difference
+}
+```
+
+### The honest seam — annotations are unanchored
+
+datapitfalls sees **findings, not pixel coordinates**. So every annotation is
+emitted *unanchored*: `disable: ['connector']`, and **no `x`/`y` or data
+accessor**. The bridge never invents coordinates. **Positioning is the host
+app's job** — anchor each note to a mark (add your own `x`/`y` or an accessor
+before rendering), or render them as a stacked margin/legend list. Each
+annotation carries a `dataPitfall` provenance blob (`ruleId`, `domain`,
+`severity`, `evidence`) so you can filter, style, or place them by rule.
+
+### Mapping
+
+| `Finding` field | Annotation field |
+|---|---|
+| `name` | `note.title` |
+| `remediation` | `note.label` (the actionable fix shown on the chart) |
+| `severity` | `color` (via palette) and `className` = `pitfall-${severity}` |
+| `ruleId`, `domain`, `severity`, `evidence` | `dataPitfall` provenance blob |
+
+### Types
+
+```ts
+interface SemioticAnnotation {
+  type: 'note';
+  note: { title: string; label: string; wrap: number };
+  dataPitfall: { ruleId: string; domain: Domain; severity: Severity; evidence: string };
+  color: string; // resolved from the severity palette
+  className: string; // `pitfall-${severity}`
+  disable: string[]; // always includes 'connector' (unanchored)
+}
+
+interface SemioticAnnotationOptions {
+  /** Override the severity → color map. Merged over the defaults. */
+  palette?: Partial<Record<Severity, string>>;
+  /** Cap emitted annotations. Default: no cap. The full count survives in
+   *  `meta.count`, so a cap is never silent. */
+  max?: number;
+  /** Text-wrap width (px) passed through to react-annotation. Default: 240. */
+  wrap?: number;
+}
+
+interface SemioticAnnotationBridge {
+  annotations: SemioticAnnotation[];
+  /** `count` is the finding total *before* any `max` cap, so
+   *  `count > annotations.length` reveals a truncation. */
+  meta: { count: number; kind: InputKind };
+}
+```
+
+The default palette is an accessible blue / amber / red 3-stop, exported as
+`DEFAULT_SEMIOTIC_PALETTE`:
+
+```ts
+const DEFAULT_SEMIOTIC_PALETTE: Record<Severity, string> = {
+  info: '#2563eb', // blue-600
+  warning: '#d97706', // amber-600
+  error: '#dc2626', // red-600
+};
 ```
 
 ---

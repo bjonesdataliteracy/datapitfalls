@@ -67,6 +67,7 @@ Open the doors and grow.
 - [ ] Community-contributed pitfall rules
 - [ ] Internationalization
 - [ ] Integrations with popular data tools (notebooks, BI platforms, dashboards)
+  - [x] Semiotic annotation bridge — `toSemioticAnnotations()` renders findings as chart annotations (reciprocal of [nteract/semiotic#1030](https://github.com/nteract/semiotic/pull/1030))
 
 ---
 

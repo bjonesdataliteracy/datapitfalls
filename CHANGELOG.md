@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Dependency-free **bridge to [Semiotic](https://github.com/nteract/semiotic)**:
+  `toSemioticAnnotations(report, opts?)` and `buildSemioticAnnotationBridge(report, opts?)`
+  (new `src/bridges/semiotic.ts`, re-exported from the package root) convert a
+  `PitfallReport` into the react-annotation "note" specs Semiotic's `annotations`
+  prop consumes — mapping each finding's `name` → `note.title`,
+  `remediation` → `note.label`, and `severity` → an accessible blue/amber/red
+  `color` (overridable via `opts.palette`) plus a `pitfall-${severity}`
+  `className`, with a `dataPitfall` provenance blob (`ruleId`, `domain`,
+  `severity`, `evidence`) on each. It's the reciprocal of
+  [nteract/semiotic#1030](https://github.com/nteract/semiotic/pull/1030)
+  (Semiotic → datapitfalls): it lives in this repo, emits *their* shape, and
+  never imports Semiotic — zero new runtime dependencies, and off the engine's
+  hot path (`detectPitfalls()` does not import it). Because datapitfalls sees
+  findings, not pixel coordinates, annotations are emitted **unanchored**
+  (`disable: ['connector']`, no `x`/`y`) — the host app positions them. An
+  optional `max` cap keeps busy charts readable; the full finding count survives
+  in `meta.count`, so a cap is never silent. See
+  [Bridging to Semiotic](docs/API.md#bridging-to-semiotic).
+
 ## [0.8.0] - 2026-07-09
 
 ### Added
