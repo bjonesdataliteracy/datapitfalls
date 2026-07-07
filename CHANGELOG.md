@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- New Graphical Gaffes extension rule `uneven-time-axis-spacing` (Unevenly
+  Spaced Time Axis): flags time plotted on a categorical axis, where unequal
+  intervals get equal visual spacing and every slope is distorted (e.g. a line
+  chart of survey years 1969-2020 where a ten-year gap is as wide as a
+  one-year gap). Distinct from `misleading-interpolation` (fabricated
+  between-sample values) and `cherry-picked-chart-window` (window choice) —
+  this is about the axis encoding itself. Included in image-scan grounding
+  via the Graphical Gaffes domain.
+
 ## [0.6.0] - 2026-06-12
 
 ### Added

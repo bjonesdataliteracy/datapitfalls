@@ -1005,6 +1005,22 @@ export const rules: PitfallRule[] = [
     ]
   },
   {
+    "id": "uneven-time-axis-spacing",
+    "name": "Unevenly Spaced Time Axis",
+    "domain": "Graphical Gaffes",
+    "severity": "warning",
+    "description": "A chart plots time on a categorical axis, so every observation gets one equal-width slot regardless of how much time actually elapsed between observations — a ten-year gap occupies the same horizontal distance as a one-year gap. Since position along the x-axis no longer encodes elapsed time proportionally, every slope in the chart is distorted: irregular sampling reads as a smooth, steady progression, gradual change over long gaps looks abrupt, and rapid change across dense periods looks gradual. This extends the domain's encoding-distortion theme but is not a specific sub-pitfall in the book.\n",
+    "detection_strategy": "In charts, read the x-axis tick labels as numbers or dates and check whether their numeric gaps match their visual spacing — equally spaced ticks whose labels jump irregularly (1969, 1972, 1973, 1977, ... 1985, 1995, 2000) are the giveaway, especially on line charts where slope carries the message. In code, flag temporal values plotted as strings or categories: years cast with `.astype(str)`, matplotlib or pandas plots over string-typed date columns, Vega-Lite `ordinal`/`nominal` (or Tableau discrete, Excel \"text axis\") encodings on a temporal field, and bar-style categorical axes used for a time series. Distinct from misleading-interpolation: even if connecting sparse points is acceptable, the axis itself must still give each interval its proportional width.\n",
+    "example_bad": "A line chart of poll results plots survey years 1969-2020 as equally spaced category labels. The decade with no surveys (1985-1995) gets the same width as single-year gaps, so a rise that took 51 years with long quiet stretches reads as one smooth, near-linear climb — the slope between any two points is an artifact of slot spacing, not time.\n",
+    "example_good": "The same series is plotted on a continuous time axis, so the 1985-1995 gap is ten slots wide and the annual surveys cluster tightly; markers show where measurements actually occurred, and the varying steepness between them now honestly reflects change per unit of time.\n",
+    "remediation": "Plot time on a continuous (quantitative or date-typed) axis so horizontal distance is proportional to elapsed time — in most tools that means keeping dates as dates rather than strings, or switching the axis from categorical/discrete to continuous. Mark the observed points so sparse coverage stays visible, and if the gaps are large, consider annotating them rather than letting equal spacing paper over them.\n",
+    "references": [
+      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)",
+      "Alberto Cairo, How Charts Lie (Norton, 2019) — distorted and dubious chart scales",
+      "https://www.avoidingdatapitfalls.com"
+    ]
+  },
+  {
     "id": "colorblind-unsafe-palette",
     "name": "Colorblind-Unsafe Palette",
     "domain": "Design Dangers",
