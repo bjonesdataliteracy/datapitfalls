@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-07-07
+
 ### Added
 
 - New Graphical Gaffes extension rule `uneven-time-axis-spacing` (Unevenly
@@ -102,6 +104,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Pitfall taxonomy v0.1 structure, organized around the eight audit domains from _Avoiding Data Pitfalls_.
 - Project roadmap outlining the path from foundation through developer tools and community ecosystem.
 
-[Unreleased]: https://github.com/bjonesdataliteracy/datapitfalls/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/bjonesdataliteracy/datapitfalls/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/bjonesdataliteracy/datapitfalls/compare/v0.6.0...v0.7.0
+[0.6.0]: https://github.com/bjonesdataliteracy/datapitfalls/releases/tag/v0.6.0
 [0.5.0]: https://github.com/bjonesdataliteracy/datapitfalls/compare/v0.1.0...v0.5.0
 [0.1.0]: https://github.com/bjonesdataliteracy/datapitfalls/releases/tag/v0.1.0
