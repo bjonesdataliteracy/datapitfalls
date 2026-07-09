@@ -1,0 +1,51 @@
+id: unevenly-spaced-axis
+name: Unevenly Spaced Axis
+domain: Graphical Gaffes
+severity: warning
+description: >
+  A quantitative axis gives each labeled tick an equal-width slot even though the numeric
+  intervals between labels are unequal, so position along the axis no longer encodes the
+  value proportionally. The most common case is time plotted on a categorical axis — a
+  ten-year gap occupying the same distance as a one-year gap — but the same distortion
+  happens on any numeric axis whose labels jump irregularly at even spacing (e.g. a
+  height axis running 5'5", 5'6", 5'7", 5'9" across evenly spaced ticks). Because equal
+  distance no longer means equal difference, slopes and gaps are misread: irregular
+  sampling reads as steady progression, change over wide gaps looks abrupt, and change
+  across narrow gaps looks gradual. This extends the domain's encoding-distortion theme
+  but is not a specific sub-pitfall in the book.
+detection_strategy: >
+  Read the axis tick labels as numbers or dates and check whether their numeric gaps
+  match their visual spacing — equally spaced ticks whose labels jump irregularly
+  (1969, 1972, 1973, 1977, ... 1985, 1995, 2000; or 5'5", 5'6", 5'7", 5'9") are the
+  giveaway, especially on line charts where slope carries the message. The classic and
+  most frequent form is a time axis: in code, flag temporal values plotted as strings or
+  categories — years cast with `.astype(str)`, matplotlib or pandas plots over
+  string-typed date columns, Vega-Lite `ordinal`/`nominal` (or Tableau discrete, Excel
+  "text axis") encodings on a temporal field, and bar-style categorical axes used for a
+  time series. But apply it to any quantitative axis: a numeric field placed on a
+  categorical/ordinal scale, or hand-placed ticks at even intervals whose labels are not
+  evenly spaced in value. Distinct from `misleading-interpolation` (even if connecting
+  sparse points is acceptable, the axis itself must still give each interval its
+  proportional width) and from `incoherent-axis-scale` (there the labels are broken or
+  non-monotonic; here they are valid and ordered, only spaced disproportionately).
+example_bad: >
+  A line chart of poll results plots survey years 1969-2020 as equally spaced category
+  labels. The decade with no surveys (1985-1995) gets the same width as single-year gaps,
+  so a rise that took 51 years with long quiet stretches reads as one smooth, near-linear
+  climb — the slope between any two points is an artifact of slot spacing, not time.
+example_good: >
+  The same series is plotted on a continuous (quantitative or date-typed) axis, so the
+  1985-1995 gap is ten slots wide and the annual surveys cluster tightly; markers show
+  where measurements actually occurred, and the varying steepness between them now
+  honestly reflects change per unit of the axis variable.
+remediation: >
+  Plot the axis variable on a continuous (quantitative or date-typed) scale so distance
+  is proportional to difference — for time that means keeping dates as dates rather than
+  strings, or switching the axis from categorical/discrete to continuous; for any other
+  numeric field, use a linear scale rather than one evenly spaced tick per observation.
+  Mark the observed points so sparse coverage stays visible, and if the gaps are large,
+  consider annotating them rather than letting equal spacing paper over them.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)"
+  - "Alberto Cairo, How Charts Lie (Norton, 2019) — distorted and dubious chart scales"
+  - "https://www.avoidingdatapitfalls.com"

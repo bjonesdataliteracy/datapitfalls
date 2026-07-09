@@ -15,7 +15,14 @@ detection_strategy: >
   ggplot `coord_cartesian`/`ylim`, Vega-Lite `scale: {zero: false}`, an Excel minimum
   bound). Be suspicious of bar charts where a tiny percentage change fills most of the
   plot, and of a y-axis minimum set just below the smallest value. Scope the check to
-  length-encoded marks, not line/dot charts where omitting zero can be fine.
+  length-encoded marks, not line/dot charts where omitting zero can be fine — but note
+  that pictorial or pictograph bars (icons, silhouettes, "unit-shaped" marks whose
+  height carries the value) are length-encoded too and can be truncated just like plain
+  rectangles. A strong tell is a missing or vanishing smallest mark: when the row with
+  the lowest value renders at (or near) zero height — e.g. the shortest human silhouette
+  is absent entirely — the baseline has been parked at that smallest value, which is
+  textbook truncation. The pictograph costume hides it, because a zero-height figure
+  reads as "they forgot to draw it" rather than as a cut-off axis.
 example_bad: >
   A column chart of quarterly revenue ($1.02M, $1.04M, $1.05M) with a y-axis running
   $1.00M–$1.06M makes a ~3% change look like a near-tripling, because the truncated

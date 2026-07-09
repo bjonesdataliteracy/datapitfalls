@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- New Graphical Gaffes extension rule `incoherent-axis-scale` (Incoherent
+  Axis Scale): flags an axis whose tick labels are self-contradictory —
+  adjacent ticks repeating the same label, non-monotonic labels (a smaller
+  value positioned above a larger one), or values duplicated across ticks
+  that should be distinct — so no consistent scale exists and no reader can
+  map a position to a value. Distinct from `truncated-y-axis` (real scale,
+  non-zero base) and `unevenly-spaced-axis` (valid, ordered labels, only
+  disproportionately spaced). Grounded in image scans via the Graphical
+  Gaffes domain.
+
+### Changed
+
+- Generalized the `uneven-time-axis-spacing` rule (added in 0.7.0) to
+  `unevenly-spaced-axis` (Unevenly Spaced Axis): it now covers any
+  quantitative axis whose labels jump irregularly at even visual spacing
+  (e.g. a height axis running 5'5", 5'6", 5'7", 5'9"), not only time. Time on
+  a categorical axis remains the flagship example and the primary code
+  detection target. **Rule id renamed** `uneven-time-axis-spacing` →
+  `unevenly-spaced-axis`.
+- `truncated-y-axis` detection now recognizes that pictorial/pictograph bars
+  (icons, silhouettes, unit-shaped marks) are length-encoded and can be
+  truncated, and calls out a missing or vanishing smallest mark (e.g. the
+  shortest human silhouette absent entirely) as a strong truncation tell.
+- `disproportionate-encoding` detection now steers toward checking for a
+  truncated baseline first when marks are 2-D pictographs, ranking
+  `truncated-y-axis` as the primary finding (and disproportionate encoding as
+  the compounding one) when the smallest value renders at roughly zero size.
+
 ## [0.7.0] - 2026-07-07
 
 ### Added
