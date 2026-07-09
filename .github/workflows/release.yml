@@ -27,11 +27,13 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           registry-url: "https://registry.npmjs.org"
 
-      # Trusted Publishing needs npm >= 11.5.1; Node 20 ships npm 10, so bump it.
+      # Trusted Publishing needs npm >= 11.5.1; Node 22 ships npm 10, so bump it.
+      # Node 22 (not 20) is required because current npm majors (>=12) dropped
+      # Node 20 support — `npm install -g npm@latest` fails EBADENGINE on Node 20.
       - name: Upgrade npm for Trusted Publishing
         run: npm install -g npm@latest
 
