@@ -19,7 +19,13 @@ detection_strategy: >
   innocent explanations first — a clearly stated non-linear (log) axis, or a non-zero
   baseline that still preserves the ordering — and only flag when no single consistent
   scale fits. In code, watch for bar lengths, heights, or widths set from a constant or
-  from something other than the plotted value.
+  from something other than the plotted value. When the marks are pictographs (icons,
+  human silhouettes, unit-shaped figures) that scale in two dimensions, check for a
+  truncated baseline *first*: a nonzero value axis is often the root cause and the 2-D
+  area amplification only the visible symptom sitting on top of it. If the smallest
+  value renders at roughly zero size (a figure that shrinks to nothing or is absent),
+  treat truncated-y-axis as the primary finding and disproportionate encoding as the
+  compounding one, rather than the reverse.
 example_bad: >
   A bar chart labels four models 74.9, 52.8, 69.1, and 30.8, but the 69.1 and 30.8 bars
   are drawn at almost the same height while the 74.9 bar towers over both — no single

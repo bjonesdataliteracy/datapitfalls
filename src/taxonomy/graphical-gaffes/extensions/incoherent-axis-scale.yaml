@@ -1,0 +1,44 @@
+id: incoherent-axis-scale
+name: Incoherent Axis Scale
+domain: Graphical Gaffes
+severity: warning
+description: >
+  An axis's tick labels are internally contradictory, so no consistent scale exists and
+  no reader can map a position to a value. Adjacent ticks repeat the same label, the
+  labels don't run monotonically (a smaller value sits where a larger one should, or the
+  sequence reverses partway), or the same value appears on ticks that should be distinct.
+  This is distinct from a truncated baseline (the scale is real, just not zero-based) and
+  from an unevenly spaced axis (the labels are correct and ordered, only their spacing is
+  disproportionate) — here the labels themselves are broken, so the axis lies about its
+  own scale before any mark is even read. It extends the domain's encoding-integrity
+  theme and is not a specific sub-pitfall in the book.
+detection_strategy: >
+  Read the tick labels in order along the axis and check that they form one coherent
+  scale: flag when adjacent ticks carry the same label, when the labels don't increase
+  (or decrease) monotonically, when a smaller value is positioned above/beyond a larger
+  one, or when a value is duplicated across ticks that should be distinct. Separate this
+  from `unevenly-spaced-axis` (labels are valid and monotonic but the gaps aren't
+  proportional) — reach for this rule only when the labels are self-contradictory, so no
+  single scale can fit them. In code, watch for hand-set tick text overriding computed
+  positions, a formatter that over-rounds distinct values to the same string (e.g. two
+  ticks both rendering "5'6\""), or categorical labels reused across positions.
+example_bad: >
+  A height chart's right-hand axis reads, top to bottom, 5'0", 5'9", 5'7", 5'6", 5'6",
+  5'6", 5'6", 5'5", 5'5", 5'5": the same label repeats on adjacent ticks and 5'0" sits
+  above 5'9", so the axis contradicts itself — a reader cannot decode any mark's height
+  from it because the ruler itself is not a valid scale.
+example_good: >
+  The ticks carry distinct, monotonically ordered labels at a consistent interval — 5'5",
+  5'6", 5'7", 5'8", 5'9", 5'10" — so every gridline maps unambiguously to one value. If
+  rounding would collapse distinct values to the same label, precision is increased or the
+  interval widened so each tick stays unique.
+remediation: >
+  Let the plotting library derive ticks from the scale rather than hand-labeling them, and
+  keep the tick formatter precise enough that adjacent labels stay distinct. Before
+  publishing, read the axis top to bottom (or left to right) and confirm the labels are
+  unique where they should be and run monotonically — an axis a reader can't decode is
+  worse than no axis at all.
+references:
+  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)"
+  - "Alberto Cairo, How Charts Lie (Norton, 2019) — dubious and self-contradictory chart scales"
+  - "https://www.avoidingdatapitfalls.com"
