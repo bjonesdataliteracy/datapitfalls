@@ -1,56 +1,74 @@
 {
   "annotations": [
     {
-      "type": "note",
-      "note": {
-        "title": "Truncated axis",
-        "label": "Start the bar axis at zero, or switch to a chart type that does not imply a zero baseline.",
-        "wrap": 240
+      "type": "label",
+      "title": "Truncated axis",
+      "label": "Start the bar axis at zero, or switch to a chart type that does not imply a zero baseline.",
+      "wrap": 240,
+      "color": "#dc2626",
+      "className": "pitfall-error",
+      "emphasis": "primary",
+      "provenance": {
+        "author": "datapitfalls",
+        "authorKind": "watcher",
+        "source": "computed",
+        "basis": "llm-inference",
+        "stableId": "truncated-axis"
       },
       "dataPitfall": {
         "ruleId": "truncated-axis",
         "domain": "Graphical Gaffes",
         "severity": "error",
         "evidence": "the y-axis starts at 90, not 0"
-      },
-      "color": "#dc2626",
-      "className": "pitfall-error",
-      "disable": ["connector"]
+      }
     },
     {
-      "type": "note",
-      "note": {
-        "title": "Dual y-axis",
-        "label": "Use two aligned panels, or index both series to a common baseline.",
-        "wrap": 240
+      "type": "label",
+      "title": "Dual y-axis",
+      "label": "Use two aligned panels, or index both series to a common baseline.",
+      "wrap": 240,
+      "color": "#d97706",
+      "className": "pitfall-warning",
+      "emphasis": "secondary",
+      "provenance": {
+        "author": "datapitfalls",
+        "authorKind": "watcher",
+        "source": "computed",
+        "basis": "llm-inference",
+        "stableId": "dual-axis"
       },
       "dataPitfall": {
         "ruleId": "dual-axis",
         "domain": "Graphical Gaffes",
         "severity": "warning",
         "evidence": "two series on left and right axes"
-      },
-      "color": "#d97706",
-      "className": "pitfall-warning",
-      "disable": ["connector"]
+      }
     },
     {
-      "type": "note",
-      "note": {
-        "title": "Data-reality gap",
-        "label": "State what the data does and does not measure, and who it covers.",
-        "wrap": 240
+      "type": "label",
+      "title": "Data-reality gap",
+      "label": "State what the data does and does not measure, and who it covers.",
+      "wrap": 240,
+      "color": "#2563eb",
+      "className": "pitfall-info",
+      "emphasis": "secondary",
+      "provenance": {
+        "author": "datapitfalls",
+        "authorKind": "watcher",
+        "source": "computed",
+        "basis": "llm-inference",
+        "stableId": "data-reality-gap"
       },
       "dataPitfall": {
         "ruleId": "data-reality-gap",
         "domain": "Epistemic Errors",
         "severity": "info",
         "evidence": "survey responses shown as population fact"
-      },
-      "color": "#2563eb",
-      "className": "pitfall-info",
-      "disable": ["connector"]
+      }
     }
   ],
-  "meta": { "count": 3, "kind": "image" }
+  "meta": {
+    "count": 3,
+    "kind": "image"
+  }
 }

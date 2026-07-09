@@ -274,8 +274,9 @@ if (hasBlockingFindings(report)) process.exit(1);
 
 A dependency-free bridge that turns a `PitfallReport` into the plain objects
 [Semiotic](https://github.com/nteract/semiotic)'s `annotations` prop consumes
-(react-annotation "note" specs), so a chart you audited can render its own
-warnings. It's the structural mirror of
+(Semiotic **v3**'s native annotation shape — flat `title`/`label`/`wrap`, a
+`type` from v3's taxonomy, an `emphasis`, and a `provenance` block), so a chart
+you audited can render its own warnings. It's the structural mirror of
 [nteract/semiotic#1030](https://github.com/nteract/semiotic/pull/1030), which
 bridges the other direction (Semiotic → datapitfalls): that one lives in their
 repo, emits *our* shape, and never imports us; this one lives in our repo, emits
@@ -314,32 +315,47 @@ if (meta.count > annotations.length) {
 ### The honest seam — annotations are unanchored
 
 datapitfalls sees **findings, not pixel coordinates**. So every annotation is
-emitted *unanchored*: `disable: ['connector']`, and **no `x`/`y` or data
-accessor**. The bridge never invents coordinates. **Positioning is the host
-app's job** — anchor each note to a mark (add your own `x`/`y` or an accessor
-before rendering), or render them as a stacked margin/legend list. Each
-annotation carries a `dataPitfall` provenance blob (`ruleId`, `domain`,
-`severity`, `evidence`) so you can filter, style, or place them by rule.
+emitted *unanchored*: **no `x`/`y` or data accessor**. The bridge never invents
+coordinates. On Semiotic v3 this is a **hard requirement, not a nicety** — an
+annotation whose coordinates can't be resolved is *dropped*, not floated. So
+**positioning is the host app's job**: anchor each to a mark (add your own
+`x`/`y` or an accessor before rendering), render them as a stacked margin/legend
+list (unaffected by anchoring), or let v3 re-resolve position via
+`anchor: 'semantic'` keyed on `provenance.stableId` (the `ruleId`). Each
+annotation also carries a `dataPitfall` blob (`ruleId`, `domain`, `severity`,
+`evidence`) so you can filter, style, or place them by rule.
 
 ### Mapping
 
 | `Finding` field | Annotation field |
 |---|---|
-| `name` | `note.title` |
-| `remediation` | `note.label` (the actionable fix shown on the chart) |
-| `severity` | `color` (via palette) and `className` = `pitfall-${severity}` |
-| `ruleId`, `domain`, `severity`, `evidence` | `dataPitfall` provenance blob |
+| `name` | `title` (flat — v3 reads it directly) |
+| `remediation` | `label` (the actionable fix shown on the chart) |
+| `severity` | `color` (via palette), `className` = `pitfall-${severity}`, and `emphasis` (`'primary'` for errors, else `'secondary'`) |
+| `ruleId` | `provenance.stableId` (enables `anchor: 'semantic'`) |
+| `ruleId`, `domain`, `severity`, `evidence` | `dataPitfall` blob |
 
 ### Types
 
 ```ts
+type SemioticAnnotationType = 'label' | 'text'; // from v3's annotation taxonomy
+
 interface SemioticAnnotation {
-  type: 'note';
-  note: { title: string; label: string; wrap: number };
-  dataPitfall: { ruleId: string; domain: Domain; severity: Severity; evidence: string };
+  type: SemioticAnnotationType; // default 'label'
+  title: string; // flat (v1 nested this under `note`)
+  label: string;
+  wrap: number;
   color: string; // resolved from the severity palette
   className: string; // `pitfall-${severity}`
-  disable: string[]; // always includes 'connector' (unanchored)
+  emphasis: 'primary' | 'secondary';
+  provenance: {
+    author: 'datapitfalls';
+    authorKind: 'watcher';
+    source: 'computed';
+    basis: 'llm-inference';
+    stableId: string; // the ruleId
+  };
+  dataPitfall: { ruleId: string; domain: Domain; severity: Severity; evidence: string };
 }
 
 interface SemioticAnnotationOptions {
@@ -348,8 +364,10 @@ interface SemioticAnnotationOptions {
   /** Cap emitted annotations. Default: no cap. The full count survives in
    *  `meta.count`, so a cap is never silent. */
   max?: number;
-  /** Text-wrap width (px) passed through to react-annotation. Default: 240. */
+  /** Text-wrap width (px) passed through to v3. Default: 240. */
   wrap?: number;
+  /** v3 annotation type to emit. Default 'label'; use 'text' for connector-less notes. */
+  type?: SemioticAnnotationType;
 }
 
 interface SemioticAnnotationBridge {

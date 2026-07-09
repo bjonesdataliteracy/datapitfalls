@@ -39,7 +39,7 @@
           "react": "https://esm.sh/react@17.0.2",
           "react-dom": "https://esm.sh/react-dom@17.0.2",
           "htm": "https://esm.sh/htm@3.1.1",
-          "semiotic": "https://esm.sh/semiotic@1?deps=react@17.0.2,react-dom@17.0.2"
+          "semiotic": "https://esm.sh/semiotic@3?deps=react@17.0.2,react-dom@17.0.2"
         }
       }
     </script>
@@ -47,10 +47,11 @@
   <body>
     <h1>datapitfalls&nbsp;→&nbsp;Semiotic annotation bridge</h1>
     <p class="lede">
-      A chart was scanned by datapitfalls; each finding became a Semiotic annotation spec via
-      <code>buildSemioticAnnotationBridge()</code>. The bridge emits them <strong>unanchored</strong>
-      (no x/y), so this host app positions them — here, anchored to bars in the Semiotic frame
-      <em>and</em> listed in the margin.
+      A chart was scanned by datapitfalls; each finding became a Semiotic <strong>v3</strong>
+      annotation spec via <code>buildSemioticAnnotationBridge()</code>. The bridge emits them
+      <strong>unanchored</strong> (no x/y), so this host app positions them — here, anchored to bars
+      in the Semiotic frame <em>and</em> listed in the margin. (On v3 an unanchored annotation is
+      <em>dropped</em> until the host resolves its coordinates, so anchoring is required, not optional.)
     </p>
     <div id="root">Loading React + Semiotic from CDN…</div>
 
@@ -58,9 +59,18 @@
       import React from 'react';
       import ReactDOM from 'react-dom';
       import htm from 'htm';
-      import { OrdinalFrame } from 'semiotic';
 
       const html = htm.bind(React.createElement);
+
+      // Load Semiotic v3 resiliently. The margin-list rendering below needs no
+      // charting library and always works; the in-frame anchoring does. If v3
+      // fails to load or its frame API differs, we still show the margin list.
+      let OrdinalFrame = null;
+      try {
+        ({ OrdinalFrame } = await import('semiotic'));
+      } catch (_) {
+        /* margin-list-only fallback */
+      }
 
       // Part 3 input: the bridge output. Prefer a real annotations.json (written by
       // scan-to-annotations.mjs); fall back to the checked-in sample.
@@ -87,9 +97,10 @@
         const { annotations, meta } = bridge;
 
         // ── The honest seam ──────────────────────────────────────────────
-        // The bridge gives us unanchored notes. WE decide where they go. Here we
-        // anchor each to a bar by adding the frame's oAccessor key ('quarter')
-        // plus a small pixel nudge — Semiotic then places its own <Note>.
+        // The bridge gives us unanchored annotations. WE decide where they go.
+        // Here we anchor each to a bar by adding the frame's oAccessor key
+        // ('quarter') plus a small pixel nudge — v3 then places its own label.
+        // Without this, v3 would drop them (unresolvable coordinates).
         const anchored = annotations.map((a, i) => ({
           ...a,
           quarter: DATA[Math.min(i, DATA.length - 1)].quarter,
@@ -97,32 +108,37 @@
           dy: -30 - i * 8,
         }));
 
-        const frame = html`
-          <${OrdinalFrame}
-            size=${[520, 360]}
-            data=${DATA}
-            oAccessor="quarter"
-            rAccessor="value"
-            type="bar"
-            oPadding=${18}
-            style=${{ fill: '#94a3b8', stroke: '#64748b' }}
-            rExtent=${[90, 98]}
-            margin=${{ top: 40, right: 30, bottom: 40, left: 44 }}
-            axes=${[{ orient: 'left' }]}
-            oLabel=${true}
-            title="Customer satisfaction (y-axis starts at 90)"
-            annotations=${anchored}
-          />
-        `;
+        // The in-frame rendering, only when Semiotic v3 loaded. The annotations
+        // are passed straight through — v3 reads title/label/wrap/type flat.
+        const frame = OrdinalFrame
+          ? html`
+              <${OrdinalFrame}
+                size=${[520, 360]}
+                data=${DATA}
+                oAccessor="quarter"
+                rAccessor="value"
+                type="bar"
+                oPadding=${18}
+                style=${{ fill: '#94a3b8', stroke: '#64748b' }}
+                rExtent=${[90, 98]}
+                margin=${{ top: 40, right: 30, bottom: 40, left: 44 }}
+                axes=${[{ orient: 'left' }]}
+                oLabel=${true}
+                title="Customer satisfaction (y-axis starts at 90)"
+                annotations=${anchored}
+              />
+            `
+          : html`<p class="lede">Semiotic v3 could not be loaded from the CDN; showing the
+              margin-list rendering only (it needs no charting library).</p>`;
 
-        // The margin-list rendering: consumes color / className / note.title /
-        // note.label / dataPitfall directly — the other honest host pattern.
+        // The margin-list rendering: consumes color / className / title / label /
+        // dataPitfall directly (flat v3 fields) — the other honest host pattern.
         const list = annotations.map(
           (a, i) => html`
             <div class=${'note ' + a.className} key=${i} style=${{ borderLeftColor: a.color }}>
               <div class="rule">${a.dataPitfall.domain} · ${a.dataPitfall.severity}</div>
-              <h3 style=${{ color: a.color }}>${a.note.title}</h3>
-              <p class="label">${a.note.label}</p>
+              <h3 style=${{ color: a.color }}>${a.title}</h3>
+              <p class="label">${a.label}</p>
               <p class="evidence">“${a.dataPitfall.evidence}”</p>
             </div>
           `
@@ -136,8 +152,8 @@
             </div>
             <p class="seam">
               ${meta.count} finding(s) scanned; ${annotations.length} annotation(s) rendered. The bridge
-              never invented coordinates — <code>disable: ['connector']</code>, no x/y. Positioning
-              (anchoring to bars above, and the margin list) is this host app's job.
+              never invented coordinates — no x/y. Positioning (anchoring to bars above, and the margin
+              list) is this host app's job.
             </p>
           </div>
         `;

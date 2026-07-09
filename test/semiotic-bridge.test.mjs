@@ -51,7 +51,7 @@ test('empty report → no annotations', () => {
   assert.equal(bridge.meta.kind, 'image');
 });
 
-test('each finding maps 1:1, in order, to a note spec', () => {
+test('each finding maps 1:1, in order, to a v3 annotation spec', () => {
   const findings = [
     finding({ ruleId: 'a', name: 'First', remediation: 'Fix first', evidence: 'ev1' }),
     finding({ ruleId: 'b', name: 'Second', remediation: 'Fix second', evidence: 'ev2' }),
@@ -65,20 +65,50 @@ test('each finding maps 1:1, in order, to a note spec', () => {
   );
 
   const [first] = annotations;
-  assert.equal(first.type, 'note');
-  assert.equal(first.note.title, 'First'); // name → title
-  assert.equal(first.note.label, 'Fix first'); // remediation → label
-  assert.equal(first.note.wrap, 240); // default wrap
+  // v3 shape: fields are FLAT (no `note: { ... }` nesting), and the type comes
+  // from v3's taxonomy — 'label', not v1's 'note'.
+  assert.equal(first.type, 'label');
+  assert.equal(first.title, 'First'); // name → title (flat)
+  assert.equal(first.label, 'Fix first'); // remediation → label (flat)
+  assert.equal(first.wrap, 240); // default wrap (flat)
   assert.deepEqual(first.dataPitfall, {
     ruleId: 'a',
     domain: 'Epistemic Errors',
     severity: 'warning',
     evidence: 'ev1',
   });
-  // Honest seam: unanchored, no connector, no x/y.
-  assert.deepEqual(first.disable, ['connector']);
+  // The v1 shape must be gone — it renders as nothing on v3.
+  assert.equal('note' in first, false);
+  assert.equal('disable' in first, false);
+  // Honest seam: unanchored, no x/y. (On v3 the host must anchor or v3 drops it.)
   assert.equal('x' in first, false);
   assert.equal('y' in first, false);
+});
+
+test('each annotation carries a v3 provenance block keyed on the ruleId', () => {
+  const [ann] = toSemioticAnnotations(report([finding({ ruleId: 'truncated-axis' })]));
+  assert.deepEqual(ann.provenance, {
+    author: 'datapitfalls',
+    authorKind: 'watcher',
+    source: 'computed',
+    basis: 'llm-inference',
+    stableId: 'truncated-axis', // enables anchor: 'semantic' re-resolution
+  });
+});
+
+test('emphasis is primary for errors and secondary otherwise', () => {
+  const annotations = toSemioticAnnotations(
+    report([finding({ severity: 'info' }), finding({ severity: 'warning' }), finding({ severity: 'error' })])
+  );
+  assert.deepEqual(
+    annotations.map((a) => a.emphasis),
+    ['secondary', 'secondary', 'primary']
+  );
+});
+
+test('type defaults to label and can be overridden to text', () => {
+  assert.equal(toSemioticAnnotations(report([finding()]))[0].type, 'label');
+  assert.equal(toSemioticAnnotations(report([finding()]), { type: 'text' })[0].type, 'text');
 });
 
 test('severity drives color and className', () => {
@@ -117,9 +147,9 @@ test('a partial palette merges over the defaults', () => {
   assert.equal(errAnn[0].color, DEFAULT_SEMIOTIC_PALETTE.error);
 });
 
-test('wrap is passed through to each note', () => {
+test('wrap is passed through to each annotation', () => {
   const annotations = toSemioticAnnotations(report([finding()]), { wrap: 320 });
-  assert.equal(annotations[0].note.wrap, 320);
+  assert.equal(annotations[0].wrap, 320);
 });
 
 test('max truncates, and the cap is observable via meta.count (no silent caps)', () => {

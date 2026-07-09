@@ -12,20 +12,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependency-free **bridge to [Semiotic](https://github.com/nteract/semiotic)**:
   `toSemioticAnnotations(report, opts?)` and `buildSemioticAnnotationBridge(report, opts?)`
   (new `src/bridges/semiotic.ts`, re-exported from the package root) convert a
-  `PitfallReport` into the react-annotation "note" specs Semiotic's `annotations`
-  prop consumes — mapping each finding's `name` → `note.title`,
-  `remediation` → `note.label`, and `severity` → an accessible blue/amber/red
-  `color` (overridable via `opts.palette`) plus a `pitfall-${severity}`
-  `className`, with a `dataPitfall` provenance blob (`ruleId`, `domain`,
-  `severity`, `evidence`) on each. It's the reciprocal of
-  [nteract/semiotic#1030](https://github.com/nteract/semiotic/pull/1030)
+  `PitfallReport` into the **Semiotic v3** annotation objects its `annotations`
+  prop consumes — flat `title` (← finding `name`), `label` (← `remediation`), and
+  `wrap`; a `type` from v3's taxonomy (default `'label'`, or `'text'` via
+  `opts.type`); `severity` → an accessible blue/amber/red `color` (overridable via
+  `opts.palette`), a `pitfall-${severity}` `className`, and an `emphasis`
+  (`'primary'` for errors, else `'secondary'`); a v3 `provenance` block whose
+  `stableId` (the `ruleId`) enables `anchor: 'semantic'` re-resolution; and a
+  `dataPitfall` blob (`ruleId`, `domain`, `severity`, `evidence`) on each. It's the
+  reciprocal of [nteract/semiotic#1030](https://github.com/nteract/semiotic/pull/1030)
   (Semiotic → datapitfalls): it lives in this repo, emits *their* shape, and
   never imports Semiotic — zero new runtime dependencies, and off the engine's
   hot path (`detectPitfalls()` does not import it). Because datapitfalls sees
-  findings, not pixel coordinates, annotations are emitted **unanchored**
-  (`disable: ['connector']`, no `x`/`y`) — the host app positions them. An
-  optional `max` cap keeps busy charts readable; the full finding count survives
-  in `meta.count`, so a cap is never silent. See
+  findings, not pixel coordinates, annotations are emitted **unanchored** (no
+  `x`/`y`) — the host app positions them (on v3 an unanchored annotation is
+  *dropped* until anchored). An optional `max` cap keeps busy charts readable; the
+  full finding count survives in `meta.count`, so a cap is never silent. See
   [Bridging to Semiotic](docs/API.md#bridging-to-semiotic).
 
 ## [0.8.0] - 2026-07-09
