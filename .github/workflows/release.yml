@@ -32,10 +32,12 @@ jobs:
           registry-url: "https://registry.npmjs.org"
 
       # Trusted Publishing needs npm >= 11.5.1; Node 22 ships npm 10, so bump it.
-      # Node 22 (not 20) is required because current npm majors (>=12) dropped
-      # Node 20 support — `npm install -g npm@latest` fails EBADENGINE on Node 20.
+      # Pin to the 11.x line rather than @latest: npm 12.0.0 ships a broken
+      # bundle whose provenance path can't resolve `sigstore`, so `npm publish`
+      # crashes with MODULE_NOT_FOUND before uploading. 11.x (>=11.5.1) supports
+      # Trusted Publishing + provenance and publishes cleanly on Node 22.
       - name: Upgrade npm for Trusted Publishing
-        run: npm install -g npm@latest
+        run: npm install -g 'npm@^11.5.1'
 
       - run: npm ci
 
