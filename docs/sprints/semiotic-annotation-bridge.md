@@ -5,6 +5,13 @@
 **Owner:** TBD
 **Related:** [nteract/semiotic#1030](https://github.com/nteract/semiotic/pull/1030) — the Semiotic → datapitfalls bridge this one mirrors.
 
+> **Note (post-review):** the emitted shape sketched below targeted Semiotic **v1**
+> (react-annotation "note" specs). Per review, the shipped bridge emits Semiotic
+> **v3**'s native shape — flat `title`/`label`/`wrap`, a `type` from v3's taxonomy,
+> `emphasis`, and a `provenance` block. See
+> [docs/API.md → Bridging to Semiotic](../API.md#bridging-to-semiotic) for the
+> current, authoritative shape.
+
 ---
 
 ## Why

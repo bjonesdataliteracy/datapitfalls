@@ -172,6 +172,15 @@ The package is ESM-only and ships its own TypeScript types. See the **[API
 reference](docs/API.md)** for the full supported surface — inputs, report
 shape, file routing, taxonomy queries — and the API-stability policy.
 
+It also ships a dependency-free **bridge to [Semiotic](https://github.com/nteract/semiotic)**:
+`toSemioticAnnotations(report)` turns findings into the Semiotic **v3** annotation
+specs its `annotations` prop consumes, so a chart you audited can render its own
+warnings. It's the reciprocal of
+[nteract/semiotic#1030](https://github.com/nteract/semiotic/pull/1030) (Semiotic →
+datapitfalls). Because datapitfalls sees findings, not pixel coordinates, the
+annotations are emitted *unanchored* — the host app positions them. See
+[Bridging to Semiotic](docs/API.md#bridging-to-semiotic).
+
 ---
 
 ## How It Works

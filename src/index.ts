@@ -31,3 +31,6 @@ export * from './pptx.js';
 
 // Shared file routing: turn an uploaded/loaded file into a DetectionInput.
 export * from './file-input.js';
+
+// Bridges to other tools. Dependency-free, off the engine's hot path.
+export * from './bridges/semiotic.js';

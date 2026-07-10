@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>datapitfalls → Semiotic annotation bridge — demo</title>
+    <style>
+      :root { color-scheme: light; }
+      body {
+        margin: 0;
+        font: 15px/1.5 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        color: #0f172a;
+        background: #f8fafc;
+        padding: 32px;
+      }
+      h1 { font-size: 20px; margin: 0 0 4px; }
+      p.lede { margin: 0 0 24px; color: #475569; max-width: 60ch; }
+      .stage { display: flex; gap: 28px; align-items: flex-start; flex-wrap: wrap; }
+      .chart { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; }
+      .notes { width: 320px; display: flex; flex-direction: column; gap: 12px; }
+      .note {
+        background: #fff; border: 1px solid #e2e8f0; border-left-width: 6px;
+        border-radius: 10px; padding: 12px 14px;
+      }
+      .note h3 { margin: 0 0 4px; font-size: 14px; }
+      .note .label { margin: 0; color: #334155; }
+      .note .evidence { margin: 8px 0 0; font-size: 12px; color: #64748b; font-style: italic; }
+      .note .rule { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: .04em; }
+      .seam { margin-top: 24px; font-size: 13px; color: #64748b; max-width: 70ch; }
+      code { background: #eef2ff; padding: 1px 5px; border-radius: 4px; }
+      /* The bridge's className hook, if a host prefers CSS over inline color. */
+      .pitfall-error { border-left-color: #dc2626; }
+      .pitfall-warning { border-left-color: #d97706; }
+      .pitfall-info { border-left-color: #2563eb; }
+    </style>
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://esm.sh/react@17.0.2",
+          "react-dom": "https://esm.sh/react-dom@17.0.2",
+          "htm": "https://esm.sh/htm@3.1.1",
+          "semiotic": "https://esm.sh/semiotic@3?deps=react@17.0.2,react-dom@17.0.2"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <h1>datapitfalls&nbsp;→&nbsp;Semiotic annotation bridge</h1>
+    <p class="lede">
+      A chart was scanned by datapitfalls; each finding became a Semiotic <strong>v3</strong>
+      annotation spec via <code>buildSemioticAnnotationBridge()</code>. The bridge emits them
+      <strong>unanchored</strong> (no x/y), so this host app positions them — here, anchored to bars
+      in the Semiotic frame <em>and</em> listed in the margin. (On v3 an unanchored annotation is
+      <em>dropped</em> until the host resolves its coordinates, so anchoring is required, not optional.)
+    </p>
+    <div id="root">Loading React + Semiotic from CDN…</div>
+
+    <script type="module">
+      import React from 'react';
+      import ReactDOM from 'react-dom';
+      import htm from 'htm';
+
+      const html = htm.bind(React.createElement);
+
+      // Load Semiotic v3 resiliently. The margin-list rendering below needs no
+      // charting library and always works; the in-frame anchoring does. If v3
+      // fails to load or its frame API differs, we still show the margin list.
+      let OrdinalFrame = null;
+      try {
+        ({ OrdinalFrame } = await import('semiotic'));
+      } catch (_) {
+        /* margin-list-only fallback */
+      }
+
+      // Part 3 input: the bridge output. Prefer a real annotations.json (written by
+      // scan-to-annotations.mjs); fall back to the checked-in sample.
+      async function loadBridge() {
+        for (const name of ['annotations.json', 'annotations.sample.json']) {
+          try {
+            const res = await fetch(name, { cache: 'no-store' });
+            if (res.ok) return await res.json();
+          } catch (_) { /* try next */ }
+        }
+        throw new Error('No annotations.json or annotations.sample.json found next to demo.html');
+      }
+
+      // Toy data whose shape matches the "truncated axis" finding: a y-axis that
+      // starts at 90 makes tiny differences look dramatic.
+      const DATA = [
+        { quarter: 'Q1', value: 94 },
+        { quarter: 'Q2', value: 95 },
+        { quarter: 'Q3', value: 96 },
+        { quarter: 'Q4', value: 97 },
+      ];
+
+      function App({ bridge }) {
+        const { annotations, meta } = bridge;
+
+        // ── The honest seam ──────────────────────────────────────────────
+        // The bridge gives us unanchored annotations. WE decide where they go.
+        // Here we anchor each to a bar by adding the frame's oAccessor key
+        // ('quarter') plus a small pixel nudge — v3 then places its own label.
+        // Without this, v3 would drop them (unresolvable coordinates).
+        const anchored = annotations.map((a, i) => ({
+          ...a,
+          quarter: DATA[Math.min(i, DATA.length - 1)].quarter,
+          dx: 20,
+          dy: -30 - i * 8,
+        }));
+
+        // The in-frame rendering, only when Semiotic v3 loaded. The annotations
+        // are passed straight through — v3 reads title/label/wrap/type flat.
+        const frame = OrdinalFrame
+          ? html`
+              <${OrdinalFrame}
+                size=${[520, 360]}
+                data=${DATA}
+                oAccessor="quarter"
+                rAccessor="value"
+                type="bar"
+                oPadding=${18}
+                style=${{ fill: '#94a3b8', stroke: '#64748b' }}
+                rExtent=${[90, 98]}
+                margin=${{ top: 40, right: 30, bottom: 40, left: 44 }}
+                axes=${[{ orient: 'left' }]}
+                oLabel=${true}
+                title="Customer satisfaction (y-axis starts at 90)"
+                annotations=${anchored}
+              />
+            `
+          : html`<p class="lede">Semiotic v3 could not be loaded from the CDN; showing the
+              margin-list rendering only (it needs no charting library).</p>`;
+
+        // The margin-list rendering: consumes color / className / title / label /
+        // dataPitfall directly (flat v3 fields) — the other honest host pattern.
+        const list = annotations.map(
+          (a, i) => html`
+            <div class=${'note ' + a.className} key=${i} style=${{ borderLeftColor: a.color }}>
+              <div class="rule">${a.dataPitfall.domain} · ${a.dataPitfall.severity}</div>
+              <h3 style=${{ color: a.color }}>${a.title}</h3>
+              <p class="label">${a.label}</p>
+              <p class="evidence">“${a.dataPitfall.evidence}”</p>
+            </div>
+          `
+        );
+
+        return html`
+          <div>
+            <div class="stage">
+              <div class="chart">${frame}</div>
+              <div class="notes">${list}</div>
+            </div>
+            <p class="seam">
+              ${meta.count} finding(s) scanned; ${annotations.length} annotation(s) rendered. The bridge
+              never invented coordinates — no x/y. Positioning (anchoring to bars above, and the margin
+              list) is this host app's job.
+            </p>
+          </div>
+        `;
+      }
+
+      loadBridge()
+        .then((bridge) => ReactDOM.render(html`<${App} bridge=${bridge} />`, document.getElementById('root')))
+        .catch((err) => {
+          document.getElementById('root').textContent = 'Error: ' + err.message;
+        });
+    </script>
+  </body>
+</html>

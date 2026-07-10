@@ -21,6 +21,7 @@ import { detectPitfalls, formatReport, hasBlockingFindings } from 'datapitfalls'
 - [Inputs](#inputs) — what you can scan
 - [Reports](#reports) — what you get back
 - [Formatting a report](#formatting-a-report)
+- [Bridging to Semiotic](#bridging-to-semiotic) — render findings as chart annotations
 - [Routing files to inputs](#routing-files-to-inputs)
 - [Querying the taxonomy](#querying-the-taxonomy)
 - [Extracting slide decks](#extracting-slide-decks)
@@ -265,6 +266,127 @@ advisories and all latent findings do not block.
 const report = await detectPitfalls(input, { apiKey });
 console.log(formatReport(report));
 if (hasBlockingFindings(report)) process.exit(1);
+```
+
+---
+
+## Bridging to Semiotic
+
+A dependency-free bridge that turns a `PitfallReport` into the plain objects
+[Semiotic](https://github.com/nteract/semiotic)'s `annotations` prop consumes
+(Semiotic **v3**'s native annotation shape — flat `title`/`label`/`wrap`, a
+`type` from v3's taxonomy, an `emphasis`, and a `provenance` block), so a chart
+you audited can render its own warnings. It's the structural mirror of
+[nteract/semiotic#1030](https://github.com/nteract/semiotic/pull/1030), which
+bridges the other direction (Semiotic → datapitfalls): that one lives in their
+repo, emits *our* shape, and never imports us; this one lives in our repo, emits
+*their* shape, and never imports Semiotic. It adds **zero runtime dependencies**
+— it imports only local types.
+
+```ts
+function toSemioticAnnotations(
+  report: PitfallReport,
+  opts?: SemioticAnnotationOptions
+): SemioticAnnotation[];
+
+function buildSemioticAnnotationBridge(
+  report: PitfallReport,
+  opts?: SemioticAnnotationOptions
+): SemioticAnnotationBridge; // { annotations, meta: { count, kind } }
+```
+
+`toSemioticAnnotations` maps each finding, in order, to one annotation.
+`buildSemioticAnnotationBridge` mirrors Semiotic's `build*` + `to*` pairing and
+also returns `meta` (see below).
+
+```ts
+import { detectPitfalls, buildSemioticAnnotationBridge } from 'datapitfalls';
+
+const report = await detectPitfalls({ kind: 'image', images }, { apiKey });
+const { annotations, meta } = buildSemioticAnnotationBridge(report);
+
+// In your Semiotic frame:
+// <XYFrame ... annotations={annotations} />
+if (meta.count > annotations.length) {
+  // a `max` cap dropped some findings — surface the difference
+}
+```
+
+### The honest seam — annotations are unanchored
+
+datapitfalls sees **findings, not pixel coordinates**. So every annotation is
+emitted *unanchored*: **no `x`/`y` or data accessor**. The bridge never invents
+coordinates. On Semiotic v3 this is a **hard requirement, not a nicety** — an
+annotation whose coordinates can't be resolved is *dropped*, not floated. So
+**positioning is the host app's job**: anchor each to a mark (add your own
+`x`/`y` or an accessor before rendering), render them as a stacked margin/legend
+list (unaffected by anchoring), or let v3 re-resolve position via
+`anchor: 'semantic'` keyed on `provenance.stableId` (the `ruleId`). Each
+annotation also carries a `dataPitfall` blob (`ruleId`, `domain`, `severity`,
+`evidence`) so you can filter, style, or place them by rule.
+
+### Mapping
+
+| `Finding` field | Annotation field |
+|---|---|
+| `name` | `title` (flat — v3 reads it directly) |
+| `remediation` | `label` (the actionable fix shown on the chart) |
+| `severity` | `color` (via palette), `className` = `pitfall-${severity}`, and `emphasis` (`'primary'` for errors, else `'secondary'`) |
+| `ruleId` | `provenance.stableId` (enables `anchor: 'semantic'`) |
+| `ruleId`, `domain`, `severity`, `evidence` | `dataPitfall` blob |
+
+### Types
+
+```ts
+type SemioticAnnotationType = 'label' | 'text'; // from v3's annotation taxonomy
+
+interface SemioticAnnotation {
+  type: SemioticAnnotationType; // default 'label'
+  title: string; // flat (v1 nested this under `note`)
+  label: string;
+  wrap: number;
+  color: string; // resolved from the severity palette
+  className: string; // `pitfall-${severity}`
+  emphasis: 'primary' | 'secondary';
+  provenance: {
+    author: 'datapitfalls';
+    authorKind: 'watcher';
+    source: 'computed';
+    basis: 'llm-inference';
+    stableId: string; // the ruleId
+  };
+  dataPitfall: { ruleId: string; domain: Domain; severity: Severity; evidence: string };
+}
+
+interface SemioticAnnotationOptions {
+  /** Override the severity → color map. Merged over the defaults. */
+  palette?: Partial<Record<Severity, string>>;
+  /** Cap emitted annotations. Default: no cap. The full count survives in
+   *  `meta.count`, so a cap is never silent. */
+  max?: number;
+  /** Text-wrap width (px) passed through to v3. Default: 240. */
+  wrap?: number;
+  /** v3 annotation type to emit. Default 'label'; use 'text' for connector-less notes. */
+  type?: SemioticAnnotationType;
+}
+
+interface SemioticAnnotationBridge {
+  annotations: SemioticAnnotation[];
+  /** `count` is the finding total *before* any `max` cap, so
+   *  `count > annotations.length` reveals a truncation. */
+  meta: { count: number; kind: InputKind };
+}
+```
+
+The default palette is an accessible blue / amber / red 3-stop, exported as
+`DEFAULT_SEMIOTIC_PALETTE`:
+
+```ts
+const DEFAULT_SEMIOTIC_PALETTE: Record<Severity, string> = {
+  info: '#2563eb', // blue-600
+  warning: '#d97706', // amber-600
+  error: '#dc2626', // red-600
+};
 ```
 
 ---
