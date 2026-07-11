@@ -85,8 +85,7 @@ export function reportTier(report: PitfallReport): Tier {
   if (
     active.some(
       (f) =>
-        f.severity === 'error' ||
-        (f.severity === 'warning' && f.consequence === 'changes-takeaway')
+        f.severity === 'error' || (f.severity === 'warning' && f.consequence === 'changes-takeaway')
     )
   ) {
     return 'serious';
@@ -175,7 +174,9 @@ export function formatReport(report: PitfallReport, options: ReportFormatOptions
   if (active.length === 0 && latent.length === 0) {
     const lines = [`${tierText} — ${sgr('2', checkedAgainst, color)}`];
     if (hiddenLatent > 0) {
-      lines.push(`(${hiddenLatent} lower-confidence potential pitfall(s) hidden — use --all to show.)`);
+      lines.push(
+        `(${hiddenLatent} lower-confidence potential pitfall(s) hidden — use --all to show.)`
+      );
     }
     if (report.summary) lines.push('', `Summary: ${report.summary}`);
     if (avoidedBlock.length > 0) lines.push('', ...avoidedBlock);
@@ -217,7 +218,9 @@ export function formatReport(report: PitfallReport, options: ReportFormatOptions
   }
 
   if (hiddenLatent > 0) {
-    lines.push(`(${hiddenLatent} lower-confidence potential pitfall(s) hidden — use --all to show.)`);
+    lines.push(
+      `(${hiddenLatent} lower-confidence potential pitfall(s) hidden — use --all to show.)`
+    );
   }
 
   if (avoidedBlock.length > 0) {

@@ -24,13 +24,22 @@ function report(findings, overrides = {}) {
 }
 
 test('hasBlockingFindings is true only for active error/warning findings', () => {
-  assert.equal(hasBlockingFindings(report([finding({ nature: 'active', severity: 'error' })])), true);
+  assert.equal(
+    hasBlockingFindings(report([finding({ nature: 'active', severity: 'error' })])),
+    true
+  );
   assert.equal(
     hasBlockingFindings(report([finding({ nature: 'active', severity: 'warning' })])),
     true
   );
-  assert.equal(hasBlockingFindings(report([finding({ nature: 'active', severity: 'info' })])), false);
-  assert.equal(hasBlockingFindings(report([finding({ nature: 'latent', severity: 'error' })])), false);
+  assert.equal(
+    hasBlockingFindings(report([finding({ nature: 'active', severity: 'info' })])),
+    false
+  );
+  assert.equal(
+    hasBlockingFindings(report([finding({ nature: 'latent', severity: 'error' })])),
+    false
+  );
   assert.equal(hasBlockingFindings(report([])), false);
 });
 
@@ -133,7 +142,10 @@ test('formatReport leads with the tier and folds counts into the header', () => 
       finding({ nature: 'latent', confidence: 'high', severity: 'info' }),
     ])
   );
-  assert.match(text, /^SERIOUS PITFALLS FOUND — 2 detected, 1 potential · 1 error \/ 1 warning \/ 1 info/);
+  assert.match(
+    text,
+    /^SERIOUS PITFALLS FOUND — 2 detected, 1 potential · 1 error \/ 1 warning \/ 1 info/
+  );
   assert.match(text, /Checked against 42 rules · model test-model/);
 });
 

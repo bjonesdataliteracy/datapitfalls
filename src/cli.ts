@@ -15,7 +15,8 @@ const SKY = '38;2;105;223;250'; // Sky Blue       #69DFFA
 const IRON = '38;2;60;55;68'; // Iron Gray      #3C3744
 const RESET_CODE = '\x1b[0m';
 
-const paint = (code: string, s: string): string => (useColor && code ? `\x1b[${code}m${s}${RESET_CODE}` : s);
+const paint = (code: string, s: string): string =>
+  useColor && code ? `\x1b[${code}m${s}${RESET_CODE}` : s;
 const dim = (s: string): string => (useColor ? `\x1b[2m${s}${RESET_CODE}` : s);
 
 // Accent roles per terminal background. Body text is never colored — it uses the
@@ -114,15 +115,30 @@ function printSplash(theme: Theme): void {
   console.log();
   console.log('  ' + paint(theme.heading, 'Getting Started:'));
   console.log(
-    '    ' + paint(theme.label, 'Human:') + '  ' + paint(theme.command, 'datapitfalls scan <file>') + '  scan a chart, code, report, or description'
+    '    ' +
+      paint(theme.label, 'Human:') +
+      '  ' +
+      paint(theme.command, 'datapitfalls scan <file>') +
+      '  scan a chart, code, report, or description'
   );
-  console.log('            ' + paint(theme.hint, 'add --all for every finding, --thorough for the deepest model'));
   console.log(
-    '    ' + paint(theme.label, 'Agent:') + '  ' + paint(theme.command, 'datapitfalls scan --json <file>') + '  machine-readable findings'
+    '            ' +
+      paint(theme.hint, 'add --all for every finding, --thorough for the deepest model')
   );
-  console.log('            ' + paint(theme.hint, 'add --ci to exit non-zero when a blocking pitfall is found'));
+  console.log(
+    '    ' +
+      paint(theme.label, 'Agent:') +
+      '  ' +
+      paint(theme.command, 'datapitfalls scan --json <file>') +
+      '  machine-readable findings'
+  );
+  console.log(
+    '            ' + paint(theme.hint, 'add --ci to exit non-zero when a blocking pitfall is found')
+  );
   console.log();
-  console.log('  ' + paint(theme.hint, `Run datapitfalls --help for the full command list · v${VERSION}`));
+  console.log(
+    '  ' + paint(theme.hint, `Run datapitfalls --help for the full command list · v${VERSION}`)
+  );
   console.log('  ' + dim('Made by Data Literacy · github.com/bjonesdataliteracy/datapitfalls'));
   console.log();
 }

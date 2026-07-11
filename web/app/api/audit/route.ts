@@ -1,5 +1,12 @@
 import { NextResponse } from 'next/server';
-import { detectPitfalls, fileToStage, filesToInput, textStage, reportTier, TIER_LABEL } from 'datapitfalls';
+import {
+  detectPitfalls,
+  fileToStage,
+  filesToInput,
+  textStage,
+  reportTier,
+  TIER_LABEL,
+} from 'datapitfalls';
 import type { ChainStage, DetectionInput, FileInput, PitfallReport } from 'datapitfalls';
 import { checkRateLimit, clientKey } from './rate-limit';
 
@@ -65,7 +72,10 @@ async function parseTextInput(req: Request): Promise<Parsed> {
     return { error: 'There was nothing to scan (the input is empty).', status: 400 };
   }
   if (text.length > MAX_TEXT_CHARS) {
-    return { error: `Input is too long (max ${MAX_TEXT_CHARS.toLocaleString()} characters).`, status: 413 };
+    return {
+      error: `Input is too long (max ${MAX_TEXT_CHARS.toLocaleString()} characters).`,
+      status: 413,
+    };
   }
   const lang = typeof language === 'string' && language.trim() !== '' ? language.trim() : undefined;
   return { input: { kind, content: text, language: lang } };
@@ -124,7 +134,11 @@ async function parseChainInput(form: FormData, files: File[]): Promise<Parsed> {
   for (const file of files) {
     const result = await fileToStage(
       { bytes: new Uint8Array(await file.arrayBuffer()), filename: file.name, mimeType: file.type },
-      { maxImageBytes: MAX_IMAGE_BYTES, maxBinaryBytes: MAX_BINARY_BYTES, maxTextChars: MAX_TEXT_CHARS }
+      {
+        maxImageBytes: MAX_IMAGE_BYTES,
+        maxBinaryBytes: MAX_BINARY_BYTES,
+        maxTextChars: MAX_TEXT_CHARS,
+      }
     );
     if ('error' in result) {
       return { error: result.error, status: result.reason === 'too_large' ? 413 : 400 };
@@ -135,14 +149,18 @@ async function parseChainInput(form: FormData, files: File[]): Promise<Parsed> {
   const narrative = form.get('narrative');
   if (typeof narrative === 'string' && narrative.trim() !== '') {
     if (narrative.length > MAX_TEXT_CHARS) {
-      return { error: `Written summary is too long (max ${MAX_TEXT_CHARS.toLocaleString()} characters).`, status: 413 };
+      return {
+        error: `Written summary is too long (max ${MAX_TEXT_CHARS.toLocaleString()} characters).`,
+        status: 413,
+      };
     }
     stages.push(textStage(narrative, 'Written summary'));
   }
 
   if (stages.length < 2) {
     return {
-      error: 'A full-analysis scan needs at least two pieces — e.g. your prep code, a chart, and a written summary.',
+      error:
+        'A full-analysis scan needs at least two pieces — e.g. your prep code, a chart, and a written summary.',
       status: 400,
     };
   }

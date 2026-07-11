@@ -23,7 +23,8 @@ const MODES: { id: Mode; label: string }[] = [
   { id: 'chain', label: 'Full analysis' },
 ];
 
-const DECK_ACCEPT = '.pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation';
+const DECK_ACCEPT =
+  '.pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation';
 
 // Full-analysis mode takes any supported artifact type as a stage of the chain.
 const CHAIN_ACCEPT =
@@ -103,7 +104,9 @@ export default function Home() {
   // Paste chart screenshots from anywhere on the page.
   useEffect(() => {
     function onPaste(e: ClipboardEvent) {
-      const images = Array.from(e.clipboardData?.files ?? []).filter((f) => f.type.startsWith('image/'));
+      const images = Array.from(e.clipboardData?.files ?? []).filter((f) =>
+        f.type.startsWith('image/')
+      );
       if (images.length > 0) {
         e.preventDefault();
         addImages(images);
@@ -211,13 +214,20 @@ export default function Home() {
     } else {
       const content = mode === 'code' ? code : text;
       if (content.trim() === '') {
-        setState({ status: 'error', message: 'Paste something — or upload a file — to audit first.' });
+        setState({
+          status: 'error',
+          message: 'Paste something — or upload a file — to audit first.',
+        });
         return;
       }
       request = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ kind: mode, content, language: mode === 'code' ? language : undefined }),
+        body: JSON.stringify({
+          kind: mode,
+          content,
+          language: mode === 'code' ? language : undefined,
+        }),
       };
     }
 
@@ -250,7 +260,11 @@ export default function Home() {
             <em>Avoiding Data Pitfalls</em>
           </a>
           , across all eight pitfall domains.{' '}
-          <a href="https://github.com/bjonesdataliteracy/datapitfalls" target="_blank" rel="noreferrer">
+          <a
+            href="https://github.com/bjonesdataliteracy/datapitfalls"
+            target="_blank"
+            rel="noreferrer"
+          >
             Open source on GitHub
           </a>
           .
@@ -328,7 +342,11 @@ export default function Home() {
               onDragLeave={() => setDragging(false)}
               onDrop={onDeckDrop}
             >
-              <input type="file" accept={DECK_ACCEPT} onChange={(e) => setDocFile(e.target.files?.[0] ?? null)} />
+              <input
+                type="file"
+                accept={DECK_ACCEPT}
+                onChange={(e) => setDocFile(e.target.files?.[0] ?? null)}
+              />
               <span>
                 {docFile
                   ? `Deck selected: ${docFile.name} — choose or drop another to replace it`
@@ -339,7 +357,12 @@ export default function Home() {
               <div className="uploadrow">
                 <span className="filename">
                   Auditing {docFile.name}
-                  <button type="button" className="clearfile" onClick={() => setDocFile(null)} aria-label="Remove deck">
+                  <button
+                    type="button"
+                    className="clearfile"
+                    onClick={() => setDocFile(null)}
+                    aria-label="Remove deck"
+                  >
                     ×
                   </button>
                 </span>
@@ -351,10 +374,10 @@ export default function Home() {
         {mode === 'chain' && (
           <>
             <p className="chainintro">
-              Add the pieces of one analysis — the prep/analysis code, the chart(s), a PDF/Word/deck —
-              and we&rsquo;ll check the whole chain, including pitfalls that only surface across steps
-              (a transform that biases a later chart, a metric described differently than it&rsquo;s
-              computed, a chart the summary over-claims).
+              Add the pieces of one analysis — the prep/analysis code, the chart(s), a PDF/Word/deck
+              — and we&rsquo;ll check the whole chain, including pitfalls that only surface across
+              steps (a transform that biases a later chart, a metric described differently than
+              it&rsquo;s computed, a chart the summary over-claims).
             </p>
             <label
               className={dragging ? 'filefield dragging' : 'filefield'}
@@ -415,7 +438,9 @@ export default function Home() {
             <textarea
               className={mode === 'code' ? 'editor mono' : 'editor'}
               value={mode === 'code' ? code : text}
-              onChange={(e) => (mode === 'code' ? setCode(e.target.value) : setText(e.target.value))}
+              onChange={(e) =>
+                mode === 'code' ? setCode(e.target.value) : setText(e.target.value)
+              }
               placeholder={
                 mode === 'code'
                   ? 'Paste the analysis code to audit…'
@@ -437,7 +462,12 @@ export default function Home() {
               {docFile ? (
                 <span className="filename">
                   Auditing {docFile.name}
-                  <button type="button" className="clearfile" onClick={() => setDocFile(null)} aria-label="Remove file">
+                  <button
+                    type="button"
+                    className="clearfile"
+                    onClick={() => setDocFile(null)}
+                    aria-label="Remove file"
+                  >
                     ×
                   </button>
                 </span>
@@ -480,7 +510,11 @@ export default function Home() {
             Claude
           </a>
           .{' '}
-          <a href="https://github.com/bjonesdataliteracy/datapitfalls" target="_blank" rel="noreferrer">
+          <a
+            href="https://github.com/bjonesdataliteracy/datapitfalls"
+            target="_blank"
+            rel="noreferrer"
+          >
             Source on GitHub
           </a>
           .
@@ -504,7 +538,12 @@ function roleHint(file: File): string {
   if (name.endsWith('.pptx')) return 'Slide deck';
   if (name.endsWith('.pdf') || name.endsWith('.docx')) return 'Document';
   if (name.endsWith('.ipynb')) return 'Notebook';
-  if (name.endsWith('.md') || name.endsWith('.markdown') || name.endsWith('.txt') || name.endsWith('.rst'))
+  if (
+    name.endsWith('.md') ||
+    name.endsWith('.markdown') ||
+    name.endsWith('.txt') ||
+    name.endsWith('.rst')
+  )
     return 'Notes';
   return 'Code';
 }
