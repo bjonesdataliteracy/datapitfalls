@@ -43,6 +43,60 @@ export function hasBlockingFindings(report: PitfallReport): boolean {
   return report.findings.some((f) => f.nature === 'active' && f.severity !== 'info');
 }
 
+/** Overall report tiers, best to worst. A tier is a coarse, deterministic
+ *  rollup of the findings — never a model-supplied score — so the same findings
+ *  always produce the same tier, and run-to-run detection noise is absorbed by
+ *  the tier boundaries instead of surfacing as false precision. */
+export const TIERS = ['clear', 'verify', 'attention', 'serious'] as const;
+
+export type Tier = (typeof TIERS)[number];
+
+/** Human labels for each tier. The top tier is worded as a scope-limited
+ *  negative ("no pitfalls detected"), not praise — a clean scan means none of
+ *  the cataloged pitfalls were detected, not that the work is correct. Display
+ *  it alongside `report.rulesConsidered` (e.g. "checked against 47 rules") so
+ *  the claim carries its own denominator. */
+export const TIER_LABEL: Record<Tier, string> = {
+  clear: 'No pitfalls detected',
+  verify: 'Conditions to verify',
+  attention: 'Needs attention',
+  serious: 'Serious pitfalls found',
+};
+
+/**
+ * The overall tier for a report, from best to worst:
+ *
+ * - `clear` — nothing detected (or only the low-confidence latent findings the
+ *   default report hides as noise).
+ * - `verify` — only info-level active findings and/or high-confidence latent
+ *   ones. Latent findings never push a report below this tier, whatever their
+ *   severity: they are conditions to check against the data, not verdicts.
+ * - `attention` — at least one active warning.
+ * - `serious` — at least one active error, or an active warning rated
+ *   `changes-takeaway` (the consequence rating, when present, says the flaw
+ *   likely changes what a reader concludes — that outranks a warning label).
+ *
+ * The tier agrees with the default `formatReport` display (a finding hidden as
+ * noise never affects the tier) and with CI gating: the tier is `attention` or
+ * worse exactly when `hasBlockingFindings` is true.
+ */
+export function reportTier(report: PitfallReport): Tier {
+  const active = report.findings.filter((f) => f.nature === 'active');
+  if (
+    active.some(
+      (f) =>
+        f.severity === 'error' || (f.severity === 'warning' && f.consequence === 'changes-takeaway')
+    )
+  ) {
+    return 'serious';
+  }
+  if (active.some((f) => f.severity === 'warning')) return 'attention';
+  const hasVisibleLatent = report.findings.some(
+    (f) => f.nature === 'latent' && f.confidence === 'high'
+  );
+  return active.length > 0 || hasVisibleLatent ? 'verify' : 'clear';
+}
+
 // EXPERIMENTAL — human labels for the consequence rating (variant runs only).
 const CONSEQUENCE_LABEL: Record<string, string> = {
   'changes-takeaway': 'changes the takeaway',
@@ -67,6 +121,23 @@ function renderFinding(finding: Finding, lines: string[]): void {
 export interface ReportFormatOptions {
   /** Show every finding, including lower-confidence latent ones. Default false. */
   showAll?: boolean;
+  /** Colorize the report header with ANSI escapes — the tier in its semantic
+   *  color, the checked-against line dimmed. The caller owns TTY/NO_COLOR
+   *  detection; default false so piped and captured output stays plain. */
+  color?: boolean;
+}
+
+// Semantic ANSI colors for the tier line (standard 16-color codes, so they
+// respect the user's terminal palette): green / cyan / yellow / red.
+const TIER_SGR: Record<Tier, string> = {
+  clear: '32',
+  verify: '36',
+  attention: '33',
+  serious: '31',
+};
+
+function sgr(code: string, s: string, on: boolean): string {
+  return on ? `\x1b[${code}m${s}\x1b[0m` : s;
 }
 
 /**
@@ -78,16 +149,19 @@ export interface ReportFormatOptions {
  */
 export function formatReport(report: PitfallReport, options: ReportFormatOptions = {}): string {
   const showAll = options.showAll ?? false;
+  const color = options.color ?? false;
 
   const active = report.findings.filter((f) => f.nature === 'active').sort(bySeverity);
   const allLatent = report.findings.filter((f) => f.nature === 'latent').sort(bySeverity);
   const latent = showAll ? allLatent : allLatent.filter((f) => f.confidence === 'high');
   const hiddenLatent = allLatent.length - latent.length;
 
-  // EXPERIMENTAL — the summary leads the report when a variant produced one,
-  // and visibly-avoided pitfalls close it.
-  const preamble: string[] = [];
-  if (report.summary) preamble.push(`Summary: ${report.summary}`, '');
+  // The tier leads the report as its headline verdict; the checked-against line
+  // carries the denominator that keeps a clean scan honest.
+  const tier = reportTier(report);
+  const tierText = sgr(`1;${TIER_SGR[tier]}`, TIER_LABEL[tier].toUpperCase(), color);
+  const checkedAgainst = `checked against ${report.rulesConsidered} rules · model ${report.model}`;
+
   const avoidedBlock: string[] = [];
   if (report.avoided && report.avoided.length > 0) {
     avoidedBlock.push('Pitfalls avoided — countermeasures visible in the work:');
@@ -98,25 +172,30 @@ export function formatReport(report: PitfallReport, options: ReportFormatOptions
   }
 
   if (active.length === 0 && latent.length === 0) {
-    const base =
-      hiddenLatent > 0
-        ? `No pitfalls detected — ${hiddenLatent} lower-confidence potential pitfall(s) hidden (use --all to show).`
-        : 'No pitfalls detected.';
-    const closing = avoidedBlock.length > 0 ? ['', ...avoidedBlock] : [];
-    return [
-      ...preamble,
-      `${base} Considered ${report.rulesConsidered} rules, model ${report.model}.`,
-      ...closing,
-    ].join('\n');
+    const lines = [`${tierText} — ${sgr('2', checkedAgainst, color)}`];
+    if (hiddenLatent > 0) {
+      lines.push(
+        `(${hiddenLatent} lower-confidence potential pitfall(s) hidden — use --all to show.)`
+      );
+    }
+    if (report.summary) lines.push('', `Summary: ${report.summary}`);
+    if (avoidedBlock.length > 0) lines.push('', ...avoidedBlock);
+    return lines.join('\n');
   }
 
   const counts = countBySeverity([...active, ...latent]);
+  const severityParts = (['error', 'warning', 'info'] as const)
+    .filter((s) => counts[s] > 0)
+    .map((s) => `${counts[s]} ${s}`)
+    .join(' / ');
   const lines: string[] = [
-    ...preamble,
-    `${active.length + latent.length} pitfall(s) shown — ${active.length} detected, ${latent.length} potential · ` +
-      `${counts.error} error / ${counts.warning} warning / ${counts.info} info (model ${report.model}):`,
+    `${tierText} — ${active.length} detected, ${latent.length} potential · ${severityParts}`,
+    sgr('2', `Checked against ${report.rulesConsidered} rules · model ${report.model}`, color),
     '',
   ];
+  // EXPERIMENTAL — the summary follows the header when a variant produced one,
+  // and visibly-avoided pitfalls close the report.
+  if (report.summary) lines.push(`Summary: ${report.summary}`, '');
 
   if (active.length > 0) {
     const source =
@@ -139,7 +218,9 @@ export function formatReport(report: PitfallReport, options: ReportFormatOptions
   }
 
   if (hiddenLatent > 0) {
-    lines.push(`(${hiddenLatent} lower-confidence potential pitfall(s) hidden — use --all to show.)`);
+    lines.push(
+      `(${hiddenLatent} lower-confidence potential pitfall(s) hidden — use --all to show.)`
+    );
   }
 
   if (avoidedBlock.length > 0) {

@@ -22,7 +22,15 @@ body {
   padding: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
   line-height: 1.55;
 }
 
@@ -343,10 +351,85 @@ body {
   margin-top: 2rem;
 }
 
-.summary,
-.clean {
-  color: var(--muted);
+/* The verdict header that opens every result: tier pill + facts + summary in
+   one card, sharing the finding cards' colored-left-border grammar. The words
+   carry the verdict; the tier color reinforces it. */
+.verdict {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 1rem 1.15rem;
   margin-bottom: 1.5rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--muted);
+  border-radius: 10px;
+}
+.verdict.tier-serious {
+  border-left-color: var(--error);
+}
+.verdict.tier-attention {
+  border-left-color: var(--warning);
+}
+.verdict.tier-verify {
+  border-left-color: var(--info);
+}
+.verdict.tier-clear {
+  border-left-color: var(--good);
+}
+
+.tier-pill {
+  align-self: flex-start;
+  padding: 0.28rem 0.85rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  border-radius: 999px;
+  color: #0b0d12;
+  background: var(--muted);
+}
+.tier-serious .tier-pill {
+  background: var(--error);
+}
+.tier-attention .tier-pill {
+  background: var(--warning);
+}
+.tier-verify .tier-pill {
+  background: var(--info);
+}
+.tier-clear .tier-pill {
+  background: var(--good);
+}
+
+.verdict-facts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.9rem;
+  font-size: 0.88rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.sevcount {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+}
+
+.dot {
+  width: 0.55em;
+  height: 0.55em;
+  border-radius: 50%;
+}
+.dot-error {
+  background: var(--error);
+}
+.dot-warning {
+  background: var(--warning);
+}
+.dot-info {
+  background: var(--info);
 }
 
 .results h2 {
@@ -428,16 +511,11 @@ body {
   background: var(--muted);
 }
 
-/* The scan's overall summary leads the results. */
+/* The scan's overall summary, inside the verdict header. */
 .scan-summary {
-  margin: 0 0 1rem;
-  padding: 1rem 1.1rem;
+  margin: 0;
   font-size: 1.02rem;
   line-height: 1.6;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-left: 4px solid var(--accent);
-  border-radius: 8px;
 }
 
 /* The headline finding gets the full card treatment. */

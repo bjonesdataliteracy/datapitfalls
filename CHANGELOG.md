@@ -9,6 +9,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Overall report tier**: `reportTier(report)` (with `TIERS`, `Tier`, and
+  `TIER_LABEL`, exported from the package root) rolls a report's findings up
+  into one of four named tiers — `clear` ("No pitfalls detected"), `verify`
+  ("Conditions to verify"), `attention` ("Needs attention"), `serious`
+  ("Serious pitfalls found"). The tier is computed deterministically in code
+  from each finding's nature/severity/consequence (never model-supplied, and
+  deliberately coarse rather than a 0–100 score): any active error — or an
+  active warning whose consequence rating says it changes the takeaway — is
+  `serious`; any other active warning is `attention`; info-level active
+  findings and high-confidence latent ones are `verify`; latent findings never
+  push a report below `verify`, whatever their severity. It matches the default
+  `formatReport` display (lower-confidence latent findings hidden as noise
+  don't move the tier) and agrees with `hasBlockingFindings` at the
+  `attention` boundary. Display-only for now: the CLI's `--ci` gating is
+  unchanged. See [`reportTier`](docs/API.md#reporttier).
+- **The tier now leads both surfaces.** `formatReport` opens with a tier
+  header (`NEEDS ATTENTION — 2 detected, 1 potential · 2 warning / 1 info`)
+  over a `Checked against N rules · model …` denominator line, unifying the
+  clean and findings report shapes; a new `color` option (default off)
+  colorizes the header with semantic ANSI colors, and the CLI passes its
+  existing TTY/`NO_COLOR` detection through. `datapitfalls scan --json` now
+  includes a computed `tier` field. The web app opens every result — clean or
+  not — with a verdict card: the tier pill, a facts line (severity counts as
+  colored dots, the rule denominator, the model), and the scan summary in one
+  card; `/api/audit` responses carry server-computed `tier` and `tierLabel`
+  fields. The web "Start here" slot and hidden-findings toggle now use the
+  same default-visibility rule as the CLI and the tier, so a lower-confidence
+  latent finding can no longer headline a report whose tier says clear.
 - Dependency-free **bridge to [Semiotic](https://github.com/nteract/semiotic)**:
   `toSemioticAnnotations(report, opts?)` and `buildSemioticAnnotationBridge(report, opts?)`
   (new `src/bridges/semiotic.ts`, re-exported from the package root) convert a
@@ -21,12 +49,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `stableId` (the `ruleId`) enables `anchor: 'semantic'` re-resolution; and a
   `dataPitfall` blob (`ruleId`, `domain`, `severity`, `evidence`) on each. It's the
   reciprocal of [nteract/semiotic#1030](https://github.com/nteract/semiotic/pull/1030)
-  (Semiotic → datapitfalls): it lives in this repo, emits *their* shape, and
+  (Semiotic → datapitfalls): it lives in this repo, emits _their_ shape, and
   never imports Semiotic — zero new runtime dependencies, and off the engine's
   hot path (`detectPitfalls()` does not import it). Because datapitfalls sees
   findings, not pixel coordinates, annotations are emitted **unanchored** (no
   `x`/`y`) — the host app positions them (on v3 an unanchored annotation is
-  *dropped* until anchored). An optional `max` cap keeps busy charts readable; the
+  _dropped_ until anchored). An optional `max` cap keeps busy charts readable; the
   full finding count survives in `meta.count`, so a cap is never silent. See
   [Bridging to Semiotic](docs/API.md#bridging-to-semiotic).
 
@@ -85,7 +113,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   audience would misperceive, optionally noting one genuine strength) and a
   per-finding `consequence` rating (changes-takeaway / weakens-support /
   polish), and an `avoided` list — up to two catalog pitfalls the work
-  *visibly* avoided, evidenced by a concrete countermeasure (a guard, a
+  _visibly_ avoided, evidenced by a concrete countermeasure (a guard, a
   stated caveat, a deliberate choice), catalog-validated and disjoint from
   findings, with zero allowed. Explanations are capped at one to two
   artifact-specific sentences (the rule's general description is not
@@ -145,7 +173,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CLI splash screen — a colored ANSI block-art banner with a Human/Agent quick-start, in the Powered By Data palette, that adapts to light or dark terminals (auto-detected, with a `--theme light|dark` flag or `DATAPITFALLS_THEME` env override). Body text uses the terminal's own foreground so it stays readable on any background.
 - Slide-deck scanning (`.pptx`) — extracts each slide's text and embedded chart images and reviews the whole deck against the full catalog (CLI and web). New engine input kind `slides` and an `extractSlides()` helper.
 - Shared file router in the package — `fileToInput()` / `filesToInput()` turn an uploaded or loaded file (bytes + filename + MIME) into a `DetectionInput`, covering images (one or several), PDF, `.pptx`, `.docx`, notebooks, and code/prose in one place. The CLI and the web app now both route through it, so a new input format is wired up once and every surface (and future site) gets it on a version bump.
-- Whole-chain scanning (`chain` input kind, 0.5.0) — scan the steps of one analysis *together* (prep/analysis code, the chart(s), a written summary) and surface pitfalls that only emerge **across** stages: a transform that biases a later chart, a metric computed one way and described another, a chart the narrative over-claims, a caveat the conclusion drops. Adds `datapitfalls scan --chain <files…>`, a "Full analysis" mode in the web app, and `fileToStage()` / `textStage()` helpers.
+- Whole-chain scanning (`chain` input kind, 0.5.0) — scan the steps of one analysis _together_ (prep/analysis code, the chart(s), a written summary) and surface pitfalls that only emerge **across** stages: a transform that biases a later chart, a metric computed one way and described another, a chart the narrative over-claims, a caveat the conclusion drops. Adds `datapitfalls scan --chain <files…>`, a "Full analysis" mode in the web app, and `fileToStage()` / `textStage()` helpers.
 
 ### Changed
 

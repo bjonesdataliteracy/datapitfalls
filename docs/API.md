@@ -49,10 +49,7 @@ API). Provide it via `options.apiKey`, a pre-built `options.client`, or the
 ## `detectPitfalls`
 
 ```ts
-function detectPitfalls(
-  input: DetectionInput,
-  options?: DetectionOptions
-): Promise<PitfallReport>;
+function detectPitfalls(input: DetectionInput, options?: DetectionOptions): Promise<PitfallReport>;
 ```
 
 Scans one artifact — or a whole analysis chain — against the pitfall catalog and
@@ -142,7 +139,7 @@ interface ImageSource {
 
 ### A PDF report — `DocumentDetectionInput`
 
-The PDF is sent to Claude as a native document, so it reads the prose *and* sees
+The PDF is sent to Claude as a native document, so it reads the prose _and_ sees
 the charts and tables on the page.
 
 ```ts
@@ -173,7 +170,7 @@ Use [`extractSlides`](#extracting-slide-decks) to build this from `.pptx` bytes.
 
 ### A whole analysis — `ChainDetectionInput`
 
-Scan the ordered stages of one analysis *together* (data prep → analysis →
+Scan the ordered stages of one analysis _together_ (data prep → analysis →
 chart → narrative) so pitfalls that only emerge **across** stages surface — a
 transform that biases a later chart, a metric computed one way and described
 another, a chart the narrative over-claims.
@@ -245,12 +242,25 @@ authoritative.
 ### `formatReport`
 
 ```ts
-function formatReport(report: PitfallReport, options?: { showAll?: boolean }): string;
+function formatReport(
+  report: PitfallReport,
+  options?: { showAll?: boolean; color?: boolean }
+): string;
 ```
 
-Renders a report as plain text for the terminal. By default it shows all active
-findings plus only high-confidence latent ones; pass `{ showAll: true }` to
-include lower-confidence latent findings.
+Renders a report as plain text for the terminal, led by the report's tier (see
+[`reportTier`](#reporttier)) and the checked-against denominator:
+
+```
+NEEDS ATTENTION — 2 detected, 1 potential · 2 warning / 1 info
+Checked against 78 rules · model claude-sonnet-4-6
+```
+
+By default it shows all active findings plus only high-confidence latent ones;
+pass `{ showAll: true }` to include lower-confidence latent findings. Pass
+`{ color: true }` to colorize the header with ANSI escapes (the tier in its
+semantic color, the denominator dimmed) — the caller owns TTY/`NO_COLOR`
+detection, so the default is plain text.
 
 ### `hasBlockingFindings`
 
@@ -268,6 +278,40 @@ console.log(formatReport(report));
 if (hasBlockingFindings(report)) process.exit(1);
 ```
 
+### `reportTier`
+
+```ts
+const TIERS = ['clear', 'verify', 'attention', 'serious'] as const;
+type Tier = (typeof TIERS)[number];
+const TIER_LABEL: Record<Tier, string>;
+
+function reportTier(report: PitfallReport): Tier;
+```
+
+A coarse overall tier for a report — a deterministic rollup of the findings
+(never a model-supplied score), best to worst:
+
+| Tier        | Label                  | When                                                                               |
+| ----------- | ---------------------- | ---------------------------------------------------------------------------------- |
+| `clear`     | No pitfalls detected   | Nothing detected (low/medium-confidence latent findings are noise and don't count) |
+| `verify`    | Conditions to verify   | Only info-level active findings and/or high-confidence latent ones                 |
+| `attention` | Needs attention        | At least one active warning                                                        |
+| `serious`   | Serious pitfalls found | At least one active error, or an active warning rated `changes-takeaway`           |
+
+Latent findings never push a report below `verify`, whatever their severity —
+they are conditions to check against the data, not verdicts. The tier agrees
+with `hasBlockingFindings`: it is `attention` or worse exactly when that
+returns `true`.
+
+When displaying the `clear` tier, pair the label with `report.rulesConsidered`
+(e.g. "No pitfalls detected · checked against 47 rules") — a clean scan means
+none of the cataloged pitfalls were detected, not that the work is correct.
+
+```ts
+const tier = reportTier(report); // e.g. 'attention'
+badge.textContent = TIER_LABEL[tier]; // "Needs attention"
+```
+
 ---
 
 ## Bridging to Semiotic
@@ -279,8 +323,8 @@ A dependency-free bridge that turns a `PitfallReport` into the plain objects
 you audited can render its own warnings. It's the structural mirror of
 [nteract/semiotic#1030](https://github.com/nteract/semiotic/pull/1030), which
 bridges the other direction (Semiotic → datapitfalls): that one lives in their
-repo, emits *our* shape, and never imports us; this one lives in our repo, emits
-*their* shape, and never imports Semiotic. It adds **zero runtime dependencies**
+repo, emits _our_ shape, and never imports us; this one lives in our repo, emits
+_their_ shape, and never imports Semiotic. It adds **zero runtime dependencies**
 — it imports only local types.
 
 ```ts
@@ -315,9 +359,9 @@ if (meta.count > annotations.length) {
 ### The honest seam — annotations are unanchored
 
 datapitfalls sees **findings, not pixel coordinates**. So every annotation is
-emitted *unanchored*: **no `x`/`y` or data accessor**. The bridge never invents
+emitted _unanchored_: **no `x`/`y` or data accessor**. The bridge never invents
 coordinates. On Semiotic v3 this is a **hard requirement, not a nicety** — an
-annotation whose coordinates can't be resolved is *dropped*, not floated. So
+annotation whose coordinates can't be resolved is _dropped_, not floated. So
 **positioning is the host app's job**: anchor each to a mark (add your own
 `x`/`y` or an accessor before rendering), render them as a stacked margin/legend
 list (unaffected by anchoring), or let v3 re-resolve position via
@@ -327,13 +371,13 @@ annotation also carries a `dataPitfall` blob (`ruleId`, `domain`, `severity`,
 
 ### Mapping
 
-| `Finding` field | Annotation field |
-|---|---|
-| `name` | `title` (flat — v3 reads it directly) |
-| `remediation` | `label` (the actionable fix shown on the chart) |
-| `severity` | `color` (via palette), `className` = `pitfall-${severity}`, and `emphasis` (`'primary'` for errors, else `'secondary'`) |
-| `ruleId` | `provenance.stableId` (enables `anchor: 'semantic'`) |
-| `ruleId`, `domain`, `severity`, `evidence` | `dataPitfall` blob |
+| `Finding` field                            | Annotation field                                                                                                        |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| `name`                                     | `title` (flat — v3 reads it directly)                                                                                   |
+| `remediation`                              | `label` (the actionable fix shown on the chart)                                                                         |
+| `severity`                                 | `color` (via palette), `className` = `pitfall-${severity}`, and `emphasis` (`'primary'` for errors, else `'secondary'`) |
+| `ruleId`                                   | `provenance.stableId` (enables `anchor: 'semantic'`)                                                                    |
+| `ruleId`, `domain`, `severity`, `evidence` | `dataPitfall` blob                                                                                                      |
 
 ### Types
 

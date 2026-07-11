@@ -2,15 +2,18 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ChangeEvent, DragEvent, FormEvent } from 'react';
-import type { PitfallReport, Finding, AvoidedPitfall, Consequence } from 'datapitfalls';
+import type { PitfallReport, Finding, AvoidedPitfall, Consequence, Tier } from 'datapitfalls';
 
 type Mode = 'image' | 'text' | 'slides' | 'code' | 'chain';
+
+/** What /api/audit returns: the engine report plus the server-computed tier. */
+type AuditReport = PitfallReport & { tier: Tier; tierLabel: string };
 
 type State =
   | { status: 'idle' }
   | { status: 'loading' }
   | { status: 'error'; message: string }
-  | { status: 'done'; report: PitfallReport };
+  | { status: 'done'; report: AuditReport };
 
 const MODES: { id: Mode; label: string }[] = [
   { id: 'image', label: 'Chart image' },
@@ -20,7 +23,8 @@ const MODES: { id: Mode; label: string }[] = [
   { id: 'chain', label: 'Full analysis' },
 ];
 
-const DECK_ACCEPT = '.pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation';
+const DECK_ACCEPT =
+  '.pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation';
 
 // Full-analysis mode takes any supported artifact type as a stage of the chain.
 const CHAIN_ACCEPT =
@@ -100,7 +104,9 @@ export default function Home() {
   // Paste chart screenshots from anywhere on the page.
   useEffect(() => {
     function onPaste(e: ClipboardEvent) {
-      const images = Array.from(e.clipboardData?.files ?? []).filter((f) => f.type.startsWith('image/'));
+      const images = Array.from(e.clipboardData?.files ?? []).filter((f) =>
+        f.type.startsWith('image/')
+      );
       if (images.length > 0) {
         e.preventDefault();
         addImages(images);
@@ -208,25 +214,32 @@ export default function Home() {
     } else {
       const content = mode === 'code' ? code : text;
       if (content.trim() === '') {
-        setState({ status: 'error', message: 'Paste something — or upload a file — to audit first.' });
+        setState({
+          status: 'error',
+          message: 'Paste something — or upload a file — to audit first.',
+        });
         return;
       }
       request = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ kind: mode, content, language: mode === 'code' ? language : undefined }),
+        body: JSON.stringify({
+          kind: mode,
+          content,
+          language: mode === 'code' ? language : undefined,
+        }),
       };
     }
 
     setState({ status: 'loading' });
     try {
       const res = await fetch('/api/audit', request);
-      const data = (await res.json()) as PitfallReport | { error: string };
+      const data = (await res.json()) as AuditReport | { error: string };
       if (!res.ok) {
         setState({ status: 'error', message: 'error' in data ? data.error : 'The scan failed.' });
         return;
       }
-      setState({ status: 'done', report: data as PitfallReport });
+      setState({ status: 'done', report: data as AuditReport });
     } catch {
       setState({ status: 'error', message: 'Network error — please try again.' });
     }
@@ -247,7 +260,11 @@ export default function Home() {
             <em>Avoiding Data Pitfalls</em>
           </a>
           , across all eight pitfall domains.{' '}
-          <a href="https://github.com/bjonesdataliteracy/datapitfalls" target="_blank" rel="noreferrer">
+          <a
+            href="https://github.com/bjonesdataliteracy/datapitfalls"
+            target="_blank"
+            rel="noreferrer"
+          >
             Open source on GitHub
           </a>
           .
@@ -325,7 +342,11 @@ export default function Home() {
               onDragLeave={() => setDragging(false)}
               onDrop={onDeckDrop}
             >
-              <input type="file" accept={DECK_ACCEPT} onChange={(e) => setDocFile(e.target.files?.[0] ?? null)} />
+              <input
+                type="file"
+                accept={DECK_ACCEPT}
+                onChange={(e) => setDocFile(e.target.files?.[0] ?? null)}
+              />
               <span>
                 {docFile
                   ? `Deck selected: ${docFile.name} — choose or drop another to replace it`
@@ -336,7 +357,12 @@ export default function Home() {
               <div className="uploadrow">
                 <span className="filename">
                   Auditing {docFile.name}
-                  <button type="button" className="clearfile" onClick={() => setDocFile(null)} aria-label="Remove deck">
+                  <button
+                    type="button"
+                    className="clearfile"
+                    onClick={() => setDocFile(null)}
+                    aria-label="Remove deck"
+                  >
                     ×
                   </button>
                 </span>
@@ -348,10 +374,10 @@ export default function Home() {
         {mode === 'chain' && (
           <>
             <p className="chainintro">
-              Add the pieces of one analysis — the prep/analysis code, the chart(s), a PDF/Word/deck —
-              and we&rsquo;ll check the whole chain, including pitfalls that only surface across steps
-              (a transform that biases a later chart, a metric described differently than it&rsquo;s
-              computed, a chart the summary over-claims).
+              Add the pieces of one analysis — the prep/analysis code, the chart(s), a PDF/Word/deck
+              — and we&rsquo;ll check the whole chain, including pitfalls that only surface across
+              steps (a transform that biases a later chart, a metric described differently than
+              it&rsquo;s computed, a chart the summary over-claims).
             </p>
             <label
               className={dragging ? 'filefield dragging' : 'filefield'}
@@ -412,7 +438,9 @@ export default function Home() {
             <textarea
               className={mode === 'code' ? 'editor mono' : 'editor'}
               value={mode === 'code' ? code : text}
-              onChange={(e) => (mode === 'code' ? setCode(e.target.value) : setText(e.target.value))}
+              onChange={(e) =>
+                mode === 'code' ? setCode(e.target.value) : setText(e.target.value)
+              }
               placeholder={
                 mode === 'code'
                   ? 'Paste the analysis code to audit…'
@@ -434,7 +462,12 @@ export default function Home() {
               {docFile ? (
                 <span className="filename">
                   Auditing {docFile.name}
-                  <button type="button" className="clearfile" onClick={() => setDocFile(null)} aria-label="Remove file">
+                  <button
+                    type="button"
+                    className="clearfile"
+                    onClick={() => setDocFile(null)}
+                    aria-label="Remove file"
+                  >
                     ×
                   </button>
                 </span>
@@ -477,7 +510,11 @@ export default function Home() {
             Claude
           </a>
           .{' '}
-          <a href="https://github.com/bjonesdataliteracy/datapitfalls" target="_blank" rel="noreferrer">
+          <a
+            href="https://github.com/bjonesdataliteracy/datapitfalls"
+            target="_blank"
+            rel="noreferrer"
+          >
             Source on GitHub
           </a>
           .
@@ -501,7 +538,12 @@ function roleHint(file: File): string {
   if (name.endsWith('.pptx')) return 'Slide deck';
   if (name.endsWith('.pdf') || name.endsWith('.docx')) return 'Document';
   if (name.endsWith('.ipynb')) return 'Notebook';
-  if (name.endsWith('.md') || name.endsWith('.markdown') || name.endsWith('.txt') || name.endsWith('.rst'))
+  if (
+    name.endsWith('.md') ||
+    name.endsWith('.markdown') ||
+    name.endsWith('.txt') ||
+    name.endsWith('.rst')
+  )
     return 'Notes';
   return 'Code';
 }
@@ -532,31 +574,66 @@ function triageOrder(a: Finding, b: Finding): number {
   );
 }
 
-function Results({ report }: { report: PitfallReport }) {
+// The verdict header that opens every result: the tier pill, the facts line
+// (counts by severity, the rule denominator, the model), and — when the summary
+// variant ran — the model's overall summary, in one card. Counts cover the
+// findings shown by default, matching how the tier itself is computed.
+function VerdictHeader({ report }: { report: AuditReport }) {
+  const shown = report.findings.filter((f) => f.nature === 'active' || f.confidence === 'high');
+  const detected = shown.filter((f) => f.nature === 'active').length;
+  const potential = shown.length - detected;
+  const counts = { error: 0, warning: 0, info: 0 };
+  for (const f of shown) counts[f.severity] += 1;
+
+  return (
+    <div className={`verdict tier-${report.tier}`}>
+      <span className="tier-pill">{report.tierLabel}</span>
+      <div className="verdict-facts">
+        {shown.length > 0 && (
+          <>
+            <span>
+              {detected} detected, {potential} potential
+              {detected === 0 ? ' — nothing evidently wrong' : ''}
+            </span>
+            {(['error', 'warning', 'info'] as const)
+              .filter((s) => counts[s] > 0)
+              .map((s) => (
+                <span className="sevcount" key={s}>
+                  <i className={`dot dot-${s}`} aria-hidden />
+                  {counts[s]} {s}
+                </span>
+              ))}
+          </>
+        )}
+        <span>checked against {report.rulesConsidered} rules</span>
+        <span>model {report.model}</span>
+      </div>
+      {report.summary && <p className="scan-summary">{report.summary}</p>}
+    </div>
+  );
+}
+
+function Results({ report }: { report: AuditReport }) {
   const [showAllPotential, setShowAllPotential] = useState(false);
 
+  // Same default as the CLI (and as the tier computation): lower-confidence
+  // potential pitfalls fire on almost any real work, so they stay behind a
+  // toggle — including for the "Start here" slot.
   const sorted = [...report.findings].sort(triageOrder);
-  const headline = sorted[0];
-  const rest = sorted.slice(1);
-  const detected = rest.filter((f) => f.nature === 'active');
-  const allPotential = rest.filter((f) => f.nature === 'latent');
-  // Same default as the CLI: lower-confidence potential pitfalls fire on almost
-  // any real work, so they stay behind a toggle.
-  const potential = showAllPotential
-    ? allPotential
-    : allPotential.filter((f) => f.confidence === 'high');
-  const hiddenCount = allPotential.length - potential.length;
+  const visible = showAllPotential
+    ? sorted
+    : sorted.filter((f) => f.nature === 'active' || f.confidence === 'high');
+  const hiddenCount = sorted.length - visible.length;
 
-  const detectedCount = report.findings.filter((f) => f.nature === 'active').length;
-  const potentialCount = report.findings.length - detectedCount;
+  const headline = visible[0];
+  const rest = visible.slice(1);
+  const detected = rest.filter((f) => f.nature === 'active');
+  const potential = rest.filter((f) => f.nature === 'latent');
 
   if (report.findings.length === 0) {
     return (
       <section className="results">
-        {report.summary && <p className="scan-summary">{report.summary}</p>}
-        <p className="clean">
-          No pitfalls detected. Considered {report.rulesConsidered} rules · model {report.model}.
-        </p>
+        <VerdictHeader report={report} />
         <AvoidedSection avoided={report.avoided} />
       </section>
     );
@@ -564,11 +641,7 @@ function Results({ report }: { report: PitfallReport }) {
 
   return (
     <section className="results">
-      {report.summary && <p className="scan-summary">{report.summary}</p>}
-      <p className="summary">
-        {report.findings.length} pitfall{report.findings.length > 1 ? 's' : ''} — {detectedCount}{' '}
-        detected, {potentialCount} potential · model {report.model}
-      </p>
+      <VerdictHeader report={report} />
 
       {headline && (
         <>

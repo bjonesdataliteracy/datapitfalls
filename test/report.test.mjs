@@ -1,7 +1,7 @@
 // Unit tests for audit-report formatting and CI gating.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { formatReport, hasBlockingFindings } from '../dist/index.js';
+import { formatReport, hasBlockingFindings, reportTier, TIERS, TIER_LABEL } from '../dist/index.js';
 
 function finding(overrides = {}) {
   return {
@@ -24,21 +24,151 @@ function report(findings, overrides = {}) {
 }
 
 test('hasBlockingFindings is true only for active error/warning findings', () => {
-  assert.equal(hasBlockingFindings(report([finding({ nature: 'active', severity: 'error' })])), true);
+  assert.equal(
+    hasBlockingFindings(report([finding({ nature: 'active', severity: 'error' })])),
+    true
+  );
   assert.equal(
     hasBlockingFindings(report([finding({ nature: 'active', severity: 'warning' })])),
     true
   );
-  assert.equal(hasBlockingFindings(report([finding({ nature: 'active', severity: 'info' })])), false);
-  assert.equal(hasBlockingFindings(report([finding({ nature: 'latent', severity: 'error' })])), false);
+  assert.equal(
+    hasBlockingFindings(report([finding({ nature: 'active', severity: 'info' })])),
+    false
+  );
+  assert.equal(
+    hasBlockingFindings(report([finding({ nature: 'latent', severity: 'error' })])),
+    false
+  );
   assert.equal(hasBlockingFindings(report([])), false);
+});
+
+test('reportTier is clear when nothing is detected', () => {
+  assert.equal(reportTier(report([])), 'clear');
+  // Low/medium-confidence latent findings are display noise and never move the tier.
+  assert.equal(reportTier(report([finding({ nature: 'latent', confidence: 'low' })])), 'clear');
+  assert.equal(reportTier(report([finding({ nature: 'latent', confidence: 'medium' })])), 'clear');
+});
+
+test('reportTier floors latent-only reports at verify, whatever their severity', () => {
+  assert.equal(
+    reportTier(report([finding({ nature: 'latent', confidence: 'high', severity: 'error' })])),
+    'verify'
+  );
+  assert.equal(
+    reportTier(
+      report([
+        finding({
+          nature: 'latent',
+          confidence: 'high',
+          severity: 'warning',
+          consequence: 'changes-takeaway',
+        }),
+      ])
+    ),
+    'verify'
+  );
+});
+
+test('reportTier ranks active findings by severity', () => {
+  assert.equal(reportTier(report([finding({ severity: 'info' })])), 'verify');
+  assert.equal(reportTier(report([finding({ severity: 'warning' })])), 'attention');
+  assert.equal(reportTier(report([finding({ severity: 'error' })])), 'serious');
+  // The worst finding wins.
+  assert.equal(
+    reportTier(
+      report([
+        finding({ severity: 'info' }),
+        finding({ severity: 'error' }),
+        finding({ nature: 'latent', confidence: 'high' }),
+      ])
+    ),
+    'serious'
+  );
+});
+
+test('reportTier promotes an active warning rated changes-takeaway to serious', () => {
+  assert.equal(
+    reportTier(report([finding({ severity: 'warning', consequence: 'changes-takeaway' })])),
+    'serious'
+  );
+  // The promotion applies to warnings only — an info finding stays at verify.
+  assert.equal(
+    reportTier(report([finding({ severity: 'info', consequence: 'changes-takeaway' })])),
+    'verify'
+  );
+  // Other consequence ratings do not promote.
+  assert.equal(
+    reportTier(report([finding({ severity: 'warning', consequence: 'weakens-support' })])),
+    'attention'
+  );
+});
+
+test('reportTier agrees with hasBlockingFindings at the attention boundary', () => {
+  const cases = [
+    report([]),
+    report([finding({ severity: 'info' })]),
+    report([finding({ severity: 'warning' })]),
+    report([finding({ severity: 'error' })]),
+    report([finding({ nature: 'latent', confidence: 'high', severity: 'error' })]),
+    report([finding({ severity: 'warning', consequence: 'changes-takeaway' })]),
+    report([finding({ severity: 'info', consequence: 'changes-takeaway' })]),
+  ];
+  for (const r of cases) {
+    const blocked = TIERS.indexOf(reportTier(r)) >= TIERS.indexOf('attention');
+    assert.equal(blocked, hasBlockingFindings(r));
+  }
+});
+
+test('every tier has a human label', () => {
+  for (const tier of TIERS) {
+    assert.equal(typeof TIER_LABEL[tier], 'string');
+    assert.ok(TIER_LABEL[tier].length > 0);
+  }
 });
 
 test('formatReport reports a clean bill when there are no findings', () => {
   const text = formatReport(report([]));
-  assert.match(text, /No pitfalls detected/);
-  assert.match(text, /42 rules/);
+  assert.match(text, /NO PITFALLS DETECTED/);
+  assert.match(text, /checked against 42 rules/);
   assert.match(text, /test-model/);
+});
+
+test('formatReport leads with the tier and folds counts into the header', () => {
+  const text = formatReport(
+    report([
+      finding({ severity: 'error' }),
+      finding({ severity: 'warning' }),
+      finding({ nature: 'latent', confidence: 'high', severity: 'info' }),
+    ])
+  );
+  assert.match(
+    text,
+    /^SERIOUS PITFALLS FOUND — 2 detected, 1 potential · 1 error \/ 1 warning \/ 1 info/
+  );
+  assert.match(text, /Checked against 42 rules · model test-model/);
+});
+
+test('formatReport omits zero severities from the header counts', () => {
+  const text = formatReport(report([finding({ severity: 'warning' })]));
+  assert.match(text, /^NEEDS ATTENTION — 1 detected, 0 potential · 1 warning\n/);
+  assert.doesNotMatch(text, /0 error/);
+  assert.doesNotMatch(text, /0 info/);
+});
+
+test('formatReport colors the header only when asked', () => {
+  const plain = formatReport(report([finding({ severity: 'error' })]));
+  assert.doesNotMatch(plain, /\x1b\[/);
+
+  const colored = formatReport(report([finding({ severity: 'error' })]), { color: true });
+  // Bold red tier, dimmed checked-against line, and a matching reset for each.
+  assert.match(colored, /\x1b\[1;31mSERIOUS PITFALLS FOUND\x1b\[0m/);
+  assert.match(colored, /\x1b\[2mChecked against 42 rules · model test-model\x1b\[0m/);
+  // Findings themselves stay plain.
+  assert.match(colored, /\[ERROR\] Demo Pitfall/);
+
+  const clean = formatReport(report([]), { color: true });
+  assert.match(clean, /\x1b\[1;32mNO PITFALLS DETECTED\x1b\[0m/);
 });
 
 test('formatReport always shows detected (active) findings', () => {
@@ -67,17 +197,19 @@ test('formatReport hides low-confidence latent findings unless showAll is set', 
 
 test('formatReport notes the hidden count when every finding is filtered out', () => {
   const text = formatReport(report([finding({ nature: 'latent', confidence: 'low' })]));
-  assert.match(text, /No pitfalls detected/);
+  assert.match(text, /NO PITFALLS DETECTED/);
   assert.match(text, /1 lower-confidence potential pitfall/);
 });
 
-test('formatReport leads with the summary when a variant produced one', () => {
+test('formatReport places the summary right after the header when a variant produced one', () => {
   const text = formatReport(report([finding()], { summary: 'Fundamentally sound.' }));
-  assert.match(text, /^Summary: Fundamentally sound\./);
+  assert.match(text, /^NEEDS ATTENTION/);
+  assert.match(text, /Summary: Fundamentally sound\./);
+  assert.ok(text.indexOf('Summary:') < text.indexOf('Demo Pitfall'));
 
   const clean = formatReport(report([], { summary: 'Nothing to fix.' }));
-  assert.match(clean, /^Summary: Nothing to fix\./);
-  assert.match(clean, /No pitfalls detected/);
+  assert.match(clean, /^NO PITFALLS DETECTED/);
+  assert.match(clean, /Summary: Nothing to fix\./);
 });
 
 test('formatReport closes with avoided pitfalls, in both report shapes', () => {
@@ -99,7 +231,7 @@ test('formatReport closes with avoided pitfalls, in both report shapes', () => {
   assert.ok(withFindings.indexOf('Demo Pitfall') < withFindings.indexOf('Pitfalls avoided'));
 
   const clean = formatReport(report([], { avoided }));
-  assert.match(clean, /No pitfalls detected/);
+  assert.match(clean, /NO PITFALLS DETECTED/);
   assert.match(clean, /Pitfalls avoided/);
 });
 
