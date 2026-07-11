@@ -3,7 +3,7 @@
 
 import { DOMAINS, TAGLINE, VERSION, ruleCount, ruleCountsByDomain } from './index.js';
 import { detectPitfalls } from './analyze.js';
-import { formatReport, hasBlockingFindings } from './report.js';
+import { formatReport, hasBlockingFindings, reportTier } from './report.js';
 import { buildScanInput, buildChainInput } from './scan-input.js';
 
 const useColor = Boolean(process.stdout.isTTY) && !process.env.NO_COLOR;
@@ -275,7 +275,13 @@ async function scan(args: string[]): Promise<void> {
     model,
     ...(summary ? { variant: 'summary' as const } : {}),
   });
-  console.log(asJson ? JSON.stringify(report, null, 2) : formatReport(report, { showAll }));
+  // JSON gains the computed tier so agents get the rollup without re-deriving it;
+  // the text report colors its header only when stdout is a color-capable TTY.
+  console.log(
+    asJson
+      ? JSON.stringify({ ...report, tier: reportTier(report) }, null, 2)
+      : formatReport(report, { showAll, color: useColor })
+  );
 
   if (ci && hasBlockingFindings(report)) process.exitCode = 1;
 }

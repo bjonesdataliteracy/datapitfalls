@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { detectPitfalls, fileToStage, filesToInput, textStage } from 'datapitfalls';
+import { detectPitfalls, fileToStage, filesToInput, textStage, reportTier, TIER_LABEL } from 'datapitfalls';
 import type { ChainStage, DetectionInput, FileInput, PitfallReport } from 'datapitfalls';
 import { checkRateLimit, clientKey } from './rate-limit';
 
@@ -154,7 +154,10 @@ async function runAnalysis(input: DetectionInput): Promise<NextResponse> {
     // The web app uses the summary presentation: an overall summary line,
     // per-finding consequence ratings, and visibly-avoided pitfalls.
     const report: PitfallReport = await detectPitfalls(input, { variant: 'summary' });
-    return NextResponse.json(report);
+    // The tier is computed server-side (the engine's entry point needs Node),
+    // so the client renders it without bundling engine code.
+    const tier = reportTier(report);
+    return NextResponse.json({ ...report, tier, tierLabel: TIER_LABEL[tier] });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'The scan failed unexpectedly.';
     return NextResponse.json({ error: message }, { status: 500 });

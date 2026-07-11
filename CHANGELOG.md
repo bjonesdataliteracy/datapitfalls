@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Overall report tier**: `reportTier(report)` (with `TIERS`, `Tier`, and
   `TIER_LABEL`, exported from the package root) rolls a report's findings up
   into one of four named tiers — `clear` ("No pitfalls detected"), `verify`
-  ("Verify against your data"), `attention` ("Needs attention"), `serious`
+  ("Conditions to verify"), `attention` ("Needs attention"), `serious`
   ("Serious pitfalls found"). The tier is computed deterministically in code
   from each finding's nature/severity/consequence (never model-supplied, and
   deliberately coarse rather than a 0–100 score): any active error — or an
@@ -24,6 +24,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   don't move the tier) and agrees with `hasBlockingFindings` at the
   `attention` boundary. Display-only for now: the CLI's `--ci` gating is
   unchanged. See [`reportTier`](docs/API.md#reporttier).
+- **The tier now leads both surfaces.** `formatReport` opens with a tier
+  header (`NEEDS ATTENTION — 2 detected, 1 potential · 2 warning / 1 info`)
+  over a `Checked against N rules · model …` denominator line, unifying the
+  clean and findings report shapes; a new `color` option (default off)
+  colorizes the header with semantic ANSI colors, and the CLI passes its
+  existing TTY/`NO_COLOR` detection through. `datapitfalls scan --json` now
+  includes a computed `tier` field. The web app opens every result — clean or
+  not — with a verdict card: the tier pill, a facts line (severity counts as
+  colored dots, the rule denominator, the model), and the scan summary in one
+  card; `/api/audit` responses carry server-computed `tier` and `tierLabel`
+  fields. The web "Start here" slot and hidden-findings toggle now use the
+  same default-visibility rule as the CLI and the tier, so a lower-confidence
+  latent finding can no longer headline a report whose tier says clear.
 - Dependency-free **bridge to [Semiotic](https://github.com/nteract/semiotic)**:
   `toSemioticAnnotations(report, opts?)` and `buildSemioticAnnotationBridge(report, opts?)`
   (new `src/bridges/semiotic.ts`, re-exported from the package root) convert a

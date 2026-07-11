@@ -2,15 +2,18 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ChangeEvent, DragEvent, FormEvent } from 'react';
-import type { PitfallReport, Finding, AvoidedPitfall, Consequence } from 'datapitfalls';
+import type { PitfallReport, Finding, AvoidedPitfall, Consequence, Tier } from 'datapitfalls';
 
 type Mode = 'image' | 'text' | 'slides' | 'code' | 'chain';
+
+/** What /api/audit returns: the engine report plus the server-computed tier. */
+type AuditReport = PitfallReport & { tier: Tier; tierLabel: string };
 
 type State =
   | { status: 'idle' }
   | { status: 'loading' }
   | { status: 'error'; message: string }
-  | { status: 'done'; report: PitfallReport };
+  | { status: 'done'; report: AuditReport };
 
 const MODES: { id: Mode; label: string }[] = [
   { id: 'image', label: 'Chart image' },
@@ -221,12 +224,12 @@ export default function Home() {
     setState({ status: 'loading' });
     try {
       const res = await fetch('/api/audit', request);
-      const data = (await res.json()) as PitfallReport | { error: string };
+      const data = (await res.json()) as AuditReport | { error: string };
       if (!res.ok) {
         setState({ status: 'error', message: 'error' in data ? data.error : 'The scan failed.' });
         return;
       }
-      setState({ status: 'done', report: data as PitfallReport });
+      setState({ status: 'done', report: data as AuditReport });
     } catch {
       setState({ status: 'error', message: 'Network error — please try again.' });
     }
@@ -532,31 +535,66 @@ function triageOrder(a: Finding, b: Finding): number {
   );
 }
 
-function Results({ report }: { report: PitfallReport }) {
+// The verdict header that opens every result: the tier pill, the facts line
+// (counts by severity, the rule denominator, the model), and — when the summary
+// variant ran — the model's overall summary, in one card. Counts cover the
+// findings shown by default, matching how the tier itself is computed.
+function VerdictHeader({ report }: { report: AuditReport }) {
+  const shown = report.findings.filter((f) => f.nature === 'active' || f.confidence === 'high');
+  const detected = shown.filter((f) => f.nature === 'active').length;
+  const potential = shown.length - detected;
+  const counts = { error: 0, warning: 0, info: 0 };
+  for (const f of shown) counts[f.severity] += 1;
+
+  return (
+    <div className={`verdict tier-${report.tier}`}>
+      <span className="tier-pill">{report.tierLabel}</span>
+      <div className="verdict-facts">
+        {shown.length > 0 && (
+          <>
+            <span>
+              {detected} detected, {potential} potential
+              {detected === 0 ? ' — nothing evidently wrong' : ''}
+            </span>
+            {(['error', 'warning', 'info'] as const)
+              .filter((s) => counts[s] > 0)
+              .map((s) => (
+                <span className="sevcount" key={s}>
+                  <i className={`dot dot-${s}`} aria-hidden />
+                  {counts[s]} {s}
+                </span>
+              ))}
+          </>
+        )}
+        <span>checked against {report.rulesConsidered} rules</span>
+        <span>model {report.model}</span>
+      </div>
+      {report.summary && <p className="scan-summary">{report.summary}</p>}
+    </div>
+  );
+}
+
+function Results({ report }: { report: AuditReport }) {
   const [showAllPotential, setShowAllPotential] = useState(false);
 
+  // Same default as the CLI (and as the tier computation): lower-confidence
+  // potential pitfalls fire on almost any real work, so they stay behind a
+  // toggle — including for the "Start here" slot.
   const sorted = [...report.findings].sort(triageOrder);
-  const headline = sorted[0];
-  const rest = sorted.slice(1);
-  const detected = rest.filter((f) => f.nature === 'active');
-  const allPotential = rest.filter((f) => f.nature === 'latent');
-  // Same default as the CLI: lower-confidence potential pitfalls fire on almost
-  // any real work, so they stay behind a toggle.
-  const potential = showAllPotential
-    ? allPotential
-    : allPotential.filter((f) => f.confidence === 'high');
-  const hiddenCount = allPotential.length - potential.length;
+  const visible = showAllPotential
+    ? sorted
+    : sorted.filter((f) => f.nature === 'active' || f.confidence === 'high');
+  const hiddenCount = sorted.length - visible.length;
 
-  const detectedCount = report.findings.filter((f) => f.nature === 'active').length;
-  const potentialCount = report.findings.length - detectedCount;
+  const headline = visible[0];
+  const rest = visible.slice(1);
+  const detected = rest.filter((f) => f.nature === 'active');
+  const potential = rest.filter((f) => f.nature === 'latent');
 
   if (report.findings.length === 0) {
     return (
       <section className="results">
-        {report.summary && <p className="scan-summary">{report.summary}</p>}
-        <p className="clean">
-          No pitfalls detected. Considered {report.rulesConsidered} rules · model {report.model}.
-        </p>
+        <VerdictHeader report={report} />
         <AvoidedSection avoided={report.avoided} />
       </section>
     );
@@ -564,11 +602,7 @@ function Results({ report }: { report: PitfallReport }) {
 
   return (
     <section className="results">
-      {report.summary && <p className="scan-summary">{report.summary}</p>}
-      <p className="summary">
-        {report.findings.length} pitfall{report.findings.length > 1 ? 's' : ''} — {detectedCount}{' '}
-        detected, {potentialCount} potential · model {report.model}
-      </p>
+      <VerdictHeader report={report} />
 
       {headline && (
         <>

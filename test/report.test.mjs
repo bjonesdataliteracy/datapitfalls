@@ -120,9 +120,43 @@ test('every tier has a human label', () => {
 
 test('formatReport reports a clean bill when there are no findings', () => {
   const text = formatReport(report([]));
-  assert.match(text, /No pitfalls detected/);
-  assert.match(text, /42 rules/);
+  assert.match(text, /NO PITFALLS DETECTED/);
+  assert.match(text, /checked against 42 rules/);
   assert.match(text, /test-model/);
+});
+
+test('formatReport leads with the tier and folds counts into the header', () => {
+  const text = formatReport(
+    report([
+      finding({ severity: 'error' }),
+      finding({ severity: 'warning' }),
+      finding({ nature: 'latent', confidence: 'high', severity: 'info' }),
+    ])
+  );
+  assert.match(text, /^SERIOUS PITFALLS FOUND — 2 detected, 1 potential · 1 error \/ 1 warning \/ 1 info/);
+  assert.match(text, /Checked against 42 rules · model test-model/);
+});
+
+test('formatReport omits zero severities from the header counts', () => {
+  const text = formatReport(report([finding({ severity: 'warning' })]));
+  assert.match(text, /^NEEDS ATTENTION — 1 detected, 0 potential · 1 warning\n/);
+  assert.doesNotMatch(text, /0 error/);
+  assert.doesNotMatch(text, /0 info/);
+});
+
+test('formatReport colors the header only when asked', () => {
+  const plain = formatReport(report([finding({ severity: 'error' })]));
+  assert.doesNotMatch(plain, /\x1b\[/);
+
+  const colored = formatReport(report([finding({ severity: 'error' })]), { color: true });
+  // Bold red tier, dimmed checked-against line, and a matching reset for each.
+  assert.match(colored, /\x1b\[1;31mSERIOUS PITFALLS FOUND\x1b\[0m/);
+  assert.match(colored, /\x1b\[2mChecked against 42 rules · model test-model\x1b\[0m/);
+  // Findings themselves stay plain.
+  assert.match(colored, /\[ERROR\] Demo Pitfall/);
+
+  const clean = formatReport(report([]), { color: true });
+  assert.match(clean, /\x1b\[1;32mNO PITFALLS DETECTED\x1b\[0m/);
 });
 
 test('formatReport always shows detected (active) findings', () => {
@@ -151,17 +185,19 @@ test('formatReport hides low-confidence latent findings unless showAll is set', 
 
 test('formatReport notes the hidden count when every finding is filtered out', () => {
   const text = formatReport(report([finding({ nature: 'latent', confidence: 'low' })]));
-  assert.match(text, /No pitfalls detected/);
+  assert.match(text, /NO PITFALLS DETECTED/);
   assert.match(text, /1 lower-confidence potential pitfall/);
 });
 
-test('formatReport leads with the summary when a variant produced one', () => {
+test('formatReport places the summary right after the header when a variant produced one', () => {
   const text = formatReport(report([finding()], { summary: 'Fundamentally sound.' }));
-  assert.match(text, /^Summary: Fundamentally sound\./);
+  assert.match(text, /^NEEDS ATTENTION/);
+  assert.match(text, /Summary: Fundamentally sound\./);
+  assert.ok(text.indexOf('Summary:') < text.indexOf('Demo Pitfall'));
 
   const clean = formatReport(report([], { summary: 'Nothing to fix.' }));
-  assert.match(clean, /^Summary: Nothing to fix\./);
-  assert.match(clean, /No pitfalls detected/);
+  assert.match(clean, /^NO PITFALLS DETECTED/);
+  assert.match(clean, /Summary: Nothing to fix\./);
 });
 
 test('formatReport closes with avoided pitfalls, in both report shapes', () => {
@@ -183,7 +219,7 @@ test('formatReport closes with avoided pitfalls, in both report shapes', () => {
   assert.ok(withFindings.indexOf('Demo Pitfall') < withFindings.indexOf('Pitfalls avoided'));
 
   const clean = formatReport(report([], { avoided }));
-  assert.match(clean, /No pitfalls detected/);
+  assert.match(clean, /NO PITFALLS DETECTED/);
   assert.match(clean, /Pitfalls avoided/);
 });
 

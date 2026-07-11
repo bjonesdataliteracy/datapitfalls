@@ -245,12 +245,25 @@ authoritative.
 ### `formatReport`
 
 ```ts
-function formatReport(report: PitfallReport, options?: { showAll?: boolean }): string;
+function formatReport(
+  report: PitfallReport,
+  options?: { showAll?: boolean; color?: boolean }
+): string;
 ```
 
-Renders a report as plain text for the terminal. By default it shows all active
-findings plus only high-confidence latent ones; pass `{ showAll: true }` to
-include lower-confidence latent findings.
+Renders a report as plain text for the terminal, led by the report's tier (see
+[`reportTier`](#reporttier)) and the checked-against denominator:
+
+```
+NEEDS ATTENTION — 2 detected, 1 potential · 2 warning / 1 info
+Checked against 78 rules · model claude-sonnet-4-6
+```
+
+By default it shows all active findings plus only high-confidence latent ones;
+pass `{ showAll: true }` to include lower-confidence latent findings. Pass
+`{ color: true }` to colorize the header with ANSI escapes (the tier in its
+semantic color, the denominator dimmed) — the caller owns TTY/`NO_COLOR`
+detection, so the default is plain text.
 
 ### `hasBlockingFindings`
 
@@ -284,7 +297,7 @@ A coarse overall tier for a report — a deterministic rollup of the findings
 | Tier | Label | When |
 | --- | --- | --- |
 | `clear` | No pitfalls detected | Nothing detected (low/medium-confidence latent findings are noise and don't count) |
-| `verify` | Verify against your data | Only info-level active findings and/or high-confidence latent ones |
+| `verify` | Conditions to verify | Only info-level active findings and/or high-confidence latent ones |
 | `attention` | Needs attention | At least one active warning |
 | `serious` | Serious pitfalls found | At least one active error, or an active warning rated `changes-takeaway` |
 
