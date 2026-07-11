@@ -268,6 +268,40 @@ console.log(formatReport(report));
 if (hasBlockingFindings(report)) process.exit(1);
 ```
 
+### `reportTier`
+
+```ts
+const TIERS = ['clear', 'verify', 'attention', 'serious'] as const;
+type Tier = (typeof TIERS)[number];
+const TIER_LABEL: Record<Tier, string>;
+
+function reportTier(report: PitfallReport): Tier;
+```
+
+A coarse overall tier for a report — a deterministic rollup of the findings
+(never a model-supplied score), best to worst:
+
+| Tier | Label | When |
+| --- | --- | --- |
+| `clear` | No pitfalls detected | Nothing detected (low/medium-confidence latent findings are noise and don't count) |
+| `verify` | Verify against your data | Only info-level active findings and/or high-confidence latent ones |
+| `attention` | Needs attention | At least one active warning |
+| `serious` | Serious pitfalls found | At least one active error, or an active warning rated `changes-takeaway` |
+
+Latent findings never push a report below `verify`, whatever their severity —
+they are conditions to check against the data, not verdicts. The tier agrees
+with `hasBlockingFindings`: it is `attention` or worse exactly when that
+returns `true`.
+
+When displaying the `clear` tier, pair the label with `report.rulesConsidered`
+(e.g. "No pitfalls detected · checked against 47 rules") — a clean scan means
+none of the cataloged pitfalls were detected, not that the work is correct.
+
+```ts
+const tier = reportTier(report); // e.g. 'attention'
+badge.textContent = TIER_LABEL[tier]; // "Needs attention"
+```
+
 ---
 
 ## Bridging to Semiotic

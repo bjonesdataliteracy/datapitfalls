@@ -1,7 +1,7 @@
 // Unit tests for audit-report formatting and CI gating.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { formatReport, hasBlockingFindings } from '../dist/index.js';
+import { formatReport, hasBlockingFindings, reportTier, TIERS, TIER_LABEL } from '../dist/index.js';
 
 function finding(overrides = {}) {
   return {
@@ -32,6 +32,90 @@ test('hasBlockingFindings is true only for active error/warning findings', () =>
   assert.equal(hasBlockingFindings(report([finding({ nature: 'active', severity: 'info' })])), false);
   assert.equal(hasBlockingFindings(report([finding({ nature: 'latent', severity: 'error' })])), false);
   assert.equal(hasBlockingFindings(report([])), false);
+});
+
+test('reportTier is clear when nothing is detected', () => {
+  assert.equal(reportTier(report([])), 'clear');
+  // Low/medium-confidence latent findings are display noise and never move the tier.
+  assert.equal(reportTier(report([finding({ nature: 'latent', confidence: 'low' })])), 'clear');
+  assert.equal(reportTier(report([finding({ nature: 'latent', confidence: 'medium' })])), 'clear');
+});
+
+test('reportTier floors latent-only reports at verify, whatever their severity', () => {
+  assert.equal(
+    reportTier(report([finding({ nature: 'latent', confidence: 'high', severity: 'error' })])),
+    'verify'
+  );
+  assert.equal(
+    reportTier(
+      report([
+        finding({
+          nature: 'latent',
+          confidence: 'high',
+          severity: 'warning',
+          consequence: 'changes-takeaway',
+        }),
+      ])
+    ),
+    'verify'
+  );
+});
+
+test('reportTier ranks active findings by severity', () => {
+  assert.equal(reportTier(report([finding({ severity: 'info' })])), 'verify');
+  assert.equal(reportTier(report([finding({ severity: 'warning' })])), 'attention');
+  assert.equal(reportTier(report([finding({ severity: 'error' })])), 'serious');
+  // The worst finding wins.
+  assert.equal(
+    reportTier(
+      report([
+        finding({ severity: 'info' }),
+        finding({ severity: 'error' }),
+        finding({ nature: 'latent', confidence: 'high' }),
+      ])
+    ),
+    'serious'
+  );
+});
+
+test('reportTier promotes an active warning rated changes-takeaway to serious', () => {
+  assert.equal(
+    reportTier(report([finding({ severity: 'warning', consequence: 'changes-takeaway' })])),
+    'serious'
+  );
+  // The promotion applies to warnings only — an info finding stays at verify.
+  assert.equal(
+    reportTier(report([finding({ severity: 'info', consequence: 'changes-takeaway' })])),
+    'verify'
+  );
+  // Other consequence ratings do not promote.
+  assert.equal(
+    reportTier(report([finding({ severity: 'warning', consequence: 'weakens-support' })])),
+    'attention'
+  );
+});
+
+test('reportTier agrees with hasBlockingFindings at the attention boundary', () => {
+  const cases = [
+    report([]),
+    report([finding({ severity: 'info' })]),
+    report([finding({ severity: 'warning' })]),
+    report([finding({ severity: 'error' })]),
+    report([finding({ nature: 'latent', confidence: 'high', severity: 'error' })]),
+    report([finding({ severity: 'warning', consequence: 'changes-takeaway' })]),
+    report([finding({ severity: 'info', consequence: 'changes-takeaway' })]),
+  ];
+  for (const r of cases) {
+    const blocked = TIERS.indexOf(reportTier(r)) >= TIERS.indexOf('attention');
+    assert.equal(blocked, hasBlockingFindings(r));
+  }
+});
+
+test('every tier has a human label', () => {
+  for (const tier of TIERS) {
+    assert.equal(typeof TIER_LABEL[tier], 'string');
+    assert.ok(TIER_LABEL[tier].length > 0);
+  }
 });
 
 test('formatReport reports a clean bill when there are no findings', () => {

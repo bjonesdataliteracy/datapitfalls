@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Overall report tier**: `reportTier(report)` (with `TIERS`, `Tier`, and
+  `TIER_LABEL`, exported from the package root) rolls a report's findings up
+  into one of four named tiers — `clear` ("No pitfalls detected"), `verify`
+  ("Verify against your data"), `attention` ("Needs attention"), `serious`
+  ("Serious pitfalls found"). The tier is computed deterministically in code
+  from each finding's nature/severity/consequence (never model-supplied, and
+  deliberately coarse rather than a 0–100 score): any active error — or an
+  active warning whose consequence rating says it changes the takeaway — is
+  `serious`; any other active warning is `attention`; info-level active
+  findings and high-confidence latent ones are `verify`; latent findings never
+  push a report below `verify`, whatever their severity. It matches the default
+  `formatReport` display (lower-confidence latent findings hidden as noise
+  don't move the tier) and agrees with `hasBlockingFindings` at the
+  `attention` boundary. Display-only for now: the CLI's `--ci` gating is
+  unchanged. See [`reportTier`](docs/API.md#reporttier).
 - Dependency-free **bridge to [Semiotic](https://github.com/nteract/semiotic)**:
   `toSemioticAnnotations(report, opts?)` and `buildSemioticAnnotationBridge(report, opts?)`
   (new `src/bridges/semiotic.ts`, re-exported from the package root) convert a

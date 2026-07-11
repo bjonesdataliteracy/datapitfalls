@@ -43,6 +43,61 @@ export function hasBlockingFindings(report: PitfallReport): boolean {
   return report.findings.some((f) => f.nature === 'active' && f.severity !== 'info');
 }
 
+/** Overall report tiers, best to worst. A tier is a coarse, deterministic
+ *  rollup of the findings — never a model-supplied score — so the same findings
+ *  always produce the same tier, and run-to-run detection noise is absorbed by
+ *  the tier boundaries instead of surfacing as false precision. */
+export const TIERS = ['clear', 'verify', 'attention', 'serious'] as const;
+
+export type Tier = (typeof TIERS)[number];
+
+/** Human labels for each tier. The top tier is worded as a scope-limited
+ *  negative ("no pitfalls detected"), not praise — a clean scan means none of
+ *  the cataloged pitfalls were detected, not that the work is correct. Display
+ *  it alongside `report.rulesConsidered` (e.g. "checked against 47 rules") so
+ *  the claim carries its own denominator. */
+export const TIER_LABEL: Record<Tier, string> = {
+  clear: 'No pitfalls detected',
+  verify: 'Verify against your data',
+  attention: 'Needs attention',
+  serious: 'Serious pitfalls found',
+};
+
+/**
+ * The overall tier for a report, from best to worst:
+ *
+ * - `clear` — nothing detected (or only the low-confidence latent findings the
+ *   default report hides as noise).
+ * - `verify` — only info-level active findings and/or high-confidence latent
+ *   ones. Latent findings never push a report below this tier, whatever their
+ *   severity: they are conditions to check against the data, not verdicts.
+ * - `attention` — at least one active warning.
+ * - `serious` — at least one active error, or an active warning rated
+ *   `changes-takeaway` (the consequence rating, when present, says the flaw
+ *   likely changes what a reader concludes — that outranks a warning label).
+ *
+ * The tier agrees with the default `formatReport` display (a finding hidden as
+ * noise never affects the tier) and with CI gating: the tier is `attention` or
+ * worse exactly when `hasBlockingFindings` is true.
+ */
+export function reportTier(report: PitfallReport): Tier {
+  const active = report.findings.filter((f) => f.nature === 'active');
+  if (
+    active.some(
+      (f) =>
+        f.severity === 'error' ||
+        (f.severity === 'warning' && f.consequence === 'changes-takeaway')
+    )
+  ) {
+    return 'serious';
+  }
+  if (active.some((f) => f.severity === 'warning')) return 'attention';
+  const hasVisibleLatent = report.findings.some(
+    (f) => f.nature === 'latent' && f.confidence === 'high'
+  );
+  return active.length > 0 || hasVisibleLatent ? 'verify' : 'clear';
+}
+
 // EXPERIMENTAL — human labels for the consequence rating (variant runs only).
 const CONSEQUENCE_LABEL: Record<string, string> = {
   'changes-takeaway': 'changes the takeaway',
