@@ -2,7 +2,7 @@
 // datapitfalls — command-line entry point
 
 import { DOMAINS, TAGLINE, VERSION, ruleCount, ruleCountsByDomain } from './index.js';
-import { detectPitfalls } from './analyze.js';
+import { EFFORTS, detectPitfalls, type Effort } from './analyze.js';
 import { formatReport, hasBlockingFindings, reportTier } from './report.js';
 import { buildScanInput, buildChainInput } from './scan-input.js';
 
@@ -218,6 +218,7 @@ function printHelp(): void {
       '    --text                         Treat the file as a plain-English analysis description\n' +
       '    --thorough                     Use Opus 4.7 instead of the default Sonnet 4.6\n' +
       '    --fast                         Use Haiku 4.5 (cheapest)\n' +
+      '    --effort <level>               Effort level: low, medium, high, xhigh, or max (default: the model\'s own)\n' +
       '    --all                          Show all findings, incl. lower-confidence latent ones\n' +
       '    --summary                      Lead with an overall summary, consequence ratings, and avoided pitfalls\n' +
       '    --json                         Output the full report as JSON\n' +
@@ -239,6 +240,19 @@ const MODEL_FLAGS: Record<string, string> = {
 };
 
 async function scan(args: string[]): Promise<void> {
+  // --effort takes a value; pull the pair out before treating the rest as files/flags.
+  let effort: Effort | undefined;
+  const effortAt = args.indexOf('--effort');
+  if (effortAt !== -1) {
+    const level = args[effortAt + 1];
+    if (!(EFFORTS as readonly string[]).includes(level ?? '')) {
+      console.error(`--effort needs one of: ${EFFORTS.join(', ')}`);
+      process.exitCode = 1;
+      return;
+    }
+    effort = level as Effort;
+    args = [...args.slice(0, effortAt), ...args.slice(effortAt + 2)];
+  }
   const files = args.filter((arg) => !arg.startsWith('-'));
   let model: string | undefined;
   let showAll = false;
@@ -289,6 +303,7 @@ async function scan(args: string[]): Promise<void> {
 
   const report = await detectPitfalls(result.input, {
     model,
+    effort,
     ...(summary ? { variant: 'summary' as const } : {}),
   });
   // JSON gains the computed tier so agents get the rollup without re-deriving it;

@@ -207,6 +207,51 @@ export interface DetectionOptions {
   /** EXPERIMENTAL — presentation variant to A/B test. Defaults to 'baseline'
    *  (the shipped behavior). See evals/compare.mjs. */
   variant?: PresentationVariant;
+  /** Effort level (sent as output_config.effort): how much the model thinks and
+   *  spends. Omitted by default, which leaves the model's own default in place. */
+  effort?: Effort;
+}
+
+/** Effort levels accepted by output_config.effort. */
+export const EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max'] as const;
+export type Effort = (typeof EFFORTS)[number];
+
+/** Why a scan produced no usable report. */
+export type DetectionErrorCode = 'refusal' | 'truncated' | 'no_report';
+
+/** Thrown when the model answers but the answer can't be trusted as a report.
+ *  Surfacing it beats returning an empty report, which would read as "clear". */
+export class PitfallDetectionError extends Error {
+  readonly code: DetectionErrorCode;
+  constructor(code: DetectionErrorCode, message: string) {
+    super(message);
+    this.name = 'PitfallDetectionError';
+    this.code = code;
+  }
+}
+
+// These models reject a forced tool_choice ({type:'tool'}) with a 400, so the
+// report tool is offered with tool_choice 'auto' and the prompt requires the call.
+const NO_FORCED_TOOL_CHOICE = /(^|\.)claude-(sonnet-5-5|opus-5-5|fable-5-1|mythos-5-1)\b/;
+
+/** Whether the model accepts a forced tool_choice. Unknown models are assumed to;
+ *  a 400 saying otherwise is retried once without forcing (see detectPitfalls). */
+export function supportsForcedToolChoice(model: string): boolean {
+  return !NO_FORCED_TOOL_CHOICE.test(model);
+}
+
+const REPORT_CALL_INSTRUCTION =
+  '\n\nReport your results by calling the report_findings tool exactly once, even when ' +
+  'you find no pitfalls (pass an empty findings list). Do not answer in plain text.';
+
+function isForcedToolChoiceRejection(error: unknown): boolean {
+  const e = error as { status?: unknown; message?: unknown } | null;
+  return (
+    e?.status === 400 &&
+    typeof e.message === 'string' &&
+    /tool_choice/.test(e.message) &&
+    /not supported/.test(e.message)
+  );
 }
 
 // claude-sonnet-4-6 is the default: in the eval harness it had the highest active
@@ -593,6 +638,24 @@ function normalizeConsequence(value: unknown): Consequence | undefined {
     : undefined;
 }
 
+/** Throws when the response can't be read as a complete report. */
+function checkStop(message: Anthropic.Message): void {
+  // Compare as a string: the pinned SDK's types predate the 'refusal' stop reason.
+  const stop = message.stop_reason as string | null | undefined;
+  if (stop === 'refusal') {
+    throw new PitfallDetectionError('refusal', 'The model declined to scan this input.');
+  }
+  if (stop === 'max_tokens') {
+    throw new PitfallDetectionError(
+      'truncated',
+      'The report was cut off at the max_tokens limit; raise maxTokens or lower effort.'
+    );
+  }
+  if (!findToolInput(message)) {
+    throw new PitfallDetectionError('no_report', 'The model did not return a report.');
+  }
+}
+
 /** The raw input of the report_findings tool call, or undefined if absent. */
 function findToolInput(message: Anthropic.Message): Record<string, unknown> | undefined {
   const toolUse = message.content.find(
@@ -698,19 +761,41 @@ export async function detectPitfalls(
   const taxonomyBlock = `# Pitfall catalog (${rules.length} rules)\n\n${serializeRules(rules)}`;
   const reportTool = buildReportTool(variant);
 
-  const message = await client.messages.create({
-    model,
-    max_tokens: maxTokens,
-    system: [
-      { type: 'text', text: instructions + variantAddendum(variant) },
-      // The catalog is identical across requests of the same kind — cache it so
-      // repeated audits only pay full price for the (small) per-request artifact.
-      { type: 'text', text: taxonomyBlock, cache_control: { type: 'ephemeral' } },
-    ],
-    tools: [reportTool],
-    tool_choice: { type: 'tool', name: reportTool.name },
-    messages: [{ role: 'user', content: buildUserContent(input) }],
-  });
+  const system = (forced: boolean): Anthropic.TextBlockParam[] => [
+    {
+      type: 'text',
+      text: instructions + variantAddendum(variant) + (forced ? '' : REPORT_CALL_INSTRUCTION),
+    },
+    // The catalog is identical across requests of the same kind — cache it so
+    // repeated audits only pay full price for the (small) per-request artifact.
+    { type: 'text', text: taxonomyBlock, cache_control: { type: 'ephemeral' } },
+  ];
+  const request = (forced: boolean) =>
+    client.messages.create({
+      model,
+      max_tokens: maxTokens,
+      system: system(forced),
+      tools: [reportTool],
+      tool_choice: forced ? { type: 'tool', name: reportTool.name } : { type: 'auto' },
+      messages: [{ role: 'user', content: buildUserContent(input) }],
+      // output_config predates the pinned SDK's types; the SDK sends it as-is.
+      ...(options.effort ? { output_config: { effort: options.effort } } : {}),
+    } as Anthropic.MessageCreateParamsNonStreaming);
+
+  let forced = supportsForcedToolChoice(model);
+  let message: Anthropic.Message;
+  try {
+    message = await request(forced);
+  } catch (error) {
+    if (!forced || !isForcedToolChoiceRejection(error)) throw error;
+    forced = false;
+    message = await request(forced);
+  }
+  // Unforced, the model may (rarely) answer in prose; ask once more before giving up.
+  if (!forced && !findToolInput(message) && message.stop_reason === 'end_turn') {
+    message = await request(forced);
+  }
+  checkStop(message);
 
   const toolInput = findToolInput(message);
   const findings = extractFindings(toolInput);

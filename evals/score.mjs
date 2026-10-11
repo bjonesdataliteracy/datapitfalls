@@ -2,6 +2,8 @@
 
 // Approximate API prices, $ per 1M tokens: [input, output].
 const PRICES = {
+  'claude-opus-5-5': [4, 20],
+  'claude-sonnet-5-5': [2, 10],
   'claude-opus-4-7': [5, 25],
   'claude-opus-4-6': [5, 25],
   'claude-sonnet-4-6': [3, 15],
