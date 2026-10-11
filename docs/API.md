@@ -113,10 +113,10 @@ model answers but the answer can't be read as a complete report, `detectPitfalls
 throws a `PitfallDetectionError` with a `code` instead of returning an empty
 report that would read as "no pitfalls":
 
-| `code` | When |
-|---|---|
-| `'refusal'` | The model declined the request (`stop_reason: 'refusal'`). |
-| `'truncated'` | The response hit `maxTokens` before the report was complete. |
+| `code`        | When                                                                             |
+| ------------- | -------------------------------------------------------------------------------- |
+| `'refusal'`   | The model declined the request (`stop_reason: 'refusal'`).                       |
+| `'truncated'` | The response hit `maxTokens` before the report was complete.                     |
 | `'no_report'` | No `report_findings` call came back (an unforced model answered in prose twice). |
 
 ---

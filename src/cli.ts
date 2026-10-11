@@ -218,7 +218,7 @@ function printHelp(): void {
       '    --text                         Treat the file as a plain-English analysis description\n' +
       '    --thorough                     Use Opus 4.7 instead of the default Sonnet 4.6\n' +
       '    --fast                         Use Haiku 4.5 (cheapest)\n' +
-      '    --effort <level>               Effort level: low, medium, high, xhigh, or max (default: the model\'s own)\n' +
+      "    --effort <level>               Effort level: low, medium, high, xhigh, or max (default: the model's own)\n" +
       '    --all                          Show all findings, incl. lower-confidence latent ones\n' +
       '    --summary                      Lead with an overall summary, consequence ratings, and avoided pitfalls\n' +
       '    --json                         Output the full report as JSON\n' +

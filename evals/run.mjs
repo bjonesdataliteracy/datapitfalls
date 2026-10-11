@@ -28,7 +28,8 @@ function parseArgs(argv) {
   const opts = { models: [], efforts: [], repeats: 1 };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === '--model') opts.models = (argv[++i] ?? '').split(',').map((s) => s.trim());
-    else if (argv[i] === '--effort') opts.efforts = (argv[++i] ?? '').split(',').map((s) => s.trim());
+    else if (argv[i] === '--effort')
+      opts.efforts = (argv[++i] ?? '').split(',').map((s) => s.trim());
     else if (argv[i] === '--repeats') opts.repeats = Math.max(1, Number(argv[++i]) || 1);
   }
   return opts;
@@ -64,7 +65,9 @@ async function evaluateModel(model, effort, fixtures, repeats) {
     cost: 0,
   };
 
-  console.log(`Model: ${model ?? 'default (claude-sonnet-4-6)'}${effort ? ` · effort ${effort}` : ''}`);
+  console.log(
+    `Model: ${model ?? 'default (claude-sonnet-4-6)'}${effort ? ` · effort ${effort}` : ''}`
+  );
   for (const fx of fixtures) {
     const expected = fx.spec.expected ?? [];
     const acceptable = fx.spec.acceptable ?? [];
