@@ -10,6 +10,7 @@ import {
   getRulesBySeverity,
   ruleCount,
   ruleCountsByDomain,
+  rulesForInput,
 } from '../dist/index.js';
 
 test('catalog is non-empty and ruleCount matches getAllRules', () => {
@@ -64,4 +65,14 @@ test('getRulesBySeverity returns only rules of that severity', () => {
       assert.equal(rule.severity, severity);
     }
   }
+});
+
+test('rulesForInput: charts get the visual domains plus data-reality-gap, the rest get everything', () => {
+  const image = rulesForInput('image');
+  const visual = [...getRulesByDomain('Graphical Gaffes'), ...getRulesByDomain('Design Dangers')];
+  assert.deepEqual(image, [...visual, getRule('data-reality-gap')]);
+  for (const kind of ['code', 'text', 'document']) {
+    assert.deepEqual(rulesForInput(kind), [...getAllRules()]);
+  }
+  assert.deepEqual(rulesForInput('image', ['Biased Baseline']), getRulesByDomain('Biased Baseline'));
 });

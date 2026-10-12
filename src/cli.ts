@@ -215,6 +215,7 @@ function printHelp(): void {
       '  datapitfalls stats               Show the pitfall catalog size by domain\n' +
       '  datapitfalls scan <file>         Scan a code file, analysis description, chart image, or PDF for pitfalls\n' +
       '  datapitfalls scan <a.png> <b.png> …  Scan several charts together (cross-chart pitfalls)\n' +
+      '  datapitfalls mcp                 Serve the pitfall taxonomy as an MCP server over stdio (no API key)\n' +
       '    --text                         Treat the file as a plain-English analysis description\n' +
       '    --thorough                     Use Opus 4.7 instead of the default Sonnet 4.6\n' +
       '    --fast                         Use Haiku 4.5 (cheapest)\n' +
@@ -356,6 +357,12 @@ async function main(): Promise<void> {
     case 'scan':
       await scan(args);
       break;
+    case 'mcp': {
+      // Normally routed by bin.ts before the CLI loads; kept here for `node dist/cli.js mcp`.
+      const { runStdioServer } = await import('./mcp/stdio.js');
+      await runStdioServer();
+      break;
+    }
     case 'help':
     case '--help':
     case '-h':

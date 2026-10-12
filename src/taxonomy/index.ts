@@ -41,3 +41,28 @@ export function ruleCountsByDomain(): Record<Domain, number> {
   for (const rule of rules) counts[rule.domain] += 1;
   return counts;
 }
+
+/** The input kinds the rule selection distinguishes. Slides and multi-stage
+ *  chains are reviewed against the whole catalog, like code and text. */
+export type RuleInputKind = 'code' | 'text' | 'image' | 'document';
+
+/** Chart images default to the two visual domains plus the cross-cutting
+ *  epistemic rule charts most often trip (treating the chart as reality). */
+export const IMAGE_DEFAULT_DOMAINS: readonly Domain[] = ['Graphical Gaffes', 'Design Dangers'];
+export const IMAGE_EXTRA_RULE_ID = 'data-reality-gap';
+
+/**
+ * The rules that apply to a kind of input. This is the one place that decides
+ * it: the detection engine and the MCP server both call it, so they can't drift
+ * apart. `domains`, when given, overrides the default and returns those
+ * domains' rules in the order given.
+ */
+export function rulesForInput(kind: RuleInputKind, domains?: readonly Domain[]): PitfallRule[] {
+  if (domains) return domains.flatMap((domain) => getRulesByDomain(domain));
+  if (kind === 'image') {
+    const visual = IMAGE_DEFAULT_DOMAINS.flatMap((domain) => getRulesByDomain(domain));
+    const extra = getRule(IMAGE_EXTRA_RULE_ID);
+    return extra ? [...visual, extra] : visual;
+  }
+  return [...rules];
+}

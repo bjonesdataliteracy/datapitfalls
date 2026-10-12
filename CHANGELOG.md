@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.0] - Unreleased
+
+### Added
+
+- **MCP server for the taxonomy.** `datapitfalls mcp` serves the Avoiding Data
+  Pitfalls rules to Claude over stdio (Claude Code, Claude Desktop), and the web
+  app serves the same server over Streamable HTTP at `/api/mcp` (a claude.ai
+  custom connector). Claude does the checking itself, so the server makes no
+  Anthropic API calls and needs no key. Tools: `list_pitfalls`, `get_pitfall`
+  (with near-match suggestions for an unknown id), `get_checklist` (for `sql`,
+  `code`, `chart`, `image`, `prose`, `text`, `dashboard` or `document`, with an
+  optional domain `focus`) and `search_pitfalls`; a `review_for_pitfalls`
+  prompt that reports findings in the engine's shape; and the resources
+  `datapitfalls://rules/{id}` and `datapitfalls://domains`. Every response cites
+  the book and avoidingdatapitfalls.com.
+- **`datapitfalls/mcp` export**: `createDataPitfallsServer()`,
+  `handleMcpRequest(req)` (a Web-standard handler for any host) and
+  `runStdioServer()`. It loads only the taxonomy, never the engine or its SDKs.
+- **`rulesForInput(kind, domains?)`** in the taxonomy API: the rules that apply
+  to code, text, an image or a document. The engine and the MCP server both use
+  it, so they choose rules the same way.
+
+### Changed
+
+- The package's executable is now `dist/bin.js`, which starts the MCP server
+  without loading the engine and hands every other command to the CLI as
+  before. Engine behavior is unchanged.
+
 ## [0.10.0] - 2026-10-11
 
 ### Added
@@ -218,7 +246,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Pitfall taxonomy v0.1 structure, organized around the eight audit domains from _Avoiding Data Pitfalls_.
 - Project roadmap outlining the path from foundation through developer tools and community ecosystem.
 
-[Unreleased]: https://github.com/bjonesdataliteracy/datapitfalls/compare/v0.10.0...HEAD
+[Unreleased]: https://github.com/bjonesdataliteracy/datapitfalls/compare/v0.11.0...HEAD
+[0.11.0]: https://github.com/bjonesdataliteracy/datapitfalls/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/bjonesdataliteracy/datapitfalls/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/bjonesdataliteracy/datapitfalls/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/bjonesdataliteracy/datapitfalls/compare/v0.7.0...v0.8.0

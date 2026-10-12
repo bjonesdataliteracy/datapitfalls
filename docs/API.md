@@ -25,6 +25,7 @@ import { detectPitfalls, formatReport, hasBlockingFindings } from 'datapitfalls'
 - [Routing files to inputs](#routing-files-to-inputs)
 - [Querying the taxonomy](#querying-the-taxonomy)
 - [Extracting slide decks](#extracting-slide-decks)
+- [MCP server](#mcp-server) — `datapitfalls/mcp`, keyless
 - [Constants](#constants)
 
 ---
@@ -537,7 +538,13 @@ function getRule(id: string): PitfallRule | undefined;
 function getRulesByDomain(domain: Domain): PitfallRule[];
 function getRulesBySeverity(severity: Severity): PitfallRule[];
 function ruleCountsByDomain(): Record<Domain, number>;
+function rulesForInput(kind: RuleInputKind, domains?: readonly Domain[]): PitfallRule[];
 ```
+
+`rulesForInput` returns the rules the engine grounds on for a kind of input
+(`'code' | 'text' | 'image' | 'document'`): chart images get Graphical Gaffes,
+Design Dangers and `data-reality-gap`; everything else gets the whole catalog.
+`domains`, when given, overrides that. The MCP server's checklists use it too.
 
 `Domain` and `Severity` are exported types, with the runtime arrays `DOMAINS`
 and `SEVERITIES`. A `PitfallRule` carries `id`, `name`, `domain`, `severity`,
@@ -566,6 +573,39 @@ interface ExtractedSlides {
 Pulls per-slide text and embedded chart images from `.pptx` bytes, ready to pass
 as a `SlidesDetectionInput`. (`fileToInput` calls this for you when given a
 `.pptx` file.)
+
+---
+
+## MCP server
+
+`datapitfalls/mcp` serves the taxonomy over the Model Context Protocol. It
+imports only the taxonomy, so it never loads the engine, the Anthropic SDK, or
+the file parsers, and it **needs no API key**. See the README for client setup.
+
+```ts
+import { createDataPitfallsServer, handleMcpRequest, runStdioServer } from 'datapitfalls/mcp';
+
+function createDataPitfallsServer(): McpServer; // tools, prompt and resources registered
+function handleMcpRequest(req: Request): Promise<Response>; // stateless Streamable HTTP
+function runStdioServer(): Promise<void>; // what `datapitfalls mcp` runs
+```
+
+`handleMcpRequest` is a Web-standard handler, so it mounts on any fetch-style
+host. The web app mounts it as a Next.js route:
+
+```ts
+// web/app/api/mcp/route.ts (simplified)
+import { handleMcpRequest } from 'datapitfalls/mcp';
+export { handleMcpRequest as GET, handleMcpRequest as POST, handleMcpRequest as DELETE };
+```
+
+Tools (all read-only): `list_pitfalls({ domain?, severity? })`,
+`get_pitfall({ id })`, `get_checklist({ inputType, focus? })` and
+`search_pitfalls({ query })`. `inputType` is one of `sql`, `code`, `chart`,
+`image`, `prose`, `text`, `dashboard` or `document`; `dashboard` is the code
+rules plus the chart rules, de-duplicated, chart rules first. Prompt:
+`review_for_pitfalls({ inputType, artifact? })`. Resources:
+`datapitfalls://rules/{id}` and `datapitfalls://domains`.
 
 ---
 
