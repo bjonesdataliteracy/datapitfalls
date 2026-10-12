@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Stray backslash-escaped quotes no longer show up in report prose.** Some
+  models (seen on `claude-sonnet-5-5` with `variant: 'summary'`) return text
+  with a literal backslash before a quote, e.g. `Slide 3's \"best stretch
+  ever\" window`, and the CLI and web app showed the backslashes. The engine
+  now removes a backslash in front of `"`, `'` or a curly quote in the
+  `summary`, each finding's `explanation` and `condition`, and each avoided
+  pitfall's `explanation`. `evidence` is left as is, because it can quote code
+  where `\"` is real.
+
 ## [0.10.0] - 2026-10-11
 
 ### Added

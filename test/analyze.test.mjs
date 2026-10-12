@@ -248,6 +248,46 @@ test('baseline reports no avoided list even if the model volunteers one', async 
   assert.equal(report.avoided, undefined);
 });
 
+test('backslash-escaped quotes are removed from prose fields but not from evidence', async () => {
+  const [r0, r1] = getAllRules();
+  const client = fakeClient(
+    [
+      {
+        rule_id: r0.id,
+        confidence: 'high',
+        nature: 'latent',
+        evidence: 'df.query(\\"x > 0\\")',
+        explanation: 'Readers will trust Slide 3\'s \\"best stretch ever\\" window.',
+        condition: 'the \\\'peak\\\' month is \\\u201Cpartial\\\u201D',
+        consequence: 'polish',
+      },
+    ],
+    {
+      summary: 'Sound overall; check Slide 3\'s \\"best stretch ever\\" window.',
+      avoided: [{ rule_id: r1.id, evidence: 'print(\\"n=\\", n)', explanation: 'It notes the \\\u2018sample size\\\u2019.' }],
+    }
+  );
+  const report = await detectPitfalls(textInput, { client, variant: 'summary' });
+
+  assert.equal(report.summary, 'Sound overall; check Slide 3\'s "best stretch ever" window.');
+  const [finding] = report.findings;
+  assert.equal(finding.explanation, 'Readers will trust Slide 3\'s "best stretch ever" window.');
+  assert.equal(finding.condition, "the 'peak' month is “partial”");
+  assert.equal(report.avoided[0].explanation, 'It notes the ‘sample size’.');
+  // Evidence can quote code, where \" is real, so it passes through untouched.
+  assert.equal(finding.evidence, 'df.query(\\"x > 0\\")');
+  assert.equal(report.avoided[0].evidence, 'print(\\"n=\\", n)');
+});
+
+test('baseline findings also get backslash-escaped quotes removed', async () => {
+  const realRule = getAllRules()[0];
+  const client = fakeClient([
+    { rule_id: realRule.id, confidence: 'high', nature: 'active', evidence: 'e', explanation: 'the \\"typical\\" value' },
+  ]);
+  const report = await detectPitfalls(textInput, { client });
+  assert.equal(report.findings[0].explanation, 'the "typical" value');
+});
+
 test('a bogus consequence and an empty summary are dropped rather than surfaced', async () => {
   const realRule = getAllRules()[0];
   const client = fakeClient(

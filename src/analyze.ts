@@ -666,10 +666,19 @@ function findToolInput(message: Anthropic.Message): Record<string, unknown> | un
   return toolUse.input as Record<string, unknown>;
 }
 
-/** A trimmed, non-empty string from the tool input, or undefined. */
+/**
+ * Prose from the tool input with stray backslash-escaped quotes removed. Some
+ * models (seen on claude-sonnet-5-5) put a literal `\"` inside the string itself,
+ * which would otherwise show up in the CLI and web app. Applied to prose fields
+ * only; `evidence` is left alone because it can quote code where `\"` is real.
+ */
+function proseString(value: unknown): string {
+  return typeof value === 'string' ? value.replace(/\\(["'\u201C\u201D\u2018\u2019])/g, '$1') : '';
+}
+
+/** A trimmed, non-empty prose string from the tool input, or undefined. */
 function nonEmptyString(value: unknown): string | undefined {
-  if (typeof value !== 'string') return undefined;
-  const trimmed = value.trim();
+  const trimmed = proseString(value).trim();
   return trimmed === '' ? undefined : trimmed;
 }
 
@@ -695,9 +704,9 @@ function extractFindings(input: Record<string, unknown> | undefined): Finding[] 
       severity: rule.severity,
       confidence: normalizeConfidence(raw.confidence),
       nature: normalizeNature(raw.nature),
-      condition: typeof raw.condition === 'string' ? raw.condition : '',
+      condition: proseString(raw.condition),
       evidence: typeof raw.evidence === 'string' ? raw.evidence : '',
-      explanation: typeof raw.explanation === 'string' ? raw.explanation : '',
+      explanation: proseString(raw.explanation),
       remediation: rule.remediation.trim(),
       consequence: normalizeConsequence(raw.consequence),
     });
@@ -727,7 +736,7 @@ function extractAvoided(
       name: rule.name,
       domain: rule.domain,
       evidence: typeof raw.evidence === 'string' ? raw.evidence : '',
-      explanation: typeof raw.explanation === 'string' ? raw.explanation : '',
+      explanation: proseString(raw.explanation),
     });
   }
   return avoided;
