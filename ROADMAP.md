@@ -68,6 +68,7 @@ Open the doors and grow.
 - [ ] Internationalization
 - [ ] Integrations with popular data tools (notebooks, BI platforms, dashboards)
   - [x] Semiotic annotation bridge — `toSemioticAnnotations()` renders findings as chart annotations (reciprocal of [nteract/semiotic#1030](https://github.com/nteract/semiotic/pull/1030))
+  - [x] MCP server — `datapitfalls mcp` serves the taxonomy to Claude Code, Claude Desktop and claude.ai (custom connector), so Claude checks work against the rules itself, with no API key
 
 ---
 

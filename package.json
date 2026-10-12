@@ -1,6 +1,6 @@
 {
   "name": "datapitfalls",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "Helping you steer clear of common blunders when working with data. Based on Avoiding Data Pitfalls by Ben Jones.",
   "author": "Ben Jones <bjones@dataliteracy.com> (https://dataliteracy.com)",
   "license": "MIT",
@@ -21,7 +21,9 @@
     "avoiding-data-pitfalls",
     "ai",
     "linting",
-    "data-analysis"
+    "data-analysis",
+    "mcp",
+    "model-context-protocol"
   ],
   "type": "module",
   "main": "dist/index.js",
@@ -30,13 +32,17 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./mcp": {
+      "types": "./dist/mcp/index.d.ts",
+      "default": "./dist/mcp/index.js"
     }
   },
   "workspaces": [
     "web"
   ],
   "bin": {
-    "datapitfalls": "dist/cli.js"
+    "datapitfalls": "dist/bin.js"
   },
   "files": [
     "dist"
@@ -59,8 +65,10 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
+    "@modelcontextprotocol/sdk": "^1.32.1",
     "fflate": "^0.8.2",
-    "mammoth": "^1.8.0"
+    "mammoth": "^1.8.0",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@types/node": "^22.13.0",

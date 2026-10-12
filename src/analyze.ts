@@ -6,7 +6,7 @@
 // validated against the catalog, so a finding can only ever reference a real rule.
 
 import Anthropic from '@anthropic-ai/sdk';
-import { getAllRules, getRule, getRulesByDomain } from './taxonomy/index.js';
+import { getRule, rulesForInput } from './taxonomy/index.js';
 import type { Domain, PitfallRule, Severity } from './taxonomy/index.js';
 
 /** The kind of artifact being audited. */
@@ -479,20 +479,9 @@ function describeInput(input: TextDetectionInput): string {
   return 'plain-English analysis description';
 }
 
-// Images default to the two visual domains plus the cross-cutting epistemic rule
-// that charts most often trip (treating the chart as reality). options.domains
-// overrides this; non-image inputs default to the whole catalog.
-const IMAGE_DEFAULT_DOMAINS: Domain[] = ['Graphical Gaffes', 'Design Dangers'];
-const IMAGE_EXTRA_RULE_ID = 'data-reality-gap';
-
 function selectRules(input: DetectionInput, domains?: Domain[]): PitfallRule[] {
-  if (domains) return domains.flatMap((domain) => getRulesByDomain(domain));
-  if (input.kind === 'image') {
-    const rules = IMAGE_DEFAULT_DOMAINS.flatMap((domain) => getRulesByDomain(domain));
-    const extra = getRule(IMAGE_EXTRA_RULE_ID);
-    return extra ? [...rules, extra] : rules;
-  }
-  return [...getAllRules()];
+  // Slides and chains mix every kind of artifact, so they get the code/text set.
+  return rulesForInput(input.kind === 'image' || input.kind === 'document' ? input.kind : 'code', domains);
 }
 
 // The content blocks for a single artifact, without any call-to-action — used to

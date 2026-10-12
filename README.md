@@ -150,6 +150,48 @@ export ANTHROPIC_API_KEY="sk-ant-..."
 
 ---
 
+## Use it from Claude (MCP server)
+
+datapitfalls also runs as an [MCP](https://modelcontextprotocol.io) server that
+gives Claude the Avoiding Data Pitfalls taxonomy wherever you use it: Claude
+Code, Claude Desktop, and claude.ai. Claude does the checking itself, using the
+rules, so the server **needs no API key** and makes no Anthropic API calls. It
+is read-only and never touches the network.
+
+Once it's connected, ask something like _"Build this dashboard, then check every
+chart's SQL and design against datapitfalls and fix what you find."_
+
+It offers four tools: `get_checklist` (the rules to check for SQL, code, a
+chart, prose, a dashboard or a document), `get_pitfall` (one rule in full),
+`list_pitfalls`, and `search_pitfalls`; a `review_for_pitfalls` prompt; and each
+rule as a `datapitfalls://rules/{id}` resource.
+
+**Claude Code**
+
+```bash
+claude mcp add datapitfalls -- npx -y datapitfalls mcp
+```
+
+**Claude Desktop**: add this to `claude_desktop_config.json` (Settings →
+Developer → Edit Config), then restart Claude Desktop:
+
+```json
+{
+  "mcpServers": {
+    "datapitfalls": {
+      "command": "npx",
+      "args": ["-y", "datapitfalls", "mcp"]
+    }
+  }
+}
+```
+
+**claude.ai (custom connector)**: in Settings → Connectors, choose _Add custom
+connector_, name it `Data Pitfalls`, and use the URL
+`https://<your-datapitfalls-site>/api/mcp`. No authentication is needed.
+
+---
+
 ## Programmatic API
 
 Beyond the CLI, datapitfalls is a library you can build on. The core is
