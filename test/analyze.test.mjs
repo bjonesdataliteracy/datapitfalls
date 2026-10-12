@@ -4,6 +4,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   detectPitfalls,
+  PitfallDetectionError,
+  supportsForcedToolChoice,
   imageMediaTypeForExtension,
   getAllRules,
   getRule,
@@ -255,4 +257,123 @@ test('a bogus consequence and an empty summary are dropped rather than surfaced'
   const report = await detectPitfalls(textInput, { client, variant: 'summary' });
   assert.equal(report.findings[0].consequence, undefined);
   assert.equal(report.summary, undefined);
+});
+
+// A client that replays scripted responses (or throws scripted errors) in order.
+function scriptedClient(steps) {
+  const calls = [];
+  return {
+    calls,
+    messages: {
+      create: async (params) => {
+        calls.push(params);
+        const step = steps[calls.length - 1];
+        if (step instanceof Error) throw step;
+        return step;
+      },
+    },
+  };
+}
+
+const reportMessage = (findings = []) => ({
+  content: [{ type: 'tool_use', id: 't', name: 'report_findings', input: { findings } }],
+  stop_reason: 'tool_use',
+});
+const proseMessage = {
+  content: [{ type: 'text', text: 'Looks fine to me.' }],
+  stop_reason: 'end_turn',
+};
+
+test('supportsForcedToolChoice is false only for models that reject forced tool use', () => {
+  assert.equal(supportsForcedToolChoice('claude-sonnet-4-6'), true);
+  assert.equal(supportsForcedToolChoice('claude-opus-4-7'), true);
+  assert.equal(supportsForcedToolChoice('claude-haiku-4-5'), true);
+  assert.equal(supportsForcedToolChoice('claude-sonnet-5'), true);
+  assert.equal(supportsForcedToolChoice('claude-sonnet-5-5'), false);
+  assert.equal(supportsForcedToolChoice('anthropic.claude-sonnet-5-5'), false);
+  assert.equal(supportsForcedToolChoice('claude-opus-5-5'), false);
+  assert.equal(supportsForcedToolChoice('claude-fable-5-1'), false);
+});
+
+test('4.x models keep the forced tool call and the shipped prompt', async () => {
+  const client = fakeClient([]);
+  await detectPitfalls(textInput, { client, model: 'claude-sonnet-4-6' });
+  assert.deepEqual(client.calls[0].tool_choice, { type: 'tool', name: 'report_findings' });
+  assert.doesNotMatch(client.calls[0].system[0].text, /exactly once/);
+  assert.equal(client.calls[0].output_config, undefined);
+});
+
+test('Sonnet 5.5 is offered the tool with auto choice and told to call it', async () => {
+  const client = fakeClient([]);
+  await detectPitfalls(textInput, { client, model: 'claude-sonnet-5-5' });
+  assert.deepEqual(client.calls[0].tool_choice, { type: 'auto' });
+  assert.match(client.calls[0].system[0].text, /calling the report_findings tool exactly once/);
+  // The catalog block stays last and cached.
+  assert.deepEqual(client.calls[0].system[1].cache_control, { type: 'ephemeral' });
+});
+
+test('effort is sent as output_config.effort only when set', async () => {
+  const client = fakeClient([]);
+  await detectPitfalls(textInput, { client, model: 'claude-sonnet-5-5', effort: 'medium' });
+  assert.deepEqual(client.calls[0].output_config, { effort: 'medium' });
+});
+
+test('a 400 rejecting forced tool use is retried once without forcing', async () => {
+  const rejection = Object.assign(
+    new Error('400 tool_choice: type "tool" and "any" are not supported for this model.'),
+    { status: 400 }
+  );
+  const client = scriptedClient([rejection, reportMessage()]);
+  const report = await detectPitfalls(textInput, { client, model: 'claude-future-9' });
+  assert.deepEqual(report.findings, []);
+  assert.equal(client.calls.length, 2);
+  assert.deepEqual(client.calls[1].tool_choice, { type: 'auto' });
+});
+
+test('other API errors are not retried', async () => {
+  const other = Object.assign(new Error('400 messages: bad request'), { status: 400 });
+  const client = scriptedClient([other]);
+  await assert.rejects(detectPitfalls(textInput, { client }), /bad request/);
+  assert.equal(client.calls.length, 1);
+});
+
+test('an unforced prose answer is retried once, then reported as no_report', async () => {
+  const recovered = scriptedClient([proseMessage, reportMessage()]);
+  const report = await detectPitfalls(textInput, { client: recovered, model: 'claude-sonnet-5-5' });
+  assert.deepEqual(report.findings, []);
+  assert.equal(recovered.calls.length, 2);
+
+  const stuck = scriptedClient([proseMessage, proseMessage]);
+  await assert.rejects(
+    detectPitfalls(textInput, { client: stuck, model: 'claude-sonnet-5-5' }),
+    (error) => error instanceof PitfallDetectionError && error.code === 'no_report'
+  );
+});
+
+test('a refusal or a truncated report throws instead of reading as clear', async () => {
+  const refused = scriptedClient([{ content: [], stop_reason: 'refusal' }]);
+  await assert.rejects(
+    detectPitfalls(textInput, { client: refused, model: 'claude-sonnet-5-5' }),
+    (error) => error instanceof PitfallDetectionError && error.code === 'refusal'
+  );
+
+  const truncated = scriptedClient([{ ...reportMessage(), stop_reason: 'max_tokens' }]);
+  await assert.rejects(
+    detectPitfalls(textInput, { client: truncated }),
+    (error) => error instanceof PitfallDetectionError && error.code === 'truncated'
+  );
+});
+
+test('thinking blocks ahead of the tool call are skipped', async () => {
+  const client = scriptedClient([
+    {
+      content: [
+        { type: 'thinking', thinking: '', signature: 's' },
+        { type: 'tool_use', id: 't', name: 'report_findings', input: { findings: [] } },
+      ],
+      stop_reason: 'tool_use',
+    },
+  ]);
+  const report = await detectPitfalls(textInput, { client, model: 'claude-sonnet-5-5' });
+  assert.deepEqual(report.findings, []);
 });

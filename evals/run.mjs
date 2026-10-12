@@ -7,9 +7,10 @@
 // or catalog changes. It calls the API, so it costs money.
 //
 // Usage:
-//   ANTHROPIC_API_KEY=... node evals/run.mjs [--model a,b,c] [--repeats N]
+//   ANTHROPIC_API_KEY=... node evals/run.mjs [--model a,b,c] [--effort e1,e2] [--repeats N]
 //
 //   --model    comma-separated model ids to compare (default: analyzer default)
+//   --effort   comma-separated effort levels to sweep per model (default: model default)
 //   --repeats  runs per fixture, to gauge run-to-run variance (default: 1)
 //
 // Each fixtures/<name>.py has a fixtures/<name>.expected.json:
@@ -24,9 +25,11 @@ import { scoreRun, ratio, estimateCostUsd } from './score.mjs';
 const fixturesDir = join(dirname(fileURLToPath(import.meta.url)), 'fixtures');
 
 function parseArgs(argv) {
-  const opts = { models: [], repeats: 1 };
+  const opts = { models: [], efforts: [], repeats: 1 };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === '--model') opts.models = (argv[++i] ?? '').split(',').map((s) => s.trim());
+    else if (argv[i] === '--effort')
+      opts.efforts = (argv[++i] ?? '').split(',').map((s) => s.trim());
     else if (argv[i] === '--repeats') opts.repeats = Math.max(1, Number(argv[++i]) || 1);
   }
   return opts;
@@ -49,7 +52,7 @@ function loadFixtures() {
 const pct = (x) => `${(x * 100).toFixed(0)}%`;
 const tag = (f) => (f.nature === 'latent' ? `${f.ruleId}(latent)` : f.ruleId);
 
-async function evaluateModel(model, fixtures, repeats) {
+async function evaluateModel(model, effort, fixtures, repeats) {
   const total = {
     tp: 0,
     fn: 0,
@@ -62,7 +65,9 @@ async function evaluateModel(model, fixtures, repeats) {
     cost: 0,
   };
 
-  console.log(`Model: ${model ?? 'default (claude-sonnet-4-6)'}`);
+  console.log(
+    `Model: ${model ?? 'default (claude-sonnet-4-6)'}${effort ? ` · effort ${effort}` : ''}`
+  );
   for (const fx of fixtures) {
     const expected = fx.spec.expected ?? [];
     const acceptable = fx.spec.acceptable ?? [];
@@ -76,7 +81,7 @@ async function evaluateModel(model, fixtures, repeats) {
           language: fx.spec.language ?? 'Python',
           filename: `${fx.name}.py`,
         },
-        model ? { model } : {}
+        { ...(model ? { model } : {}), ...(effort ? { effort } : {}) }
       );
       const s = scoreRun(report.findings, expected, acceptable);
       for (const k of Object.keys(total)) if (k !== 'cost') total[k] += s[k] ?? 0;
@@ -112,7 +117,7 @@ async function main() {
     process.exitCode = 1;
     return;
   }
-  const { models, repeats } = parseArgs(process.argv.slice(2));
+  const { models, efforts, repeats } = parseArgs(process.argv.slice(2));
   const modelList = models.length ? models : [undefined];
   const fixtures = loadFixtures();
 
@@ -120,8 +125,9 @@ async function main() {
     `Evaluating ${fixtures.length} fixtures x ${repeats} repeat(s) on: ` +
       `${modelList.map((m) => m ?? 'default').join(', ')}\n`
   );
+  const effortList = efforts.length ? efforts : [undefined];
   for (const model of modelList) {
-    await evaluateModel(model, fixtures, repeats);
+    for (const effort of effortList) await evaluateModel(model, effort, fixtures, repeats);
   }
 }
 

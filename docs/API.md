@@ -88,8 +88,36 @@ interface DetectionOptions {
    *  Defaults to 'baseline'. Not covered by the API-stability policy; may
    *  change or be removed once the experiment concludes. See evals/compare.mjs. */
   variant?: PresentationVariant;
+  /** Effort level, sent as output_config.effort: 'low' | 'medium' | 'high' |
+   *  'xhigh' | 'max' (also exported as EFFORTS). Omitted by default, which
+   *  leaves the model's own default in place. */
+  effort?: Effort;
 }
 ```
+
+**Model compatibility.** The report comes back as a call to a `report_findings`
+tool. Most models are required to make that call (a forced `tool_choice`).
+Claude Sonnet 5.5, Opus 5.5, Fable 5.1 and Mythos 5.1 reject a forced
+`tool_choice`, so for them the tool is offered with `tool_choice: 'auto'` and the
+system prompt requires the call. `supportsForcedToolChoice(model)` reports which
+path a model takes. A model id the engine doesn't know is tried forced first; if
+the API rejects that with a 400, the scan is retried once unforced.
+
+These models think by default, and thinking counts toward `maxTokens`. If a
+scan comes back truncated, raise `maxTokens` or lower `effort`.
+
+### Errors — `PitfallDetectionError`
+
+API and network errors from the Anthropic SDK propagate unchanged. When the
+model answers but the answer can't be read as a complete report, `detectPitfalls`
+throws a `PitfallDetectionError` with a `code` instead of returning an empty
+report that would read as "no pitfalls":
+
+| `code`        | When                                                                             |
+| ------------- | -------------------------------------------------------------------------------- |
+| `'refusal'`   | The model declined the request (`stop_reason: 'refusal'`).                       |
+| `'truncated'` | The response hit `maxTokens` before the report was complete.                     |
+| `'no_report'` | No `report_findings` call came back (an unforced model answered in prose twice). |
 
 ---
 

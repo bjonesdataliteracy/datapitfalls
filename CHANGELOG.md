@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-10-11
+
+### Added
+
+- **Claude Sonnet 5.5, Opus 5.5 and Fable 5.1 support.** These models reject a
+  forced `tool_choice` with a 400, so `detectPitfalls` now offers them the
+  `report_findings` tool with `tool_choice: 'auto'` and adds one line to the
+  system prompt requiring the call. Other models keep the forced call and the
+  prompt unchanged. A model id the engine doesn't recognize is retried once
+  unforced if the API rejects forcing. The new `supportsForcedToolChoice(model)`
+  reports which path a model takes. Pass the model as before
+  (`{ model: 'claude-sonnet-5-5' }` or `ANTHROPIC_MODEL`). The default model is
+  still `claude-sonnet-4-6` until the evals have been re-run on Sonnet 5.5.
+- **`effort` option** (`'low' | 'medium' | 'high' | 'xhigh' | 'max'`, with the
+  levels exported as `EFFORTS`), sent as `output_config.effort`. It is unset by
+  default, so the model's own default applies. The CLI takes
+  `--effort <level>`, and `evals/run.mjs` takes `--effort a,b` to sweep levels
+  per model. The eval price table now includes Sonnet 5.5 and Opus 5.5.
+
+### Changed
+
+- **A scan that produced no usable report now throws `PitfallDetectionError`
+  instead of returning an empty report**, because an empty report reads as "no
+  pitfalls detected". The error's `code` is `refusal` (the model declined),
+  `truncated` (the response hit `maxTokens`) or `no_report` (no tool call came
+  back). Before this, a truncated or missing tool call silently produced zero
+  findings. Callers that show results should catch it and show an error. See
+  [Errors](docs/API.md#errors--pitfalldetectionerror).
+
 ## [0.9.0] - 2026-07-11
 
 ### Added
@@ -189,7 +218,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Pitfall taxonomy v0.1 structure, organized around the eight audit domains from _Avoiding Data Pitfalls_.
 - Project roadmap outlining the path from foundation through developer tools and community ecosystem.
 
-[Unreleased]: https://github.com/bjonesdataliteracy/datapitfalls/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/bjonesdataliteracy/datapitfalls/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/bjonesdataliteracy/datapitfalls/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/bjonesdataliteracy/datapitfalls/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/bjonesdataliteracy/datapitfalls/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/bjonesdataliteracy/datapitfalls/compare/v0.6.0...v0.7.0
