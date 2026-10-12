@@ -11,9 +11,9 @@
 // engine-backed tool (e.g. `scan_with_engine`, calling detectPitfalls with a
 // key) can be registered alongside them without changing any of them.
 
-import { createRequire } from 'node:module';
 import { McpServer, ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import { PACKAGE_VERSION } from '../version.js';
 import { DOMAINS, SEVERITIES, getAllRules, getRule } from '../taxonomy/index.js';
 import {
   BOOK_CITATION,
@@ -28,8 +28,6 @@ import {
   unknownRuleMessage,
   type ChecklistInputType,
 } from './catalog.js';
-
-const pkg = createRequire(import.meta.url)('../../package.json') as { version: string };
 
 export const SERVER_NAME = 'datapitfalls';
 
@@ -53,7 +51,7 @@ const domainSchema = z.enum(DOMAINS);
 /** Build a datapitfalls MCP server with its tools, prompt and resources registered. */
 export function createDataPitfallsServer(): McpServer {
   const server = new McpServer(
-    { name: SERVER_NAME, title: 'Data Pitfalls', version: pkg.version },
+    { name: SERVER_NAME, title: 'Data Pitfalls', version: PACKAGE_VERSION },
     { instructions: INSTRUCTIONS }
   );
 

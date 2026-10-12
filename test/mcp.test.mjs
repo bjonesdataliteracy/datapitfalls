@@ -17,6 +17,7 @@ import {
 } from '../dist/mcp/index.js';
 import { getAllRules, getRule, rulesForInput } from '../dist/taxonomy/index.js';
 
+const PKG = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
 const BIN = fileURLToPath(new URL('../dist/bin.js', import.meta.url));
 const SITE = 'avoidingdatapitfalls.com';
 
@@ -232,6 +233,7 @@ test('stdio round trip: `datapitfalls mcp` serves tools to the SDK client', asyn
   });
   await client.connect(transport);
   assert.equal(client.getServerVersion().name, 'datapitfalls');
+  assert.equal(client.getServerVersion().version, PKG.version);
   assert.match(client.getInstructions(), /get_checklist/);
   const { tools } = await client.listTools();
   assert.equal(tools.length, 4);

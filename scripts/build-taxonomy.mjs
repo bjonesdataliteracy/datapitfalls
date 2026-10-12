@@ -70,3 +70,14 @@ const body = `\nexport const rules: PitfallRule[] = ${JSON.stringify(rules, null
 
 writeFileSync(outFile, header + body);
 console.log(`Wrote ${relative(root, outFile)} (${rules.length} rules)`);
+
+// The package version as a constant, for code that must not read package.json at
+// runtime: bundlers (Next.js on Vercel) inline the MCP server, and a relative
+// require of package.json from the bundle fails there.
+const { version } = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
+const versionFile = join(root, 'src', 'version.ts');
+writeFileSync(
+  versionFile,
+  `// GENERATED FILE — do not edit by hand. Regenerate with: npm run build:taxonomy\n\nexport const PACKAGE_VERSION = '${version}';\n`
+);
+console.log(`Wrote ${relative(root, versionFile)} (${version})`);
