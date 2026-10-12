@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Rate limit on the web app's MCP route.** `/api/mcp` now has its own loose
+  per-IP limit (300 requests a minute by default; `MCP_RATE_LIMIT_MAX` and
+  `MCP_RATE_LIMIT_WINDOW_SECONDS` override it), separate from the scan limit, and
+  answers over-limit requests with a 429 and a JSON-RPC error.
+
 ## [0.11.0] - 2026-10-12
 
 ### Added

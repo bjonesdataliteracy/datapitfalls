@@ -22,12 +22,14 @@ The build is wired so the engine is compiled first: `vercel-build` runs
 
 ## Environment variables
 
-| Variable                    | Required | Purpose                                                  |
-| --------------------------- | -------- | -------------------------------------------------------- |
-| `ANTHROPIC_API_KEY`         | yes      | Server-side key the scan route uses to call Claude.      |
-| `ANTHROPIC_MODEL`           | no       | Override the model (defaults to the engine default).     |
-| `RATE_LIMIT_MAX`            | no       | Max scans per window, per IP (default 8).                |
-| `RATE_LIMIT_WINDOW_SECONDS` | no       | Length of the rate-limit window in seconds (default 60). |
+| Variable                        | Required | Purpose                                                  |
+| ------------------------------- | -------- | -------------------------------------------------------- |
+| `ANTHROPIC_API_KEY`             | yes      | Server-side key the scan route uses to call Claude.      |
+| `ANTHROPIC_MODEL`               | no       | Override the model (defaults to the engine default).     |
+| `RATE_LIMIT_MAX`                | no       | Max scans per window, per IP (default 8).                |
+| `RATE_LIMIT_WINDOW_SECONDS`     | no       | Length of the rate-limit window in seconds (default 60). |
+| `MCP_RATE_LIMIT_MAX`            | no       | Max MCP requests per window, per IP (default 300).       |
+| `MCP_RATE_LIMIT_WINDOW_SECONDS` | no       | MCP rate-limit window in seconds (default 60).           |
 
 Set these in the Vercel project (Settings → Environment Variables) and redeploy
 for changes to take effect.
