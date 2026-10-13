@@ -38,8 +38,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   connect Data Pitfalls from the Claude connector directory (Settings →
   Connectors → Discover), with the custom connector URL as a fallback.
 - **Command-line section on the home page.** A new "Run the detector from your
-  terminal" section shows how to scan files with the npm CLI (`npx datapitfalls
-  scan`) on your own API key, with its main flags, and the footer links to it.
+  terminal" section shows how to scan files with the npm CLI
+  (`npx datapitfalls scan`) on your own API key, with its main flags, and the
+  footer links to it.
 
 ## [0.11.0] - 2026-10-12
 
