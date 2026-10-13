@@ -1,5 +1,4 @@
 import { ruleCount } from 'datapitfalls';
-import { HeroLines } from './components/HeroLines';
 import { SetupTabs } from './components/SetupTabs';
 import { BOOK_URL, DATA_LITERACY_URL, GITHUB_URL, LAB_DETECTOR_URL } from './links';
 import { domainSummaries, rulePath } from './site';
@@ -22,7 +21,8 @@ export default function Home() {
   return (
     <main>
       <div className="hero">
-        <HeroLines />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img className="hero-vortex" src="/vortex.jpg" alt="" width={1200} height={900} />
         <div className="wrap">
           <span className="pill">
             From the book by Ben Jones <b>{total} pitfalls</b>

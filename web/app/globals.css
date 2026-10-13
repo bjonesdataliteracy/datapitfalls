@@ -19,6 +19,7 @@
   --tint-border: #b0d8ed;
   --page: #ffffff;
   --page-alt: #f6f9fb;
+  --hero-bg: #10293f;
 
   /* Names the standalone info pages (/mcp, /privacy) style against. */
   --text: var(--body);
@@ -115,30 +116,9 @@ code {
 }
 
 .brand-mark {
-  display: grid;
-  grid-template-columns: repeat(3, 5px);
-  align-items: end;
-  gap: 2px;
-  height: 18px;
-}
-
-.brand-mark i {
   display: block;
-  border-radius: 1px;
-  background: var(--blue);
-}
-
-.brand-mark i:nth-child(1) {
-  height: 8px;
-}
-
-.brand-mark i:nth-child(2) {
-  height: 18px;
-  background: var(--cyan);
-}
-
-.brand-mark i:nth-child(3) {
-  height: 12px;
+  width: 28px;
+  height: 28px;
 }
 
 .nav-links {
@@ -230,7 +210,7 @@ code {
 .hero {
   position: relative;
   overflow: hidden;
-  background: var(--navy);
+  background: var(--hero-bg);
   color: #fff;
   padding-block: 56px 150px;
 }
@@ -239,11 +219,18 @@ code {
   padding-block: 44px 48px;
 }
 
-.hero-lines {
+/* The vortex from the Lab's Pitfalls banner, fading into the hero on its left. */
+.hero-vortex {
   position: absolute;
-  inset: 0;
-  width: 100%;
+  top: 0;
+  right: 0;
+  width: 52%;
   height: 100%;
+  object-fit: cover;
+  object-position: 55% 50%;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 25%);
+  mask-image: linear-gradient(to right, transparent, #000 25%);
+  pointer-events: none;
 }
 
 .hero .wrap {
@@ -928,6 +915,10 @@ code {
   }
 
   .nav-links {
+    display: none;
+  }
+
+  .hero-vortex {
     display: none;
   }
 }

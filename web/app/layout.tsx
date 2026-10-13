@@ -71,11 +71,8 @@ function SiteNav() {
     <header className="site-nav">
       <div className="wrap">
         <a className="brand" href="/">
-          <span className="brand-mark" aria-hidden="true">
-            <i />
-            <i />
-            <i />
-          </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="brand-mark" src="/vortex-mark.png" alt="" width={28} height={28} />
           Data Pitfalls
         </a>
         <nav className="nav-links" aria-label="Main">
