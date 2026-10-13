@@ -16,6 +16,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **New avoidingdatapitfalls.com home page.** The site is now the home for Data
+  Pitfalls, in the Data Literacy Lab look: what the taxonomy is, and the three ways
+  to use it (the free Data Pitfalls MCP for Claude, with setup steps for claude.ai
+  and Claude Code; the Pitfalls Detector in the Data Literacy Lab; and the book).
+  A new pitfall library has one page per domain (`/pitfalls/<domain>`), generated
+  from the taxonomy, with each rule at its own anchor. The free scanner moved from
+  `/` to `/scan`, and `/api/mcp` is unchanged.
+
 - **Rate limit on the web app's MCP route.** `/api/mcp` now has its own loose
   per-IP limit (300 requests a minute by default; `MCP_RATE_LIMIT_MAX` and
   `MCP_RATE_LIMIT_WINDOW_SECONDS` override it), separate from the scan limit, and

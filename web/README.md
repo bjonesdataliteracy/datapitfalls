@@ -6,6 +6,16 @@ several charts at once, PDFs, Word docs, slide decks, notebooks, code files, pas
 prose/code, and whole analysis chains — code, charts, and prose scanned together) through the
 API route at [`app/api/audit/route.ts`](app/api/audit/route.ts).
 
+Pages:
+
+- `/` (`app/page.tsx`): the home page for Data Pitfalls (the MCP, the Lab's
+  Pitfalls Detector, and the book). Shared nav and footer live in `app/layout.tsx`;
+  links are in `app/links.ts`.
+- `/pitfalls` and `/pitfalls/<domain>`: the pitfall library, generated from the
+  taxonomy at build time. Each rule is an anchor: `/pitfalls/<domain>#<rule-id>`.
+- `/scan` (`app/scan/`): the free scanner, with its own scoped styles.
+- `/api/mcp`: the Data Pitfalls MCP server for claude.ai custom connectors.
+
 ## Local development
 
 ```bash

@@ -1,0 +1,768 @@
+'use client';
+
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { ChangeEvent, DragEvent, FormEvent } from 'react';
+import type { PitfallReport, Finding, AvoidedPitfall, Consequence, Tier } from 'datapitfalls';
+import { LAB_DETECTOR_URL } from '../links';
+import './scanner.css';
+
+type Mode = 'image' | 'text' | 'slides' | 'code' | 'chain';
+
+/** What /api/audit returns: the engine report plus the server-computed tier. */
+type AuditReport = PitfallReport & { tier: Tier; tierLabel: string };
+
+type State =
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | { status: 'error'; message: string }
+  | { status: 'done'; report: AuditReport };
+
+const MODES: { id: Mode; label: string }[] = [
+  { id: 'image', label: 'Chart image' },
+  { id: 'text', label: 'Written analysis' },
+  { id: 'slides', label: 'Slide deck' },
+  { id: 'code', label: 'Analysis code' },
+  { id: 'chain', label: 'Full analysis' },
+];
+
+const DECK_ACCEPT =
+  '.pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation';
+
+// Full-analysis mode takes any supported artifact type as a stage of the chain.
+const CHAIN_ACCEPT =
+  'image/png,image/jpeg,image/gif,image/webp,.pdf,.docx,application/pdf,' +
+  DECK_ACCEPT +
+  ',.py,.ipynb,.r,.sql,.js,.mjs,.jsx,.ts,.tsx,.java,.scala,.go,.rb,.jl,.m,.sas,.do,.cpp,.c,.cs,.php,.kt,.rs,.txt,.md,.markdown,.rst';
+
+const UPLOAD_ACCEPT: Record<'text' | 'code', string> = {
+  text: '.pdf,.docx,.txt,.md,.markdown,.rst,application/pdf',
+  code: '.py,.ipynb,.r,.sql,.js,.mjs,.jsx,.ts,.tsx,.java,.scala,.go,.rb,.jl,.m,.sas,.do,.cpp,.c,.cs,.php,.kt,.rs,.txt',
+};
+
+const UPLOAD_HINT: Record<'text' | 'code', string> = {
+  text: '.pdf, .docx, .txt, .md',
+  code: '.py, .ipynb, .sql, .r, .js …',
+};
+
+// Planted-pitfall examples so a first-time visitor can run a real audit with one
+// click. The text sample hides survivorship bias and a mean-as-typical claim;
+// the code sample hides a silent null drop, an inner-join row loss, and the same
+// mean-as-typical reporting.
+const SAMPLES = {
+  text:
+    'We measured the average customer lifetime value by taking every customer who is ' +
+    'still active today and averaging how much each has spent. The mean came out to ' +
+    '$4,200, so we are telling the board the typical customer is worth about $4,200. ' +
+    'We left out the customers who churned, because their records were incomplete.',
+  code: `import pandas as pd
+
+orders = pd.read_csv("orders.csv")
+users = pd.read_csv("users.csv")
+
+# Drop any rows with missing values before aggregating.
+orders = orders.dropna()
+
+# Attach each order to its user.
+df = orders.merge(users, on="user_id")  # inner join: users with no orders disappear
+
+# Report the average order amount as the "typical" customer spend.
+typical_spend = df["amount"].mean()
+print(f"Typical customer spend: \${typical_spend:.2f}")`,
+};
+
+export default function Home() {
+  const [mode, setMode] = useState<Mode>('image');
+  const [state, setState] = useState<State>({ status: 'idle' });
+
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
+  const [dragging, setDragging] = useState(false);
+
+  const [text, setText] = useState('');
+  const [code, setCode] = useState('');
+  const [language, setLanguage] = useState('');
+  const [docFile, setDocFile] = useState<File | null>(null);
+
+  const [chainFiles, setChainFiles] = useState<File[]>([]);
+  const [narrative, setNarrative] = useState('');
+
+  const addImages = useCallback((files: File[]) => {
+    const images = files.filter((f) => f.type.startsWith('image/'));
+    if (images.length === 0) return;
+    setImageFiles((prev) => [...prev, ...images]);
+    setPreviews((prev) => [...prev, ...images.map((f) => URL.createObjectURL(f))]);
+    setMode('image');
+  }, []);
+
+  function removeImage(index: number) {
+    setPreviews((prev) => {
+      const url = prev[index];
+      if (url) URL.revokeObjectURL(url);
+      return prev.filter((_, i) => i !== index);
+    });
+    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  // Paste chart screenshots from anywhere on the page.
+  useEffect(() => {
+    function onPaste(e: ClipboardEvent) {
+      const images = Array.from(e.clipboardData?.files ?? []).filter((f) =>
+        f.type.startsWith('image/')
+      );
+      if (images.length > 0) {
+        e.preventDefault();
+        addImages(images);
+      }
+    }
+    window.addEventListener('paste', onPaste);
+    return () => window.removeEventListener('paste', onPaste);
+  }, [addImages]);
+
+  // Revoke any outstanding object URLs when the page unmounts.
+  const previewsRef = useRef<string[]>([]);
+  previewsRef.current = previews;
+  useEffect(() => () => previewsRef.current.forEach((url) => URL.revokeObjectURL(url)), []);
+
+  function changeMode(m: Mode) {
+    setMode(m);
+    setDocFile(null);
+    setChainFiles([]);
+    setNarrative('');
+    setState({ status: 'idle' });
+  }
+
+  function addChainFiles(files: File[]) {
+    if (files.length > 0) setChainFiles((prev) => [...prev, ...files]);
+  }
+
+  function removeChainFile(index: number) {
+    setChainFiles((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function onChainChange(e: ChangeEvent<HTMLInputElement>) {
+    addChainFiles(Array.from(e.target.files ?? []));
+    e.target.value = '';
+  }
+
+  function onChainDrop(e: DragEvent<HTMLLabelElement>) {
+    e.preventDefault();
+    setDragging(false);
+    addChainFiles(Array.from(e.dataTransfer.files ?? []));
+  }
+
+  function loadSample() {
+    setDocFile(null);
+    if (mode === 'code') {
+      setLanguage('Python');
+      setCode(SAMPLES.code);
+    } else {
+      setText(SAMPLES.text);
+    }
+  }
+
+  function onImageChange(e: ChangeEvent<HTMLInputElement>) {
+    addImages(Array.from(e.target.files ?? []));
+    e.target.value = '';
+  }
+
+  function onDrop(e: DragEvent<HTMLLabelElement>) {
+    e.preventDefault();
+    setDragging(false);
+    addImages(Array.from(e.dataTransfer.files ?? []));
+  }
+
+  function onDeckDrop(e: DragEvent<HTMLLabelElement>) {
+    e.preventDefault();
+    setDragging(false);
+    const file = Array.from(e.dataTransfer.files ?? [])[0];
+    if (file) setDocFile(file);
+  }
+
+  async function onSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    let request: RequestInit;
+    if (mode === 'image') {
+      if (imageFiles.length === 0) {
+        setState({ status: 'error', message: 'Choose, drop, or paste a chart image first.' });
+        return;
+      }
+      const body = new FormData();
+      imageFiles.forEach((file) => body.append('file', file));
+      body.append('mode', 'image');
+      request = { method: 'POST', body };
+    } else if (mode === 'slides') {
+      if (!docFile) {
+        setState({ status: 'error', message: 'Choose or drop a PowerPoint deck (.pptx) first.' });
+        return;
+      }
+      request = { method: 'POST', body: fileBody(docFile, 'slides') };
+    } else if (mode === 'chain') {
+      const stages = chainFiles.length + (narrative.trim() ? 1 : 0);
+      if (stages < 2) {
+        setState({
+          status: 'error',
+          message: 'Add at least two pieces — e.g. your prep code, a chart, and a written summary.',
+        });
+        return;
+      }
+      const body = new FormData();
+      chainFiles.forEach((file) => body.append('file', file));
+      if (narrative.trim()) body.append('narrative', narrative);
+      body.append('mode', 'chain');
+      request = { method: 'POST', body };
+    } else if (docFile) {
+      request = { method: 'POST', body: fileBody(docFile, mode) };
+    } else {
+      const content = mode === 'code' ? code : text;
+      if (content.trim() === '') {
+        setState({
+          status: 'error',
+          message: 'Paste something — or upload a file — to audit first.',
+        });
+        return;
+      }
+      request = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          kind: mode,
+          content,
+          language: mode === 'code' ? language : undefined,
+        }),
+      };
+    }
+
+    setState({ status: 'loading' });
+    try {
+      const res = await fetch('/api/audit', request);
+      const data = (await res.json()) as AuditReport | { error: string };
+      if (!res.ok) {
+        setState({ status: 'error', message: 'error' in data ? data.error : 'The scan failed.' });
+        return;
+      }
+      setState({ status: 'done', report: data as AuditReport });
+    } catch {
+      setState({ status: 'error', message: 'Network error — please try again.' });
+    }
+  }
+
+  return (
+    <div className="scanner">
+      <main className="container">
+        <header className="masthead">
+          <h1>Quick scan</h1>
+          <p className="tagline">
+            Check the data work of humans and AI alike — a chart (or several at once), a written
+            analysis, a slide deck, analysis code, or a document — for the common pitfalls that
+            mislead.
+          </p>
+          <p className="subtag">
+            Grounded in the taxonomy from{' '}
+            <a href="https://www.avoidingdatapitfalls.com" target="_blank" rel="noreferrer">
+              <em>Avoiding Data Pitfalls</em>
+            </a>
+            , across all eight pitfall domains. For the full reviewer&rsquo;s report, use the{' '}
+            <a href={LAB_DETECTOR_URL} target="_blank" rel="noreferrer">
+              Pitfalls Detector in the Data Literacy Lab
+            </a>
+            .
+          </p>
+        </header>
+
+        <div className="modes" role="tablist" aria-label="What to audit">
+          {MODES.map((m) => (
+            <button
+              key={m.id}
+              type="button"
+              role="tab"
+              aria-selected={mode === m.id}
+              className={mode === m.id ? 'mode active' : 'mode'}
+              onClick={() => changeMode(m.id)}
+            >
+              {m.label}
+            </button>
+          ))}
+        </div>
+
+        <form className="uploader" onSubmit={onSubmit}>
+          {mode === 'image' && (
+            <>
+              <label
+                className={dragging ? 'filefield dragging' : 'filefield'}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDragging(true);
+                }}
+                onDragLeave={() => setDragging(false)}
+                onDrop={onDrop}
+              >
+                <input
+                  type="file"
+                  multiple
+                  accept="image/png,image/jpeg,image/gif,image/webp"
+                  onChange={onImageChange}
+                />
+                <span>
+                  {imageFiles.length === 0
+                    ? 'Choose, drop, or paste chart images (PNG, JPEG, GIF, WebP) — add several to compare them'
+                    : `${imageFiles.length} chart${imageFiles.length > 1 ? 's' : ''} selected — add more, or audit them together`}
+                </span>
+              </label>
+              {previews.length > 0 && (
+                <div className="previews">
+                  {previews.map((url, i) => (
+                    <div className="thumb" key={url}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={url} alt={`Chart ${i + 1} preview`} />
+                      <button
+                        type="button"
+                        className="thumb-remove"
+                        onClick={() => removeImage(i)}
+                        aria-label={`Remove chart ${i + 1}`}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
+          {mode === 'slides' && (
+            <>
+              <label
+                className={dragging ? 'filefield dragging' : 'filefield'}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDragging(true);
+                }}
+                onDragLeave={() => setDragging(false)}
+                onDrop={onDeckDrop}
+              >
+                <input
+                  type="file"
+                  accept={DECK_ACCEPT}
+                  onChange={(e) => setDocFile(e.target.files?.[0] ?? null)}
+                />
+                <span>
+                  {docFile
+                    ? `Deck selected: ${docFile.name} — choose or drop another to replace it`
+                    : 'Choose or drop a PowerPoint deck (.pptx) — we’ll check each slide’s text and its charts'}
+                </span>
+              </label>
+              {docFile && (
+                <div className="uploadrow">
+                  <span className="filename">
+                    Auditing {docFile.name}
+                    <button
+                      type="button"
+                      className="clearfile"
+                      onClick={() => setDocFile(null)}
+                      aria-label="Remove deck"
+                    >
+                      ×
+                    </button>
+                  </span>
+                </div>
+              )}
+            </>
+          )}
+
+          {mode === 'chain' && (
+            <>
+              <p className="chainintro">
+                Add the pieces of one analysis — the prep/analysis code, the chart(s), a
+                PDF/Word/deck — and we&rsquo;ll check the whole chain, including pitfalls that only
+                surface across steps (a transform that biases a later chart, a metric described
+                differently than it&rsquo;s computed, a chart the summary over-claims).
+              </p>
+              <label
+                className={dragging ? 'filefield dragging' : 'filefield'}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDragging(true);
+                }}
+                onDragLeave={() => setDragging(false)}
+                onDrop={onChainDrop}
+              >
+                <input type="file" multiple accept={CHAIN_ACCEPT} onChange={onChainChange} />
+                <span>
+                  {chainFiles.length === 0
+                    ? 'Choose or drop the files of your analysis — code, charts, a PDF/Word/deck (add several)'
+                    : `${chainFiles.length} file${chainFiles.length > 1 ? 's' : ''} added — add more, or scan the chain`}
+                </span>
+              </label>
+              {chainFiles.length > 0 && (
+                <ul className="chainlist">
+                  {chainFiles.map((file, i) => (
+                    <li key={`${file.name}-${i}`}>
+                      <span className="stage-role">{roleHint(file)}</span>
+                      <span className="stage-name">{file.name}</span>
+                      <button
+                        type="button"
+                        className="clearfile"
+                        onClick={() => removeChainFile(i)}
+                        aria-label={`Remove ${file.name}`}
+                      >
+                        ×
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <textarea
+                className="editor"
+                value={narrative}
+                onChange={(e) => setNarrative(e.target.value)}
+                placeholder="Optional: paste the written summary or key claim from this analysis…"
+                rows={5}
+              />
+            </>
+          )}
+
+          {(mode === 'text' || mode === 'code') && (
+            <>
+              {mode === 'code' && (
+                <input
+                  className="language"
+                  type="text"
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  placeholder="Language (optional, e.g. Python, SQL, R)"
+                  disabled={docFile !== null}
+                />
+              )}
+              <textarea
+                className={mode === 'code' ? 'editor mono' : 'editor'}
+                value={mode === 'code' ? code : text}
+                onChange={(e) =>
+                  mode === 'code' ? setCode(e.target.value) : setText(e.target.value)
+                }
+                placeholder={
+                  mode === 'code'
+                    ? 'Paste the analysis code to audit…'
+                    : 'Paste a written description of your analysis, claim, or chart…'
+                }
+                rows={mode === 'code' ? 14 : 10}
+                spellCheck={mode === 'code' ? false : undefined}
+                disabled={docFile !== null}
+              />
+              <div className="uploadrow">
+                <label className="uploadbtn">
+                  <input
+                    type="file"
+                    accept={UPLOAD_ACCEPT[mode]}
+                    onChange={(e) => setDocFile(e.target.files?.[0] ?? null)}
+                  />
+                  Upload a file
+                </label>
+                {docFile ? (
+                  <span className="filename">
+                    Auditing {docFile.name}
+                    <button
+                      type="button"
+                      className="clearfile"
+                      onClick={() => setDocFile(null)}
+                      aria-label="Remove file"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ) : (
+                  <span className="filehint">or upload {UPLOAD_HINT[mode]}</span>
+                )}
+                <button type="button" className="linklike" onClick={loadSample}>
+                  Try a sample
+                </button>
+              </div>
+            </>
+          )}
+
+          <button type="submit" disabled={state.status === 'loading'}>
+            {state.status === 'loading' ? 'Detecting…' : 'Detect pitfalls'}
+          </button>
+        </form>
+
+        {state.status === 'error' && (
+          <p className="error" role="alert">
+            {state.message}
+          </p>
+        )}
+        {state.status === 'done' && <Results report={state.report} />}
+
+        <footer className="sitefoot">
+          <p className="privacy">
+            Your input is sent to Anthropic&rsquo;s Claude API to run the audit and isn&rsquo;t
+            stored by this app — please don&rsquo;t upload confidential or personal data. To prevent
+            abuse, audits are rate-limited per visitor, and we use privacy-friendly, cookieless
+            analytics (no personal data).
+          </p>
+          <p className="credits">
+            Created by{' '}
+            <a href="https://dataliteracy.com" target="_blank" rel="noreferrer">
+              Ben Jones
+            </a>
+            , author of <em>Avoiding Data Pitfalls</em>. Built with{' '}
+            <a href="https://www.anthropic.com/" target="_blank" rel="noreferrer">
+              Claude
+            </a>
+            .{' '}
+            <a
+              href="https://github.com/bjonesdataliteracy/datapitfalls"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Source on GitHub
+            </a>
+            .
+          </p>
+        </footer>
+      </main>
+    </div>
+  );
+}
+
+function fileBody(file: File, mode: Mode): FormData {
+  const body = new FormData();
+  body.append('file', file);
+  body.append('mode', mode);
+  return body;
+}
+
+// A display-only guess at a chain file's role; the server re-derives it authoritatively.
+function roleHint(file: File): string {
+  const name = file.name.toLowerCase();
+  if (file.type.startsWith('image/')) return 'Chart';
+  if (name.endsWith('.pptx')) return 'Slide deck';
+  if (name.endsWith('.pdf') || name.endsWith('.docx')) return 'Document';
+  if (name.endsWith('.ipynb')) return 'Notebook';
+  if (
+    name.endsWith('.md') ||
+    name.endsWith('.markdown') ||
+    name.endsWith('.txt') ||
+    name.endsWith('.rst')
+  )
+    return 'Notes';
+  return 'Code';
+}
+
+// Triage order: a definite (active) finding never queues behind a speculative
+// (latent) one; within that, consequence outranks severity, then confidence.
+const CONSEQUENCE_RANK: Record<Consequence, number> = {
+  'changes-takeaway': 0,
+  'weakens-support': 1,
+  polish: 2,
+};
+const SEVERITY_RANK = { error: 0, warning: 1, info: 2 } as const;
+const CONFIDENCE_RANK = { high: 0, medium: 1, low: 2 } as const;
+
+const CONSEQUENCE_LABEL: Record<Consequence, string> = {
+  'changes-takeaway': 'Changes the takeaway',
+  'weakens-support': 'Weakens support',
+  polish: 'Polish',
+};
+
+function triageOrder(a: Finding, b: Finding): number {
+  return (
+    (a.nature === 'latent' ? 1 : 0) - (b.nature === 'latent' ? 1 : 0) ||
+    (a.consequence ? CONSEQUENCE_RANK[a.consequence] : 3) -
+      (b.consequence ? CONSEQUENCE_RANK[b.consequence] : 3) ||
+    SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity] ||
+    CONFIDENCE_RANK[a.confidence] - CONFIDENCE_RANK[b.confidence]
+  );
+}
+
+// The verdict header that opens every result: the tier pill, the facts line
+// (counts by severity, the rule denominator, the model), and — when the summary
+// variant ran — the model's overall summary, in one card. Counts cover the
+// findings shown by default, matching how the tier itself is computed.
+function VerdictHeader({ report }: { report: AuditReport }) {
+  const shown = report.findings.filter((f) => f.nature === 'active' || f.confidence === 'high');
+  const detected = shown.filter((f) => f.nature === 'active').length;
+  const potential = shown.length - detected;
+  const counts = { error: 0, warning: 0, info: 0 };
+  for (const f of shown) counts[f.severity] += 1;
+
+  return (
+    <div className={`verdict tier-${report.tier}`}>
+      <span className="tier-pill">{report.tierLabel}</span>
+      <div className="verdict-facts">
+        {shown.length > 0 && (
+          <>
+            <span>
+              {detected} detected, {potential} potential
+              {detected === 0 ? ' — nothing evidently wrong' : ''}
+            </span>
+            {(['error', 'warning', 'info'] as const)
+              .filter((s) => counts[s] > 0)
+              .map((s) => (
+                <span className="sevcount" key={s}>
+                  <i className={`dot dot-${s}`} aria-hidden />
+                  {counts[s]} {s}
+                </span>
+              ))}
+          </>
+        )}
+        <span>checked against {report.rulesConsidered} rules</span>
+        <span>model {report.model}</span>
+      </div>
+      {report.summary && <p className="scan-summary">{report.summary}</p>}
+    </div>
+  );
+}
+
+function Results({ report }: { report: AuditReport }) {
+  const [showAllPotential, setShowAllPotential] = useState(false);
+
+  // Same default as the CLI (and as the tier computation): lower-confidence
+  // potential pitfalls fire on almost any real work, so they stay behind a
+  // toggle — including for the "Start here" slot.
+  const sorted = [...report.findings].sort(triageOrder);
+  const visible = showAllPotential
+    ? sorted
+    : sorted.filter((f) => f.nature === 'active' || f.confidence === 'high');
+  const hiddenCount = sorted.length - visible.length;
+
+  const headline = visible[0];
+  const rest = visible.slice(1);
+  const detected = rest.filter((f) => f.nature === 'active');
+  const potential = rest.filter((f) => f.nature === 'latent');
+
+  if (report.findings.length === 0) {
+    return (
+      <section className="results">
+        <VerdictHeader report={report} />
+        <AvoidedSection avoided={report.avoided} />
+      </section>
+    );
+  }
+
+  return (
+    <section className="results">
+      <VerdictHeader report={report} />
+
+      {headline && (
+        <>
+          <h2>Start here</h2>
+          <FindingCard finding={headline} headline />
+        </>
+      )}
+
+      {detected.length > 0 && (
+        <>
+          <h2>More Detected Pitfalls — evident from what you shared</h2>
+          {detected.map((f, i) => (
+            <CollapsedFinding key={`d-${f.ruleId}-${i}`} finding={f} />
+          ))}
+        </>
+      )}
+
+      {(potential.length > 0 || hiddenCount > 0) && (
+        <>
+          <h2>Potential Pitfalls — verify these against your data</h2>
+          {potential.map((f, i) => (
+            <CollapsedFinding key={`p-${f.ruleId}-${i}`} finding={f} />
+          ))}
+          {hiddenCount > 0 && (
+            <button
+              type="button"
+              className="linklike showmore"
+              onClick={() => setShowAllPotential(true)}
+            >
+              Show {hiddenCount} more lower-confidence note{hiddenCount > 1 ? 's' : ''}
+            </button>
+          )}
+        </>
+      )}
+
+      <AvoidedSection avoided={report.avoided} />
+    </section>
+  );
+}
+
+function AvoidedSection({ avoided }: { avoided?: AvoidedPitfall[] }) {
+  if (!avoided || avoided.length === 0) return null;
+  return (
+    <>
+      <h2>Pitfalls Avoided — countermeasures visible in your work</h2>
+      {avoided.map((a) => (
+        <article className="avoided-item" key={a.ruleId}>
+          <p className="avoided-head">
+            <span className="check" aria-hidden>
+              ✓
+            </span>{' '}
+            <strong>{a.name}</strong> <span className="meta">{a.domain}</span>
+          </p>
+          <p>{a.explanation}</p>
+          {a.evidence && <p className="meta">Seen in: {a.evidence}</p>}
+        </article>
+      ))}
+    </>
+  );
+}
+
+function ConsequenceChip({ finding }: { finding: Finding }) {
+  if (finding.consequence) {
+    return (
+      <span className={`badge cons-${finding.consequence}`}>
+        {CONSEQUENCE_LABEL[finding.consequence]}
+      </span>
+    );
+  }
+  // Reports without consequence ratings (baseline engine runs) fall back to severity.
+  return <span className={`badge sev-${finding.severity}`}>{finding.severity.toUpperCase()}</span>;
+}
+
+function FindingBody({ finding }: { finding: Finding }) {
+  return (
+    <>
+      <p className="meta">
+        {finding.domain} · {finding.ruleId} · {finding.confidence} confidence
+      </p>
+      <p>
+        <strong>Why it matters:</strong> {finding.explanation}
+      </p>
+      {finding.nature === 'latent' && finding.condition && (
+        <p>
+          <strong>Only a problem if:</strong> {finding.condition}
+        </p>
+      )}
+      {finding.evidence && (
+        <p>
+          <strong>Where it shows up:</strong> {finding.evidence}
+        </p>
+      )}
+      <p>
+        <strong>How to avoid it:</strong> {finding.remediation}
+      </p>
+    </>
+  );
+}
+
+function FindingCard({ finding, headline = false }: { finding: Finding; headline?: boolean }) {
+  return (
+    <article className={`finding sev-${finding.severity}${headline ? ' headline' : ''}`}>
+      <div className="finding-head">
+        <ConsequenceChip finding={finding} />
+        <h3>{finding.name}</h3>
+      </div>
+      <FindingBody finding={finding} />
+    </article>
+  );
+}
+
+// A one-line row that expands on click — the name and chip carry the triage;
+// the full details are a click away for whoever wants them.
+function CollapsedFinding({ finding }: { finding: Finding }) {
+  return (
+    <details className={`finding collapsed sev-${finding.severity}`}>
+      <summary>
+        <ConsequenceChip finding={finding} />
+        <span className="collapsed-name">{finding.name}</span>
+      </summary>
+      <FindingBody finding={finding} />
+    </details>
+  );
+}

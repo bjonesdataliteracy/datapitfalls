@@ -18,9 +18,9 @@
 
 <br>
 
-[![Try it in your browser](https://img.shields.io/badge/▶_Try_it_in_your_browser-2ea44f?style=for-the-badge)](https://avoidingdatapitfalls.com)
+[![Try it in your browser](https://img.shields.io/badge/▶_Try_it_in_your_browser-2ea44f?style=for-the-badge)](https://www.avoidingdatapitfalls.com/scan)
 
-**[avoidingdatapitfalls.com](https://avoidingdatapitfalls.com)** — run a scan right now, no install required.
+**[avoidingdatapitfalls.com/scan](https://www.avoidingdatapitfalls.com/scan)**: run a scan right now, no install required. The [home page](https://www.avoidingdatapitfalls.com) covers the book, the Data Pitfalls MCP for Claude, and the [pitfall library](https://www.avoidingdatapitfalls.com/pitfalls).
 
 </div>
 
@@ -92,7 +92,7 @@ datapitfalls organizes every pitfall into one of eight domains — the pitfall c
 
 datapitfalls is designed around **four input modes**, so you can scan your work at whatever stage you're in.
 
-> ⚠️ **Status:** The datapitfalls **detection engine is live**, and you can use it two ways. The **command line** scans chart images, code snippets, and plain-English descriptions (modes 1–3 below), with a `--ci` exit code for pipelines. A **web app** (in [`web/`](web/)) does all of that in the browser and adds **document upload** — PDF read natively (so Claude reviews the prose *and* the charts and tables), Word `.docx`, **PowerPoint `.pptx` decks**, Jupyter notebooks, and code files — plus **multi-chart scans** that compare several charts at once. The web app is per-IP rate-limited, and your input is sent to the Claude API to run the scan but isn't stored by the app. Install the CLI and engine with `npm install datapitfalls`, or run the web app locally with `cd web && npm run dev`. Still planned: a public site at [avoidingdatapitfalls.com](https://www.avoidingdatapitfalls.com) — see the [Roadmap](ROADMAP.md).
+> ⚠️ **Status:** The datapitfalls **detection engine is live**, and you can use it two ways. The **command line** scans chart images, code snippets, and plain-English descriptions (modes 1–3 below), with a `--ci` exit code for pipelines. A **web app** (in [`web/`](web/)) does all of that in the browser and adds **document upload** — PDF read natively (so Claude reviews the prose *and* the charts and tables), Word `.docx`, **PowerPoint `.pptx` decks**, Jupyter notebooks, and code files — plus **multi-chart scans** that compare several charts at once. The web app is per-IP rate-limited, and your input is sent to the Claude API to run the scan but isn't stored by the app. Install the CLI and engine with `npm install datapitfalls`, or run the web app locally with `cd web && npm run dev`. It's live at [avoidingdatapitfalls.com/scan](https://www.avoidingdatapitfalls.com/scan).
 
 ### 1. Scan a chart image
 
