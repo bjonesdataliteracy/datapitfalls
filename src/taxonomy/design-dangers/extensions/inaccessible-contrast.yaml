@@ -29,6 +29,6 @@ remediation: >
   adjust until they pass. Don't trade legibility for a low-contrast aesthetic; verify
   with a contrast tool.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 7: Design Dangers (domain extension — not a specific sub-pitfall example in the book)"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 7: Design Dangers (domain extension — not a specific sub-pitfall example in the book)"
   - "W3C Web Content Accessibility Guidelines (WCAG) 2.1, Success Criterion 1.4.3 Contrast (Minimum)"
   - "https://www.avoidingdatapitfalls.com"

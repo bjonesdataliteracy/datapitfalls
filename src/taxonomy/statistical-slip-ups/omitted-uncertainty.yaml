@@ -30,5 +30,5 @@ remediation: >
   too small to support them, and call a difference real only when its intervals don't
   overlap (or a proper test confirms it).
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 4C: Slippery Sampling"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 4C: Slippery Sampling"
   - "https://www.avoidingdatapitfalls.com"

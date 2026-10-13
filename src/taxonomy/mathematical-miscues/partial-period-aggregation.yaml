@@ -32,5 +32,5 @@ remediation: >
   flag, or pro-rate any partial leading/trailing bucket, and never compare a partial
   period head-to-head with complete ones.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 3A: Aggravating Aggregations"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 3A: Aggravating Aggregations"
   - "https://www.avoidingdatapitfalls.com"

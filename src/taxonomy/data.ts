@@ -16,7 +16,7 @@ export const rules: PitfallRule[] = [
     "example_good": "\"This map shows where meteorite strikes have been observed and recorded since antiquity. The concentration over populated regions reflects reporting coverage, not a real tendency for meteorites to avoid the oceans, so we can't read it as a true strike-density map.\"\n",
     "remediation": "Name the measurement process before drawing conclusions: who collected the data, how, and what it could miss. Phrase findings as statements about the recorded data (\"reported crime,\" \"counter counts,\" \"recorded strikes\") rather than the phenomenon, and explicitly account for the gap when generalizing. Visualizing the data and investigating outliers, shifts, and trends often surfaces where the gap is hiding.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 1A: The Data-Reality Gap",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 1A: The Data-Reality Gap",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -31,7 +31,7 @@ export const rules: PitfallRule[] = [
     "example_good": "\"Roster weights show heavy heaping at multiples of 5 and 10 — a fingerprint of human-entered rounding — so we treat them as approximate. By contrast, the precisely measured Combine weights show a near-uniform last-digit distribution, which is what an instrument-based measurement looks like.\"\n",
     "remediation": "Re-examine the distribution at fine resolution (last-digit analysis or 1-unit bins) to expose heaping before trusting precision. Treat heaped values as approximate, avoid over-interpreting spikes at round numbers, and prefer instrument-measured data when the level of precision actually matters to the conclusion.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 1B: All Too Human Data",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 1B: All Too Human Data",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -46,7 +46,7 @@ export const rules: PitfallRule[] = [
     "example_good": "\"Eastbound crossings exceeded westbound in April 2014. That suggests a testable hypothesis — eastbound is usually higher — which I checked against other months and found false: westbound is typically higher, with a summer peak.\"\n",
     "remediation": "Keep singular (observed) and universal (general) statements distinct. State findings in the past tense, scoped to the data at hand. When you do generalize, frame it as an explicit, falsifiable hypothesis and test it against additional data rather than assuming the pattern holds beyond what you measured.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 1D: The Black Swan Pitfall",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 1D: The Black Swan Pitfall",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -61,7 +61,7 @@ export const rules: PitfallRule[] = [
     "example_good": "\"Recorded magnitude-6.0+ earthquakes have risen since 1900, but the increase is concentrated in the 6.0–6.9 band and coincides with major improvements in seismograph coverage. We therefore cannot conclude that actual seismic activity increased; the trend may largely reflect better detection.\"\n",
     "remediation": "Before reading a time trend as real, ask whether the measurement system changed over the period. Hold the method constant by restricting to a consistently measured subset (e.g. only the largest earthquakes, which were always detectable), annotate known instrumentation or definition changes on the chart, and scope claims to \"recorded\" counts when detection capability cannot be held constant.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 1A: The Data-Reality Gap (earthquake example)",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 1A: The Data-Reality Gap (earthquake example)",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -76,7 +76,7 @@ export const rules: PitfallRule[] = [
     "example_good": "\"Version B averaged 3.8 versus A's 3.6, but inter-rater spread was wide and a hidden duplicate item was scored differently by a third of the panel. We treat the gap as within noise and collect more ratings before concluding B is better.\"\n",
     "remediation": "Quantify rating reliability before trusting it: use multiple raters and report inter-rater agreement, embed repeated or duplicate items to measure intra-rater consistency, define each rating category operationally, and randomize presentation order to limit context effects. Treat small differences on noisy scales as inconclusive.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 1C: Inconsistent Ratings",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 1C: Inconsistent Ratings",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -91,7 +91,7 @@ export const rules: PitfallRule[] = [
     "example_good": "\"Our redesign will raise 30-day retention by at least 2 points. If retention is flat or lower in the A/B test, we will treat the hypothesis as disproven and roll the change back.\" The disconfirming result is defined in advance.\n",
     "remediation": "State hypotheses so that a specific, observable result would falsify them, and name that disconfirming result up front. Actively seek the evidence that could prove you wrong rather than only the evidence that confirms you, and treat a failed prediction as a valuable correction rather than a threat to defend against.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 1E: Falsifiability and the God Pitfall",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 1E: Falsifiability and the God Pitfall",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -106,7 +106,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The field is normalized first (trim, lowercase, then cluster near-duplicates with a fingerprint/Levenshtein method and apply a human-reviewed mapping table), so the 899 forms collapse to ~336 real makes before counting. After merging, Honda and Ford rise materially (+46% and +36%) and Volkswagen lands at 11th — a corrected ranking the raw counts had hidden.\n",
     "remediation": "Normalize categorical text before any group-by: standardize case and whitespace, then consolidate variants with clustering (OpenRefine fingerprint, Levenshtein) plus a human-reviewed mapping. Re-check the distinct-value count against a plausible domain size, and keep the mapping as an auditable artifact rather than editing values in place.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 2A: The Dirty Data Pitfall",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 2A: The Dirty Data Pitfall",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -121,7 +121,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The file is read with its actual encoding declared — `pd.read_csv('names.csv', encoding='utf-8')` (using `utf-8-sig` if a BOM is present) — so \"José\" and \"Łukasz\" survive intact. Encoding is fixed and verified at ingestion, and text is Unicode-normalized (e.g. NFC) before being used as a join key.\n",
     "remediation": "Always specify the encoding when reading and writing text; detect it explicitly (e.g. with chardet) rather than trusting platform defaults, and standardize on UTF-8 end to end. Handle BOMs (`utf-8-sig`), normalize Unicode before comparing or joining on text, and add a check that scans for mojibake markers so corruption fails loudly at ingestion rather than surfacing downstream.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 2: Technical Trespasses (domain extension — not a specific sub-pitfall example in the book)",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 2: Technical Trespasses (domain extension — not a specific sub-pitfall example in the book)",
       "Joel Spolsky (2003), 'The Absolute Minimum Every Software Developer Absolutely, Positively Must Know About Unicode and Character Sets (No Excuses!)'",
       "https://www.avoidingdatapitfalls.com"
     ]
@@ -137,7 +137,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The grain is reconciled before aggregating: either aggregate `shipments` to one row per `order_id` first, or sum `order_total` from `orders` alone and attach shipment facts separately. The merge runs with an explicit cardinality check (`pd.merge(..., validate='one_to_many')`) and the post-join row count is compared to the driving table, so unexpected multiplication fails loudly.\n",
     "remediation": "Establish the grain (the unit one row represents) of each input and the intended grain of the output before joining. Assert key uniqueness on the side that should be unique, aggregate the many-side to the target grain before joining, and compare row counts before and after. Treat any unexplained increase in row count as a fan-out until proven otherwise.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 2: Technical Trespasses (domain extension — not a specific sub-pitfall example in the book)",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 2: Technical Trespasses (domain extension — not a specific sub-pitfall example in the book)",
       "Ralph Kimball & Margy Ross, The Data Warehouse Toolkit (3rd ed., Wiley, 2013) — join grain and many-to-many fan traps",
       "https://www.avoidingdatapitfalls.com"
     ]
@@ -153,7 +153,7 @@ export const rules: PitfallRule[] = [
     "example_good": "Before joining, the analyst compares the key sets both ways (a Venn / anti-join), finds the 34 non-matching names, normalizes or maps them to a common standard (and adds Taiwan's population by hand), then joins and verifies the post-join row count and match rate. The corrected join retains every intended country and the ranking is complete.\n",
     "remediation": "Treat the join key as data to be cleaned: normalize representations (case, punctuation, known aliases) or map to a stable code (e.g. an ISO country code) rather than a display name. Inspect the non-matching rows with an anti-join, compare row counts before and after the join, and report the match rate so silent drops and null fills surface before you analyze the merged table.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 2B: Bad Blends and Joins",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 2B: Bad Blends and Joins",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -168,7 +168,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The loader declares the sentinels explicitly (`pd.read_csv(..., na_values=['', '?', 'Unknown', '0'])`) and keeps semantically different kinds of missing in distinct flags where the difference matters (blank = not recorded vs \"?\" = recorded-as-unknown). Numeric sentinels are converted to null before any arithmetic, so aggregates ignore them instead of treating 0 as a real year.\n",
     "remediation": "Inventory every value that means \"missing\" in each field and map them to true nulls at load time, while preserving meaningful distinctions between kinds of missingness in separate indicators. Never leave numeric sentinels (0, -1, 999) in a column you will sum, average, or take extremes of, and confirm placeholders don't survive into category counts.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 2A: The Dirty Data Pitfall",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 2A: The Dirty Data Pitfall",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -183,7 +183,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The analyst first measures the null rate and cross-tabs missingness against source, finding the nulls are concentrated at one yard (missing-not-at-random). They scope the analysis to the relevant yard (where only 0.8% is null), state that assumption explicitly, and report coverage (\"we have color for 97.3% of records at this yard\") instead of silently dropping a quarter of the data.\n",
     "remediation": "Before dropping nulls, quantify how much is missing and test whether missingness is associated with source, time, or group. If it is not random, don't filter blindly — segment, impute with a stated model, or scope and caveat the claim to the population actually observed. Always report the share excluded and the assumption that justifies excluding it.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 2A: The Dirty Data Pitfall",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 2A: The Dirty Data Pitfall",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -198,7 +198,7 @@ export const rules: PitfallRule[] = [
     "example_good": "Identifier columns are read as strings with explicit types — `pd.read_csv('addresses.csv', dtype={'zip': str})` (or `converters`) — so \"02134\" stays \"02134\". Columns that are codes, not quantities, are typed as text up front, and the join key's type is asserted equal on both sides before merging.\n",
     "remediation": "Declare types explicitly at every boundary instead of relying on inference. Treat identifiers (ZIP, FIPS, SKU, phone, account, order IDs) as strings, never numbers; pin dtypes on import; and verify that join keys share a type before merging. Validate that identifier widths and leading zeros survive the round trip.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 2: Technical Trespasses (domain extension — generalizes the two-digit-year example in Pitfall 2A)",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 2: Technical Trespasses (domain extension — generalizes the two-digit-year example in Pitfall 2A)",
       "Ziemann, Eren & El-Osta (2016), 'Gene name errors are widespread in the scientific literature,' Genome Biology 17:177 — spreadsheet auto-coercion of identifiers",
       "https://www.avoidingdatapitfalls.com"
     ]
@@ -214,7 +214,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The two-digit codes are mapped to full years with an explicit, documented century window justified by the data's known span (00–17 → 2000–2017, 18–99 → 1918–1999), e.g. `year = 2000 + yy if yy <= 17 else 1900 + yy`. The corrected column now averages to a sensible ~2005, and the windowing rule is recorded alongside the data so it can be reviewed.\n",
     "remediation": "Never average, sort, or threshold a two-digit year as a raw integer. Resolve the century explicitly with a window rule grounded in the data's real range, parse with full-year formats (`%Y`) at the source where possible, and validate the output range so impossible future years or pre-automobile years are caught. Document the disambiguation so the transformation is reproducible.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 2A: The Dirty Data Pitfall",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 2A: The Dirty Data Pitfall",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -229,7 +229,7 @@ export const rules: PitfallRule[] = [
     "example_good": "Denominators are guarded and thresholded: sites below a minimum baseline are excluded or flagged, zero denominators are handled explicitly, and rates over small counts are shown with their uncertainty (or smoothed) — so the ranking reflects real movement rather than small-denominator noise.\n",
     "remediation": "Guard every denominator before dividing: handle zero explicitly, set a minimum-sample threshold for rates, and treat percent changes off a tiny base with caution. Report or smooth the uncertainty of rates built on small counts so noisy values don't dominate comparisons.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 3: Mathematical Miscues (domain extension — not a specific sub-pitfall example in the book)",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 3: Mathematical Miscues (domain extension — not a specific sub-pitfall example in the book)",
       "Gelman & Price (1999), 'All maps of parameter estimates are misleading,' Statistics in Medicine 18 — instability of rates with small denominators",
       "https://www.avoidingdatapitfalls.com"
     ]
@@ -245,7 +245,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The series is reindexed onto every year from 1824 to 1849 with missing years filled at zero and shown explicitly (as discrete bars or points at zero), so the three nonproductive years are visible and the productivity pattern reads correctly — unless the domain is one where gaps are expected, in which case the handling is chosen deliberately and noted.\n",
     "remediation": "Decide explicitly how missing categories should render rather than accepting the software default. For dense series, reindex onto the full domain and show true zeros; for intermittent events, state that gaps are expected. Never let a continuous axis interpolate across a period that had no data.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 3B: Missing Values",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 3B: Missing Values",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -260,7 +260,7 @@ export const rules: PitfallRule[] = [
     "example_good": "Aggregate rows are identified and excluded before summing — `WHERE Sex <> 'Total' AND County <> 'California'` — or the detail grain is selected explicitly, yielding the correct ~3.74 million. The total rows are kept only as a cross-check, never added to the detail.\n",
     "remediation": "Inspect categorical fields for subtotal/total levels before aggregating, and filter them out (or select only the base grain). Sanity-check grand totals against an independent estimate, and treat any category that equals the sum of its siblings — or a total that is a clean multiple of the expected value — as an embedded-total red flag.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 3C: Tripping on Totals",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 3C: Tripping on Totals",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -275,7 +275,7 @@ export const rules: PitfallRule[] = [
     "example_good": "Money is stored as integer cents or a Decimal type, sums are taken in that exact representation, and comparisons use a tolerance (`abs(balance) < 0.005`) rather than exact equality — so the settled account reconciles to zero.\n",
     "remediation": "Use a decimal or integer (minor-unit) representation for money and other exact quantities, not binary floating point. When floats are unavoidable, compare with an explicit tolerance rather than `==`, and be mindful of error accumulation in long summations.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 3: Mathematical Miscues (domain extension — not a specific sub-pitfall example in the book)",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 3: Mathematical Miscues (domain extension — not a specific sub-pitfall example in the book)",
       "David Goldberg (1991), 'What Every Computer Scientist Should Know About Floating-Point Arithmetic,' ACM Computing Surveys 23(1)",
       "https://www.avoidingdatapitfalls.com"
     ]
@@ -291,7 +291,7 @@ export const rules: PitfallRule[] = [
     "example_good": "At least one operand is cast to a floating/decimal type before dividing — `successes * 1.0 / attempts` or `CAST(successes AS FLOAT) / attempts` (Python 3's `/` already does true division) — so 3 / 10 correctly returns 0.3.\n",
     "remediation": "Ensure at least one operand is a real/float/decimal type before dividing when a fractional result is intended, and cast explicitly rather than relying on the language default. Validate that computed rates fall across a plausible continuous range instead of collapsing to 0 or 1.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 3: Mathematical Miscues (domain extension — not a specific sub-pitfall example in the book)",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 3: Mathematical Miscues (domain extension — not a specific sub-pitfall example in the book)",
       "Python PEP 238 — Changing the Division Operator (true division vs floor division)",
       "https://www.avoidingdatapitfalls.com"
     ]
@@ -307,7 +307,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The analyst is explicit about which question is being answered: report the mean magnitude as a summary of the magnitude scale itself (equivalently, the geometric mean of energy), or — to summarize the physical quantity — convert magnitudes to energy, average in energy units, and convert back. The scale and its meaning are stated.\n",
     "remediation": "Decide whether you want the average of the scale or the average of the underlying quantity. For the physical quantity, transform to linear units (energy, concentration, intensity, dollars), average there, then transform back if needed. When you do average on the log scale, label it as such — it is the geometric mean of the quantity, not its arithmetic mean.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 3: Mathematical Miscues (domain extension — not a specific sub-pitfall example in the book)",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 3: Mathematical Miscues (domain extension — not a specific sub-pitfall example in the book)",
       "Limpert, Stahel & Abbt (2001), 'Log-normal Distributions across the Sciences,' BioScience 51(5) — the geometric mean and log-scale data",
       "https://www.avoidingdatapitfalls.com"
     ]
@@ -323,7 +323,7 @@ export const rules: PitfallRule[] = [
     "example_good": "Units are confirmed from the metadata and normalized before any math — converting lbf-s to N-s (or all revenue to a single currency) up front. Mixed-unit fields are converted via their accompanying UoM column (IF/THEN per unit) into a common unit before aggregation, and the unit is documented.\n",
     "remediation": "Consult the metadata for every field's unit of measure before calculating; if it is missing, demand it. Convert all values to a common unit before combining them, handle mixed-unit fields by branching on their UoM column, and validate results against expected magnitudes so an order-of-magnitude unit error surfaces immediately.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 3E: Unmatching Units",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 3E: Unmatching Units",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -338,7 +338,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The analyst first checks the data's date range (earliest Jan 1 2000, latest Jul 31 2017), recognizes 2017 is partial, and either excludes the incomplete period, annotates it clearly (\"2017 partial — through Jul 31\"), or annualizes it before comparing — so no false decline is read into the trend.\n",
     "remediation": "Before trending aggregated periods, explore the contours of the data: record the minimum and maximum timestamp and compare them to the bucket boundaries. Drop, flag, or pro-rate any partial leading/trailing bucket, and never compare a partial period head-to-head with complete ones.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 3A: Aggravating Aggregations",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 3A: Aggravating Aggregations",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -353,7 +353,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The change is stated unambiguously — \"approval rose 4 percentage points (from 40% to 44%), a 10% relative increase\" — distinguishing the absolute point change from the relative percent change so neither is misread.\n",
     "remediation": "Decide whether you mean an absolute change (percentage points) or a relative change (percent), compute it accordingly, and label it explicitly. Never write \"%\" for a difference between two percentages when you mean percentage points.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 3: Mathematical Miscues (domain extension — not a specific sub-pitfall example in the book)",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 3: Mathematical Miscues (domain extension — not a specific sub-pitfall example in the book)",
       "Darrell Huff, How to Lie with Statistics (Norton, 1954) — the misuse of percentages",
       "https://www.avoidingdatapitfalls.com"
     ]
@@ -369,7 +369,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The analyst equalizes coverage before comparing — restricting to complete years, or averaging strikes per month-year rather than summing raw totals — so each month reflects the same number of contributing periods and the ranking (August highest) is accurate.\n",
     "remediation": "When comparing aggregated categories, verify each bucket draws on the same number of underlying periods/records. Normalize to a per-period rate or average, or trim the data to a span with equal coverage, before ranking or comparing category totals.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 3A: Aggravating Aggregations",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 3A: Aggravating Aggregations",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -384,7 +384,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The regional figure is rebuilt from the components: estimate each country's urban population (percent × total population), sum those numerators, and divide by the summed populations — yielding ≈81.81%, very close to the U.S. value because the U.S. dominates the region's population.\n",
     "remediation": "Never average or sum rates directly across unequal groups. Carry the numerator and denominator through the aggregation and recompute the rate at the target level (a weighted average using each group's denominator as the weight). If the denominators aren't available, obtain them — the rate alone cannot be aggregated.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 3D: Preposterous Percents",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 3D: Preposterous Percents",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -399,7 +399,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The figure is reported with its distribution: \"median ≈$0.9M; 77% earn below the $1.5M mean, which is inflated by a few very high earners,\" ideally with a histogram — so readers see the skew instead of assuming a typical ≈$1.5M player.\n",
     "remediation": "Before calling any average \"typical,\" inspect the distribution's shape. Report the median (and the mode where relevant) alongside the mean, show the spread or a histogram, and for skewed/multimodal/heavy-tailed data lead with the median or describe the distribution rather than a single central value.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 4A: Descriptive Debacles",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 4A: Descriptive Debacles",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -414,7 +414,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The analyst pre-registers the key hypotheses or applies a multiple-comparison correction (e.g. Benjamini-Hochberg) across all 40 tests, reports how many comparisons were made, and treats surprising findings as hypotheses to confirm on fresh data before claiming them.\n",
     "remediation": "Account for the number of comparisons: correct p-values (Bonferroni or FDR), pre-register primary hypotheses, and report every test run, not just the significant ones. Treat findings from large exploratory searches as provisional until replicated on independent data.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 4B: Inferential Infernos",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 4B: Inferential Infernos",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -429,7 +429,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The company reports the response rate, compares responders to the full customer base on known attributes, weights or adjusts for the difference (or follows up with a sample of non-responders), and frames the result as \"92% of the 8% who responded,\" caveating the generalization.\n",
     "remediation": "Always report the response rate and consider how non-responders might differ from responders. Compare responders to the known population, weight or adjust for nonresponse, follow up with a subsample of non-responders, and scope claims to what the responding sample can actually support.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 4: Statistical Slip-Ups (domain extension — not a specific sub-pitfall example in the book)",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 4: Statistical Slip-Ups (domain extension — not a specific sub-pitfall example in the book)",
       "Literary Digest 1936 U.S. presidential poll (nonresponse and frame bias); Groves et al., Survey Methodology (2nd ed., Wiley, 2009)",
       "https://www.avoidingdatapitfalls.com"
     ]
@@ -445,7 +445,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The distribution is checked first (histogram/Q-Q plot); recognizing it is power-law, the analysts describe it with quantiles, a log scale, or tail statistics (Pareto share) instead of mean ± SD, and avoid Z-score/σ claims that assume normality.\n",
     "remediation": "Verify the distribution before applying normal-theory tools. Use a histogram or Q-Q plot and a normality test; for non-normal data prefer robust or quantile summaries, log transforms, or distribution-appropriate models, and don't quote σ-based probabilities (68-95-99.7, Z-scores, Six Sigma) for data that isn't normal.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 4A: Descriptive Debacles",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 4A: Descriptive Debacles",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -460,7 +460,7 @@ export const rules: PitfallRule[] = [
     "example_good": "Each rate is shown with its binomial confidence interval (error bars), cells with too few samples to support an estimate are dropped or flagged, and only differences whose intervals separate are described as real — so the chart distinguishes signal from noise.\n",
     "remediation": "Attach uncertainty to every estimate: confidence intervals or error bars on rates and means, margins of error on rankings. Suppress or caveat estimates from samples too small to support them, and call a difference real only when its intervals don't overlap (or a proper test confirms it).\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 4C: Slippery Sampling",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 4C: Slippery Sampling",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -475,7 +475,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The result is stated carefully: \"assuming no real effect, data this extreme would occur about 3% of the time; together with the effect size and CI this is suggestive but not proof,\" and replication or further evidence is sought rather than treating a single p-value as definitive.\n",
     "remediation": "Interpret a p-value as evidence about the data under the null, never as the probability the hypothesis is true or as proof. Always pair it with the effect size and a confidence interval, consider statistical power before reading a high p as \"no effect,\" and seek replication rather than a single significant/not-significant verdict.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 4B: Inferential Infernos",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 4B: Inferential Infernos",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -490,7 +490,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The evaluation uses a randomized control group (some low performers get the program, some don't), or models the expected regression, so the program's effect is measured against what would have happened by chance alone — separating real impact from regression to the mean.\n",
     "remediation": "When units are selected for being extreme, expect regression toward the mean on re-measurement and don't credit it to an intervention. Use a control group or a proper baseline model, and avoid selecting and evaluating on the same noisy measure.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 4: Statistical Slip-Ups (domain extension — not a specific sub-pitfall example in the book)",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 4: Statistical Slip-Ups (domain extension — not a specific sub-pitfall example in the book)",
       "Galton, F. (1886), 'Regression Towards Mediocrity in Hereditary Stature,' J. Anthropological Institute; Kahneman, Thinking, Fast and Slow (2011)",
       "https://www.avoidingdatapitfalls.com"
     ]
@@ -506,7 +506,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The analyst compares the two hospitals within each severity tier (stratifying on the confounder), finds the larger hospital does better in every tier, and reports the stratified result — or a case-mix-adjusted rate — rather than the misleading pooled number.\n",
     "remediation": "When comparing aggregate rates across groups, check whether a confounding variable differs in composition between them, and compare within strata as well as in aggregate. If the two views disagree, prefer the stratified or covariate-adjusted comparison and report the confounder explicitly.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 4: Statistical Slip-Ups (domain extension — not a specific sub-pitfall example in the book)",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 4: Statistical Slip-Ups (domain extension — not a specific sub-pitfall example in the book)",
       "Simpson, E.H. (1951), 'The Interpretation of Interaction in Contingency Tables,' J. Royal Statistical Society B; Bickel et al. (1975), UC Berkeley admissions, Science",
       "https://www.avoidingdatapitfalls.com"
     ]
@@ -522,7 +522,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The analyst plots rate against population (revealing the telltale funnel), applies a minimum-sample threshold or shrinks small-county rates toward the overall mean (empirical Bayes), and treats extreme values from tiny samples as likely noise rather than signal before theorizing.\n",
     "remediation": "Account for sample size whenever comparing rates across units: visualize rate versus sample size (a funnel plot), set a minimum-sample threshold, or use shrinkage/empirical-Bayes estimates that pull small-sample rates toward the overall average. Before explaining why a small unit is extreme, first rule out chance.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 4D: Insensitivity to Sample Size",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 4D: Insensitivity to Sample Size",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -537,7 +537,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The report leads with the effect size and its confidence interval (\"≈2 days, 95% CI 1–3 days\") and judges it against a clinically meaningful threshold, concluding the effect is statistically detectable but not practically important — keeping significance and importance distinct.\n",
     "remediation": "Always report and lead with the effect size (in meaningful units) and its confidence interval, not just the p-value. Decide in advance what magnitude would be practically important, and interpret statistical significance — especially in large samples — separately from real-world significance.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 4B: Inferential Infernos",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 4B: Inferential Infernos",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -552,7 +552,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The analysis explicitly accounts for the non-survivors — modeling where downed planes were likely hit, or including churned/closed/failed cases alongside the survivors — so conclusions reflect the full population (armor the areas the survivors were not hit) rather than the survivors alone.\n",
     "remediation": "Identify the selection process and ask what was filtered out before the data reached you. Include the non-survivors where possible, or explicitly scope claims to the surviving subpopulation, and never generalize from survivors to the whole without accounting for what's missing.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 4: Statistical Slip-Ups (domain extension — not a specific sub-pitfall example in the book)",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 4: Statistical Slip-Ups (domain extension — not a specific sub-pitfall example in the book)",
       "Abraham Wald, Statistical Research Group (1943), analysis of armor placement on returning WWII aircraft",
       "https://www.avoidingdatapitfalls.com"
     ]
@@ -568,7 +568,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The analyst compares like with like — grocery-to-grocery, sushi-to-sushi — or standardizes each city to a common subcategory mix, and reports only the comparisons the sampling supports, acknowledging that the unstratified overall rates aren't a fair city-to-city comparison.\n",
     "remediation": "Compare groups within consistent strata, or directly standardize/weight them to a common composition before comparing aggregate rates. Inspect each group's subcategory mix for imbalance, prefer a stratified sampling plan up front, and draw only the comparisons the sampling design actually supports.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 4C: Slippery Sampling",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 4C: Slippery Sampling",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -583,7 +583,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The team runs an appropriate hypothesis test (or computes confidence intervals) accounting for sample size and variability, and claims a real effect only if the difference is unlikely under chance — otherwise reporting \"no significant difference detected,\" with the observed effect and its uncertainty.\n",
     "remediation": "Don't infer a real difference from raw numbers alone. Quantify uncertainty — run a suitable significance test or compute confidence intervals that account for sample size and variation — and report the effect with its uncertainty rather than treating any gap as decisive.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 4B: Inferential Infernos",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 4B: Inferential Infernos",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -598,7 +598,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The analysis controls for the confounder — stratifying or adjusting for smoking, or randomizing — and finds the coffee association largely disappears, so it reports the adjusted effect and names the confounder rather than the naive association.\n",
     "remediation": "Identify plausible common causes before drawing conclusions, and control for them by randomization, stratification, matching, or regression adjustment. Compare only groups that are otherwise comparable, report which confounders were accounted for, and treat unadjusted observational effects as provisional.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 5: Analytical Aberrations (domain extension — not a specific sub-pitfall example in the book)",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 5: Analytical Aberrations (domain extension — not a specific sub-pitfall example in the book)",
       "Judea Pearl, Causality (2nd ed., Cambridge University Press, 2009); R.A. Fisher, The Design of Experiments (1935)",
       "https://www.avoidingdatapitfalls.com"
     ]
@@ -614,7 +614,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The team treats the correlation as a hypothesis and tests it causally — a randomized experiment (some users prompted to use X, some not), or at minimum controlling for engagement and considering reverse causation — before claiming X reduces churn or acting on it.\n",
     "remediation": "Don't infer causation from correlation. Establish cause with a randomized experiment where feasible; otherwise control for plausible confounders, weigh reverse causation and coincidence, and use causal-inference methods. State clearly when a relationship is only associational and shouldn't drive interventions.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 5: Analytical Aberrations (domain extension — not a specific sub-pitfall example in the book)",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 5: Analytical Aberrations (domain extension — not a specific sub-pitfall example in the book)",
       "Judea Pearl, Causality: Models, Reasoning, and Inference (2nd ed., Cambridge University Press, 2009)",
       "https://www.avoidingdatapitfalls.com"
     ]
@@ -630,7 +630,7 @@ export const rules: PitfallRule[] = [
     "example_good": "Performance is judged on a balanced set including an outcome metric (issues resolved and staying resolved, customer satisfaction) alongside activity, with counter-metrics that catch gaming, and the metrics are revisited as behavior adapts — so no single number can be gamed at the goal's expense.\n",
     "remediation": "Don't manage by a single proxy target. Pair each metric with a counter-metric, anchor incentives to outcome measures rather than easily-gamed activity, monitor whether the proxy still correlates with the true goal once it's targeted, and revise metrics as people adapt to them.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 5E: Moronic Measures (domain extension — generalizes the metric-gaming caution in the book)",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 5E: Moronic Measures (domain extension — generalizes the metric-gaming caution in the book)",
       "Goodhart, C.A.E. (1975); Marilyn Strathern (1997), 'Improving ratings: audit in the British University system,' European Review",
       "https://www.avoidingdatapitfalls.com"
     ]
@@ -646,7 +646,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The team uses domain intuition to frame the questions worth asking and to vet which discovered patterns are meaningful, then lets the analysis supply and quantify the evidence — combining the two (\"intuition guides the analysis, analysis checks the intuition\") rather than replacing one with the other.\n",
     "remediation": "Treat intuition and analysis as complementary. Keep a human-judgment step in the loop to choose which questions and metrics matter, to interpret results, and to separate useful patterns from noise — and use data to test and refine intuition rather than to abolish it. Document the domain rationale behind what's measured and acted on.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 5A: The Intuition/Analysis False Dichotomy",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 5A: The Intuition/Analysis False Dichotomy",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -661,7 +661,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The full annual series is plotted between the endpoints, revealing the wars, stagnations, and year-to-year noise the two-point view erased — and the sampling rate is chosen fine enough to capture the variation that matters before drawing conclusions.\n",
     "remediation": "Choose a sampling/aggregation rate fine enough to capture the variation relevant to the question, and don't treat lines between sparse points as real data. Before concluding from endpoints, inspect the intermediate values, and be explicit that interpolated points are fabricated, not measured.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 5C: Ill-Advised Interpolations",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 5C: Ill-Advised Interpolations",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -676,7 +676,7 @@ export const rules: PitfallRule[] = [
     "example_good": "Players are evaluated primarily on an output/impact metric (e.g. PIE), with activity metrics like average speed treated as secondary context (useful for recovery or pacing, not for ranking contribution) — and any proxy is validated against the outcome it's meant to represent before being used to judge.\n",
     "remediation": "Measure the outcome that actually matters: prefer output/results metrics over activity or opinion proxies, and validate that any proxy correlates with true impact before ranking on it. Pair metrics so a single number can't be gamed, get stakeholder buy-in, and don't judge performance by a metric just because it's easy to collect.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 5E: Moronic Measures",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 5E: Moronic Measures",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -691,7 +691,7 @@ export const rules: PitfallRule[] = [
     "example_good": "Candidate models are compared on held-out or cross-validated error (not training fit), penalized for complexity, and judged on whether their shape is theoretically sensible — so a simpler, well-behaved model is preferred over a polynomial that overfits and explodes out-of-sample.\n",
     "remediation": "Never select a predictive model on in-sample fit alone. Use cross-validation or a holdout set, penalize complexity (AIC/BIC, regularization), prefer the simplest model consistent with the data and theory, and reject any model whose extrapolations are implausible no matter how high its R².\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 5B: Exuberant Extrapolations",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 5B: Exuberant Extrapolations",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -706,7 +706,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The analyst de-trends or differences the series before correlating, requires a plausible mechanism, and confirms any candidate relationship on independent data — recognizing that two trending series will correlate by construction and that one strong pair out of many is expected by chance.\n",
     "remediation": "Treat a bare correlation as weak evidence. De-trend time series before correlating, demand a plausible mechanism, correct for how many pairs were examined, and confirm on out-of-sample data. A coincidental correlation with no mechanism and no replication is not a finding.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 5: Analytical Aberrations (domain extension — not a specific sub-pitfall example in the book)",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 5: Analytical Aberrations (domain extension — not a specific sub-pitfall example in the book)",
       "Yule, G.U. (1926), 'Why Do We Sometimes Get Nonsense-Correlations between Time-Series?', J. Royal Statistical Society; Tyler Vigen, Spurious Correlations (Hachette, 2015)",
       "https://www.avoidingdatapitfalls.com"
     ]
@@ -722,7 +722,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The forecast respects domain limits (a saturating/logistic curve toward a plausible asymptote), is restricted to a near horizon, and is shown with an uncertainty band that widens the farther it extends — and the analyst notes that a high historical R² doesn't guarantee the trend continues.\n",
     "remediation": "Don't project a trend past the data without justification. Bound forecasts by domain knowledge (ceilings, saturation), prefer models that capture the expected nonlinearity, widen uncertainty with extrapolation distance, and treat in-sample fit as no evidence of out-of-sample behavior. Validate extrapolations against plausibility.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 5B: Exuberant Extrapolations",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 5B: Exuberant Extrapolations",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -737,7 +737,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The analyst validates before interpreting: checks cluster quality (e.g. silhouette), tests stability across seeds and several values of k, and compares the result to known domain structure — then labels and reasons about clusters only to the extent the validation supports, framing them as provisional rather than definitive types.\n",
     "remediation": "Treat clusters as hypotheses, not findings, until validated. Justify the number of clusters with more than an eyeballed elbow (silhouette, gap statistic, stability across seeds/k), check sensitivity to feature scaling, and compare to external or domain-known groupings. Don't assign authoritative labels to clusters you haven't shown to be real and stable.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 5: Analytical Aberrations (domain extension — not a specific sub-pitfall example in the book)",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 5: Analytical Aberrations (domain extension — not a specific sub-pitfall example in the book)",
       "Rousseeuw (1987), 'Silhouettes: a graphical aid to the interpretation and validation of cluster analysis,' J. Computational and Applied Mathematics 20",
       "https://www.avoidingdatapitfalls.com"
     ]
@@ -753,7 +753,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The forecast models the variable's cyclicality and uncertainty, presents scenarios (including downturns) with probabilities or bands instead of a single reassuring line, and is honest when the realistic outlook isn't a clean reversion to a comfortable baseline.\n",
     "remediation": "Build forecasts from the variable's actual dynamics (cyclicality, volatility, mean-reversion speed) rather than defaulting to a comfortable baseline. Present uncertainty bands and downside scenarios, back-test the forecasting approach against history, and be wary when every forecast conveniently predicts a return to normal.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 5D: Funky Forecasts",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 5D: Funky Forecasts",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -768,7 +768,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The data is shown in a flat 2D chart (a plain pie/bar, or better a bar chart for precise comparison) where each mark's size encodes its value honestly, with no perspective, extrusion, or occlusion distorting the comparison.\n",
     "remediation": "Drop gratuitous 3D and perspective effects; use flat 2D encodings so size and length map directly to value. Reserve a true third spatial dimension only for data that genuinely has three continuous dimensions, and never tilt or extrude a chart for decoration.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)",
       "Edward Tufte, The Visual Display of Quantitative Information (2nd ed., Graphics Press, 2001) — the lie factor",
       "https://www.avoidingdatapitfalls.com"
     ]
@@ -784,7 +784,7 @@ export const rules: PitfallRule[] = [
     "example_good": "Alongside the share snapshot, a timeline shows theft's growing proportion over the period, and the data's caveats (reported-not-actual, excluded crime categories, possible reporting-policy changes) are stated on or near the chart — so the audience gets the fuller, fairer picture.\n",
     "remediation": "Ask what the most important fact about the data is and make sure the visual conveys it, not just a true-but-incomplete snapshot; add the trend or breakdown that changes the interpretation. Always present the data's known caveats and exclusions with the chart rather than omitting them.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6A: Challenging Charts",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 6A: Challenging Charts",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -799,7 +799,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The chart type is judged on fit to the task: the word cloud is accepted for the at-a-glance-gist scenario where precise comparison isn't needed, while a bar chart is chosen when precise magnitude matters — keeping all types in the toolkit and selecting by context.\n",
     "remediation": "Treat chart types as a toolkit, not a list of sanctioned and forbidden options. Judge a visualization by how well it serves its objective, audience, and context, keep less-common types available for the cases where they fit, and avoid blanket \"good/bad\" verdicts when critiquing others' work.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6B: Data Dogmatism",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 6B: Data Dogmatism",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -814,7 +814,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The part-to-whole point is shown with a pie or treemap whose three highlighted segments visibly reach ~75% of the whole — and only if the data is a legitimate whole; if heavy caveats mean it isn't, a non-part-to-whole encoding (like a bar chart) is used and the caveats are stated.\n",
     "remediation": "Match the encoding to the comparison: use a unified part-to-whole form (pie, treemap, stacked bar) for share-of-total messages, and separated marks for part-to-part. First confirm the data is a legitimate whole; if it isn't, avoid part-to-whole encodings or disclose what's excluded.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6A: Challenging Charts",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 6A: Challenging Charts",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -829,7 +829,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The trend is shown over the full available period (with the window of interest highlighted if needed), so the audience sees the recent movement in the context of the long-run trend and isn't misled by a cherry-picked slice.\n",
     "remediation": "Show data over a range justified by the question, and check whether the message survives when the window is extended. Disclose why a particular window was chosen, highlight rather than crop the broader context, and stay alert that a short slice can reverse a long-run trend.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6A: Challenging Charts",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 6A: Challenging Charts",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -845,7 +845,7 @@ export const rules: PitfallRule[] = [
     "remediation": "Drive every mark's size from the data through one consistent scale, and check the rendered sizes against the labels (a value twice another should look twice as big). Keep the lie factor at 1: don't hand-size marks, don't start a length-based axis off zero, and if a non-linear scale is genuinely needed, label it clearly so readers can decode the sizes.\n",
     "references": [
       "Edward Tufte, The Visual Display of Quantitative Information (2nd ed., Graphics Press, 2001) — the lie factor and graphical integrity",
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -860,7 +860,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The relationship is shown without scale trickery — indexing both series to a common base (e.g. % change from the start), using small multiples, or plotting one against the other in a scatterplot — so any co-movement reflects the data. If a dual axis is unavoidable, the scales are aligned on a principled basis and labeled clearly.\n",
     "remediation": "Avoid dual axes when the message is about how two series relate; prefer indexing to a common baseline, small multiples, or a scatterplot. If a secondary axis is truly necessary, fix the scales on a principled, disclosed basis and don't let arbitrary scaling manufacture crossovers or co-movement.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)",
       "Alberto Cairo, How Charts Lie (Norton, 2019) — dual axes and scale manipulation",
       "https://www.avoidingdatapitfalls.com"
     ]
@@ -876,7 +876,7 @@ export const rules: PitfallRule[] = [
     "example_good": "Before claiming a trend, the analyst views the series on a control chart (or runs a signal-vs-noise test), distinguishing genuine signals (runs, shifts, points beyond the limits) from noise — and tempers the \"rising\" claim to what the data actually supports.\n",
     "remediation": "Slow down in exploration: before treating a visual pattern as real, check it against a method that separates signal from noise (control chart, run rules, significance test). Don't publish the first striking chart; confirm the pattern exceeds normal variation.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6A: Challenging Charts",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 6A: Challenging Charts",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -891,7 +891,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The same map uses a single-hue sequential ramp from pale yellow to deep red in which each higher class is strictly darker, so the states viewers perceive as most intense are exactly the states with the most cases — with or without reading the legend.\n",
     "remediation": "Make the perceived order of the encoding match the data's order. Use a single-hue or perceptually uniform sequential ramp for ordered data, keep lightness strictly monotonic across bins, keep pattern fills out of color ramps, and give the most extreme class the most extreme color. Before publishing, read the legend top-to-bottom against the data order and squint-test the chart: the values that should dominate visually are the values that dominate numerically.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)",
       "Munzner (2014), Visualization Analysis and Design, ch. 5 — channel effectiveness for ordered attributes",
       "https://www.avoidingdatapitfalls.com"
     ]
@@ -907,7 +907,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The ticks carry distinct, monotonically ordered labels at a consistent interval — 5'5\", 5'6\", 5'7\", 5'8\", 5'9\", 5'10\" — so every gridline maps unambiguously to one value. If rounding would collapse distinct values to the same label, precision is increased or the interval widened so each tick stays unique.\n",
     "remediation": "Let the plotting library derive ticks from the scale rather than hand-labeling them, and keep the tick formatter precise enough that adjacent labels stay distinct. Before publishing, read the axis top to bottom (or left to right) and confirm the labels are unique where they should be and run monotonically — an axis a reader can't decode is worse than no axis at all.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)",
       "Alberto Cairo, How Charts Lie (Norton, 2019) — dubious and self-contradictory chart scales",
       "https://www.avoidingdatapitfalls.com"
     ]
@@ -924,7 +924,7 @@ export const rules: PitfallRule[] = [
     "remediation": "Put charts meant to be compared on a single shared scale — same axis range, units, and transform — ideally as true small multiples. If a panel genuinely needs its own scale, make that unmistakable (clear per-panel axis labels, or don't place it where readers will compare it directly).\n",
     "references": [
       "Edward Tufte, The Visual Display of Quantitative Information (2nd ed., Graphics Press, 2001) — small multiples and consistent scales",
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -939,7 +939,7 @@ export const rules: PitfallRule[] = [
     "example_good": "A bar chart with a common baseline (optionally with value labels and gridlines) is used, so the slightly longer assault bar makes the precise comparison immediately clear — the encoding affords the precision the message requires.\n",
     "remediation": "When the message depends on a precise or close comparison, use a position/length encoding with a common baseline (bar chart), and add data labels or gridlines if even finer precision is needed. Reserve area/angle encodings for cases where approximate magnitude is enough.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6A: Challenging Charts",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 6A: Challenging Charts",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -954,7 +954,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The team weighs the payoff across the factors that matter for the goal (comprehension plus attention, impact, aesthetics, memorability, behavior), optimizes when the problem is tractable and time allows, and otherwise satisfices to a stated acceptability threshold — acknowledging both approaches are legitimate.\n",
     "remediation": "Don't treat optimize versus satisfice as either/or, and don't judge visualizations on comprehensibility alone. Define the payoff factors that matter for the specific goal and audience, optimize when tractable and time permits, satisfice to an explicit threshold otherwise, and accept that more than one design can be fit for purpose.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6C: The Optimize/Satisfice False Dichotomy",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 6C: The Optimize/Satisfice False Dichotomy",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -969,7 +969,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The focus series (shoplifting) is given a bold, unique color while the rest are de-emphasized with transparency or gray, the number of fully-colored series is kept within the palette, and the chart reads clearly in static form without requiring interaction.\n",
     "remediation": "Reduce what's in the view and build a visual hierarchy: emphasize the focus series with a distinct color, mute or aggregate the rest, and keep the number of distinctly-colored categories within the palette's size. Ensure the chart conveys its point statically, without relying on hover or click.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6A: Challenging Charts",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 6A: Challenging Charts",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -984,7 +984,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The same heatmap uses a perceptually uniform sequential scale (e.g. viridis), so equal steps in value look like equal steps in color, no false boundaries appear, the gradient is visible throughout, and the palette stays legible to colorblind viewers.\n",
     "remediation": "Encode ordered/continuous data with a perceptually uniform or single-hue sequential scale (viridis, cividis, ColorBrewer sequential), and reserve hue for categorical distinctions. Check palettes for colorblind safety, and avoid rainbow/jet ramps for magnitude.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)",
       "Borland & Taylor (2007), 'Rainbow Color Map (Still) Considered Harmful,' IEEE Computer Graphics & Applications 27(2)",
       "https://www.avoidingdatapitfalls.com"
     ]
@@ -1000,7 +1000,7 @@ export const rules: PitfallRule[] = [
     "example_good": "A chart is added with time on the x-axis (altitude or cumulative distance on the y-axis), making the ascent time directly readable — the encoding is chosen to fit the specific question rather than defaulting to whatever the tool produced.\n",
     "remediation": "Start from the user and their task: define who will use the view, what question it must answer, the relevant data, and the performance needs, then choose the encoding (especially which variable goes on each axis) that lets them read the answer directly. Validate the chart against real usage, not a chart-chooser checklist.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6A: Challenging Charts",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 6A: Challenging Charts",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -1015,7 +1015,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The same bars are drawn with the value axis starting at zero, so their lengths reflect the true proportional differences — or, if the small change is the real story, it's shown with a line chart, a dot plot, or an explicit percentage-change label that doesn't rely on bar length.\n",
     "remediation": "Start the value axis at zero for bar/column/area charts so length encodes value honestly. If small differences are the point, switch to an encoding that doesn't rely on length (line, dot plot, or a stated delta) rather than truncating the baseline of bars.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6: Graphical Gaffes (domain extension — the chapter mentions y-axis truncation only in passing, not as a sub-pitfall)",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 6: Graphical Gaffes (domain extension — the chapter mentions y-axis truncation only in passing, not as a sub-pitfall)",
       "Darrell Huff, How to Lie with Statistics (Norton, 1954); Alberto Cairo, How Charts Lie (Norton, 2019)",
       "https://www.avoidingdatapitfalls.com"
     ]
@@ -1031,7 +1031,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The same series is plotted on a continuous (quantitative or date-typed) axis, so the 1985-1995 gap is ten slots wide and the annual surveys cluster tightly; markers show where measurements actually occurred, and the varying steepness between them now honestly reflects change per unit of the axis variable.\n",
     "remediation": "Plot the axis variable on a continuous (quantitative or date-typed) scale so distance is proportional to difference — for time that means keeping dates as dates rather than strings, or switching the axis from categorical/discrete to continuous; for any other numeric field, use a linear scale rather than one evenly spaced tick per observation. Mark the observed points so sparse coverage stays visible, and if the gaps are large, consider annotating them rather than letting equal spacing paper over them.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)",
       "Alberto Cairo, How Charts Lie (Norton, 2019) — distorted and dubious chart scales",
       "https://www.avoidingdatapitfalls.com"
     ]
@@ -1047,7 +1047,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The encoding uses a colorblind-safe palette (e.g. blue/orange) and adds a redundant channel — an icon, label, or position — so the at-risk/healthy distinction is legible to everyone, and the palette is verified with a colorblind simulator.\n",
     "remediation": "Choose colorblind-safe palettes (avoid red-green for meaningful distinctions), and never let color be the only channel carrying information — add shape, text, position, or lightness as a redundant cue. Test palettes with a color-vision- deficiency simulator before shipping.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 7A: Confusing Colors",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 7A: Confusing Colors",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -1062,7 +1062,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The team watches real users interact, writes down every slip and mistake instead of blaming the tester, and iterates the design to prevent those errors — assuming that if one tester erred, many real users will, and the only chance to fix it is to prevent it.\n",
     "remediation": "Treat user errors as design defects: build, test with real users, watch where they slip or misinterpret, and iterate to prevent it rather than explaining it away. Design out easy wrong actions and misleading defaults, and remember you won't be there to correct users later.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 7C: Usability Uh-Ohs",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 7C: Usability Uh-Ohs",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -1077,7 +1077,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The same labels are darkened to meet at least WCAG AA (4.5:1 for normal text) — e.g. dark gray on white — and contrast is verified with a checker, so the text is legible across vision levels, displays, and lighting.\n",
     "remediation": "Check every text/background and meaningful mark/background pair against WCAG contrast minimums (4.5:1 normal text, 3:1 large text and graphical objects), and darken or adjust until they pass. Don't trade legibility for a low-contrast aesthetic; verify with a contrast tool.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 7: Design Dangers (domain extension — not a specific sub-pitfall example in the book)",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 7: Design Dangers (domain extension — not a specific sub-pitfall example in the book)",
       "W3C Web Content Accessibility Guidelines (WCAG) 2.1, Success Criterion 1.4.3 Contrast (Minimum)",
       "https://www.avoidingdatapitfalls.com"
     ]
@@ -1093,7 +1093,7 @@ export const rules: PitfallRule[] = [
     "example_good": "Each variable gets its own distinct, non-overlapping color treatment (or the conflicting charts are separated), and redundant color is removed — e.g. the bar chart, which already encodes magnitude by length, drops its color scale so the dashboard's one sequential hue means only one thing.\n",
     "remediation": "Make every color mean exactly one thing across the whole dashboard. Don't reuse a hue or palette for unrelated variables or as two different scales; remove redundant color encodings, and if two charts genuinely need different color meanings, separate them or use clearly distinct schemes.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 7A: Confusing Colors",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 7A: Confusing Colors",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -1108,7 +1108,7 @@ export const rules: PitfallRule[] = [
     "example_good": "One shared legend governs the whole dashboard: Revenue is always blue, Costs always red, in the same order, with the same units, so a color means exactly one thing across every chart.\n",
     "remediation": "Define one encoding for the whole set and apply it everywhere: fix each category/series to a single color (and shape/size meaning), keep legend, ordering, and units identical across charts, and surface a shared legend. If two charts genuinely need different encodings, make the schemes visibly distinct so readers don't carry the wrong key over.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 7: Design Dangers (domain extension — not a specific sub-pitfall example in the book)",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 7: Design Dangers (domain extension — not a specific sub-pitfall example in the book)",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -1123,7 +1123,7 @@ export const rules: PitfallRule[] = [
     "example_good": "A single formatting standard is applied throughout — consistent units and decimal places for each measure, one date format, one name per category, shared number/currency formatting — so values are directly comparable at a glance and nothing has to be re-interpreted.\n",
     "remediation": "Define and apply consistent formatting across the whole deliverable: one date format, fixed decimal places and units per measure, consistent currency/percent display, and one canonical label per field or category. Centralize formatting rather than styling each chart ad hoc.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 7: Design Dangers (domain extension — not a specific sub-pitfall example in the book)",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 7: Design Dangers (domain extension — not a specific sub-pitfall example in the book)",
       "Jakob Nielsen (1994), '10 Usability Heuristics for User Interface Design' — consistency and standards",
       "https://www.avoidingdatapitfalls.com"
     ]
@@ -1139,7 +1139,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The visualization adapts to screen size — reflowing or simplifying panels for small screens, sizing text and tap targets for touch, and replacing hover-only interactions with tap-friendly ones — so it stays usable from phone to desktop, and it's tested at multiple widths.\n",
     "remediation": "Design and test for the screens the audience actually uses: add responsive breakpoints, size text and tap targets for touch, ensure controls and tooltips work without a mouse, and simplify or reflow dense layouts for small screens rather than shrinking them. Verify on real devices.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 7C: Usability Uh-Ohs (domain extension — generalizes the mobile-interaction discussion in the book)",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 7C: Usability Uh-Ohs (domain extension — generalizes the mobile-interaction discussion in the book)",
       "Ethan Marcotte, Responsive Web Design (A Book Apart, 2011)",
       "https://www.avoidingdatapitfalls.com"
     ]
@@ -1155,7 +1155,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The same data is rendered to fit the subject — columns stacked downward in blood-red with the author's public-domain portrait and signature filling a natural gap — adding engagement and meaning without distorting the values, while staying ready to drop the flourish for audiences that don't want it.\n",
     "remediation": "For visualizations meant to engage, ask what aesthetic choices would draw attention and fit the subject, and use them where they add (not subtract) meaning. Guard the clarity/aesthetics trade-off: test flourishes with real audience members, and omit them for contexts or audiences that prefer plain, utilitarian visuals.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 7B: Omitted Opportunities",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 7B: Omitted Opportunities",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -1170,7 +1170,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The dashboard is limited to a single color encoding, assigned to the one variable most tied to the user's primary task (e.g. Region for a regional sales review); other measures are shown without color or moved to a separate view, so color carries one clear meaning.\n",
     "remediation": "Aim for one color encoding per dashboard, given to the variable most central to the user's task. Drop or relocate competing schemes, show secondary measures without color (or in a separate view), and resist cramming every possible measure into one over-colored view.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 7A: Confusing Colors",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 7A: Confusing Colors",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -1185,7 +1185,7 @@ export const rules: PitfallRule[] = [
     "example_good": "Controls are mapped to the views they affect — mounted on or beside each panel, or arranged in the same spatial layout as the panels — with clear labels and signifiers, so it's obvious what each control does and how to use it.\n",
     "remediation": "Make interactivity discoverable and understandable: place each control on or adjacent to the view it affects (or mirror the views' spatial layout), label controls clearly, and signal which marks are interactive. Invest the effort to make complex interactions obvious.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 7C: Usability Uh-Ohs",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 7C: Usability Uh-Ohs",
       "https://www.avoidingdatapitfalls.com"
     ]
   },
@@ -1200,7 +1200,7 @@ export const rules: PitfallRule[] = [
     "example_good": "The author audits representation before publishing — deliberately sourcing quotes and examples from a diverse range of voices and crediting originators like Spear alongside Tukey — so the work reflects contributions in proportion to their value, not the demographic of the contributor.\n",
     "remediation": "Deliberately check whose voices and contributions are represented and whose are missing before finalizing data work. Seek out and amplify historically undervalued or ignored voices in your sources, examples, and data; credit originators accurately; and treat representation as a question to ask explicitly, not assume.\n",
     "references": [
-      "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 8A: The Unheard Voice",
+      "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 8A: The Unheard Voice",
       "https://www.avoidingdatapitfalls.com"
     ]
   }

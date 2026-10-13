@@ -39,6 +39,6 @@ remediation: >
   unique where they should be and run monotonically — an axis a reader can't decode is
   worse than no axis at all.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)"
   - "Alberto Cairo, How Charts Lie (Norton, 2019) — dubious and self-contradictory chart scales"
   - "https://www.avoidingdatapitfalls.com"

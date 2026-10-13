@@ -38,6 +38,6 @@ remediation: >
   rely on length (line, dot plot, or a stated delta) rather than truncating the
   baseline of bars.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6: Graphical Gaffes (domain extension — the chapter mentions y-axis truncation only in passing, not as a sub-pitfall)"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 6: Graphical Gaffes (domain extension — the chapter mentions y-axis truncation only in passing, not as a sub-pitfall)"
   - "Darrell Huff, How to Lie with Statistics (Norton, 1954); Alberto Cairo, How Charts Lie (Norton, 2019)"
   - "https://www.avoidingdatapitfalls.com"

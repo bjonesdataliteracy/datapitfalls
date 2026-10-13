@@ -109,7 +109,7 @@ export default function Home() {
                 with data, with the stories behind each one.
               </p>
               <ul>
-                <li>Ben Jones, Wiley, 2020</li>
+                <li>Ben Jones, Wiley, 2019</li>
                 <li>Seven chapters of pitfalls</li>
                 <li>Paperback and ebook</li>
               </ul>
@@ -228,7 +228,7 @@ export default function Home() {
                 Avoiding Data Pitfalls: How to Steer Clear of Common Blunders When Working with Data
                 and Presenting Analysis and Visualizations
               </em>{' '}
-              (Wiley, 2020). The taxonomy behind the connector and the Lab detector is built
+              (Wiley, 2019). The taxonomy behind the connector and the Lab detector is built
               directly from its chapters.
             </p>
             <div className="btn-row">

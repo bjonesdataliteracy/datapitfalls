@@ -31,5 +31,5 @@ remediation: >
   frame it as an explicit, falsifiable hypothesis and test it against additional
   data rather than assuming the pattern holds beyond what you measured.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 1D: The Black Swan Pitfall"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 1D: The Black Swan Pitfall"
   - "https://www.avoidingdatapitfalls.com"

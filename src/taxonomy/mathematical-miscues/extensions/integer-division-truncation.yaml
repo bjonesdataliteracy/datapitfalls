@@ -31,6 +31,6 @@ remediation: >
   language default. Validate that computed rates fall across a plausible continuous
   range instead of collapsing to 0 or 1.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 3: Mathematical Miscues (domain extension — not a specific sub-pitfall example in the book)"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 3: Mathematical Miscues (domain extension — not a specific sub-pitfall example in the book)"
   - "Python PEP 238 — Changing the Division Operator (true division vs floor division)"
   - "https://www.avoidingdatapitfalls.com"

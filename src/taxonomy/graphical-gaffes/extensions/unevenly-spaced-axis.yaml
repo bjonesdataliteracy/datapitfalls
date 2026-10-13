@@ -46,6 +46,6 @@ remediation: >
   Mark the observed points so sparse coverage stays visible, and if the gaps are large,
   consider annotating them rather than letting equal spacing paper over them.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)"
   - "Alberto Cairo, How Charts Lie (Norton, 2019) — distorted and dubious chart scales"
   - "https://www.avoidingdatapitfalls.com"

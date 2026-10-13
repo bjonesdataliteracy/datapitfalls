@@ -33,6 +33,6 @@ remediation: >
   aggregate. If the two views disagree, prefer the stratified or covariate-adjusted
   comparison and report the confounder explicitly.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 4: Statistical Slip-Ups (domain extension — not a specific sub-pitfall example in the book)"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 4: Statistical Slip-Ups (domain extension — not a specific sub-pitfall example in the book)"
   - "Simpson, E.H. (1951), 'The Interpretation of Interaction in Contingency Tables,' J. Royal Statistical Society B; Bickel et al. (1975), UC Berkeley admissions, Science"
   - "https://www.avoidingdatapitfalls.com"

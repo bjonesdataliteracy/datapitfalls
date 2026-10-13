@@ -30,6 +30,6 @@ remediation: >
   change (percent), compute it accordingly, and label it explicitly. Never write
   "%" for a difference between two percentages when you mean percentage points.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 3: Mathematical Miscues (domain extension — not a specific sub-pitfall example in the book)"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 3: Mathematical Miscues (domain extension — not a specific sub-pitfall example in the book)"
   - "Darrell Huff, How to Lie with Statistics (Norton, 1954) — the misuse of percentages"
   - "https://www.avoidingdatapitfalls.com"

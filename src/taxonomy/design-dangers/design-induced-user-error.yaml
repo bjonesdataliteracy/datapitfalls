@@ -30,5 +30,5 @@ remediation: >
   Design out easy wrong actions and misleading defaults, and remember you won't be
   there to correct users later.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 7C: Usability Uh-Ohs"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 7C: Usability Uh-Ohs"
   - "https://www.avoidingdatapitfalls.com"

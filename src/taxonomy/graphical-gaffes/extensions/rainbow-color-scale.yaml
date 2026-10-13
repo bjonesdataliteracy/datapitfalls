@@ -32,6 +32,6 @@ remediation: >
   distinctions. Check palettes for colorblind safety, and avoid rainbow/jet ramps for
   magnitude.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)"
   - "Borland & Taylor (2007), 'Rainbow Color Map (Still) Considered Harmful,' IEEE Computer Graphics & Applications 27(2)"
   - "https://www.avoidingdatapitfalls.com"

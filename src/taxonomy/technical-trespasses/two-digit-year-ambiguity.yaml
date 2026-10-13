@@ -37,5 +37,5 @@ remediation: >
   output range so impossible future years or pre-automobile years are caught.
   Document the disambiguation so the transformation is reproducible.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 2A: The Dirty Data Pitfall"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 2A: The Dirty Data Pitfall"
   - "https://www.avoidingdatapitfalls.com"

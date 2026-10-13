@@ -38,5 +38,5 @@ remediation: >
   Visualizing the data and investigating outliers, shifts, and trends often
   surfaces where the gap is hiding.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 1A: The Data-Reality Gap"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 1A: The Data-Reality Gap"
   - "https://www.avoidingdatapitfalls.com"

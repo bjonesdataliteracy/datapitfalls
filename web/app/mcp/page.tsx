@@ -35,7 +35,7 @@ export default function McpPage() {
       <h1>Data Pitfalls for Claude</h1>
       <p className={styles.lede}>
         An MCP connector that gives Claude the 78 rules from <em>Avoiding Data Pitfalls</em> by Ben
-        Jones (Wiley, 2020), so it can check your SQL, charts, dashboards, written analysis and
+        Jones (Wiley, 2019), so it can check your SQL, charts, dashboards, written analysis and
         reports for the mistakes that mislead.
       </p>
 

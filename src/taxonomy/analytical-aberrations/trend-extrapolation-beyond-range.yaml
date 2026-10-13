@@ -31,5 +31,5 @@ remediation: >
   fit as no evidence of out-of-sample behavior. Validate extrapolations against
   plausibility.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 5B: Exuberant Extrapolations"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 5B: Exuberant Extrapolations"
   - "https://www.avoidingdatapitfalls.com"

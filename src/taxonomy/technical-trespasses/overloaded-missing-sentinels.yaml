@@ -37,5 +37,5 @@ remediation: >
   in a column you will sum, average, or take extremes of, and confirm placeholders
   don't survive into category counts.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 2A: The Dirty Data Pitfall"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 2A: The Dirty Data Pitfall"
   - "https://www.avoidingdatapitfalls.com"

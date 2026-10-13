@@ -32,5 +32,5 @@ remediation: >
   the data to a span with equal coverage, before ranking or comparing category
   totals.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 3A: Aggravating Aggregations"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 3A: Aggravating Aggregations"
   - "https://www.avoidingdatapitfalls.com"

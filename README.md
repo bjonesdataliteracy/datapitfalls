@@ -253,7 +253,7 @@ For the full technical picture, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 ## Based on the Book
 
-datapitfalls is the software companion to [**_Avoiding Data Pitfalls: How to Steer Clear of Common Blunders When Working with Data and Presenting Analysis and Visualizations_**](https://www.avoidingdatapitfalls.com) by **Ben Jones** (Wiley, 2020).
+datapitfalls is the software companion to [**_Avoiding Data Pitfalls: How to Steer Clear of Common Blunders When Working with Data and Presenting Analysis and Visualizations_**](https://www.avoidingdatapitfalls.com) by **Ben Jones** (Wiley, 2019).
 
 The book distills two decades of teaching and practice into a map of where data work goes wrong — and that map is the foundation of this tool's pitfall taxonomy. Every rule datapitfalls applies traces back to a pitfall described in the book.
 

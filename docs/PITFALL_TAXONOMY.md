@@ -165,7 +165,7 @@ Extension rules follow two conventions:
 
    ```yaml
    references:
-     - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 2: Technical Trespasses (domain extension — not a specific sub-pitfall example in the book)"
+     - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 2: Technical Trespasses (domain extension — not a specific sub-pitfall example in the book)"
      - "Ralph Kimball & Margy Ross, The Data Warehouse Toolkit (3rd ed., Wiley, 2013) — join grain and many-to-many fan traps"
      - "https://www.avoidingdatapitfalls.com"
    ```

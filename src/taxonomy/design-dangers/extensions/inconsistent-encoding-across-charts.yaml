@@ -30,5 +30,5 @@ remediation: >
   across charts, and surface a shared legend. If two charts genuinely need different
   encodings, make the schemes visibly distinct so readers don't carry the wrong key over.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 7: Design Dangers (domain extension — not a specific sub-pitfall example in the book)"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 7: Design Dangers (domain extension — not a specific sub-pitfall example in the book)"
   - "https://www.avoidingdatapitfalls.com"

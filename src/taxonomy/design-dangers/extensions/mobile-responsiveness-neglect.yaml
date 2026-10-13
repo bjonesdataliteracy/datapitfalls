@@ -30,6 +30,6 @@ remediation: >
   without a mouse, and simplify or reflow dense layouts for small screens rather than
   shrinking them. Verify on real devices.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 7C: Usability Uh-Ohs (domain extension — generalizes the mobile-interaction discussion in the book)"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 7C: Usability Uh-Ohs (domain extension — generalizes the mobile-interaction discussion in the book)"
   - "Ethan Marcotte, Responsive Web Design (A Book Apart, 2011)"
   - "https://www.avoidingdatapitfalls.com"

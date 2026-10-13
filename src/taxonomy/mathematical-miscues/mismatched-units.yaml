@@ -35,5 +35,5 @@ remediation: >
   against expected magnitudes so an order-of-magnitude unit error surfaces
   immediately.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 3E: Unmatching Units"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 3E: Unmatching Units"
   - "https://www.avoidingdatapitfalls.com"

@@ -31,6 +31,6 @@ remediation: >
   groups that are otherwise comparable, report which confounders were accounted for,
   and treat unadjusted observational effects as provisional.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 5: Analytical Aberrations (domain extension — not a specific sub-pitfall example in the book)"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 5: Analytical Aberrations (domain extension — not a specific sub-pitfall example in the book)"
   - "Judea Pearl, Causality (2nd ed., Cambridge University Press, 2009); R.A. Fisher, The Design of Experiments (1935)"
   - "https://www.avoidingdatapitfalls.com"

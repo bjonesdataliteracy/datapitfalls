@@ -29,5 +29,5 @@ remediation: >
   position, or lightness as a redundant cue. Test palettes with a color-vision-
   deficiency simulator before shipping.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 7A: Confusing Colors"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 7A: Confusing Colors"
   - "https://www.avoidingdatapitfalls.com"

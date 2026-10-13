@@ -32,6 +32,6 @@ remediation: >
   display, and one canonical label per field or category. Centralize formatting rather
   than styling each chart ad hoc.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 7: Design Dangers (domain extension — not a specific sub-pitfall example in the book)"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 7: Design Dangers (domain extension — not a specific sub-pitfall example in the book)"
   - "Jakob Nielsen (1994), '10 Usability Heuristics for User Interface Design' — consistency and standards"
   - "https://www.avoidingdatapitfalls.com"

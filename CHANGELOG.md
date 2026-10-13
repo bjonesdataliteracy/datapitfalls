@@ -29,6 +29,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `MCP_RATE_LIMIT_WINDOW_SECONDS` override it), separate from the scan limit, and
   answers over-limit requests with a 429 and a JSON-RPC error.
 
+### Fixed
+
+- **Book year.** Citations of _Avoiding Data Pitfalls_ now give its publication
+  year as 2019 (Wiley), in every rule's source, the MCP server's citation, the
+  README and the web pages.
+
 ## [0.11.0] - 2026-10-12
 
 ### Added

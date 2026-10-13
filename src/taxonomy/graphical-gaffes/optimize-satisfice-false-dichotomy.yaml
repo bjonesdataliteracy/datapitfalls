@@ -33,5 +33,5 @@ remediation: >
   explicit threshold otherwise, and accept that more than one design can be fit for
   purpose.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6C: The Optimize/Satisfice False Dichotomy"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 6C: The Optimize/Satisfice False Dichotomy"
   - "https://www.avoidingdatapitfalls.com"

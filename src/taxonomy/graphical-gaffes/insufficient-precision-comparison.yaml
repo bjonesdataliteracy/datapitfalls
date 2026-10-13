@@ -28,5 +28,5 @@ remediation: >
   even finer precision is needed. Reserve area/angle encodings for cases where
   approximate magnitude is enough.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6A: Challenging Charts"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 6A: Challenging Charts"
   - "https://www.avoidingdatapitfalls.com"

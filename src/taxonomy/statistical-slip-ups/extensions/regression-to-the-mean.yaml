@@ -32,6 +32,6 @@ remediation: >
   proper baseline model, and avoid selecting and evaluating on the same noisy
   measure.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 4: Statistical Slip-Ups (domain extension — not a specific sub-pitfall example in the book)"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 4: Statistical Slip-Ups (domain extension — not a specific sub-pitfall example in the book)"
   - "Galton, F. (1886), 'Regression Towards Mediocrity in Hereditary Stature,' J. Anthropological Institute; Kahneman, Thinking, Fast and Slow (2011)"
   - "https://www.avoidingdatapitfalls.com"
