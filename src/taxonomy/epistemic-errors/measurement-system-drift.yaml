@@ -34,5 +34,5 @@ remediation: >
   the chart, and scope claims to "recorded" counts when detection capability
   cannot be held constant.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 1A: The Data-Reality Gap (earthquake example)"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 1A: The Data-Reality Gap (earthquake example)"
   - "https://www.avoidingdatapitfalls.com"

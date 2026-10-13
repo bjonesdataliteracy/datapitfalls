@@ -35,6 +35,6 @@ remediation: >
   merging. Validate that identifier widths and leading zeros survive the round
   trip.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 2: Technical Trespasses (domain extension — generalizes the two-digit-year example in Pitfall 2A)"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 2: Technical Trespasses (domain extension — generalizes the two-digit-year example in Pitfall 2A)"
   - "Ziemann, Eren & El-Osta (2016), 'Gene name errors are widespread in the scientific literature,' Genome Biology 17:177 — spreadsheet auto-coercion of identifiers"
   - "https://www.avoidingdatapitfalls.com"

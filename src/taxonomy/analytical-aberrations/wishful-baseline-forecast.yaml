@@ -31,5 +31,5 @@ remediation: >
   uncertainty bands and downside scenarios, back-test the forecasting approach against
   history, and be wary when every forecast conveniently predicts a return to normal.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 5D: Funky Forecasts"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 5D: Funky Forecasts"
   - "https://www.avoidingdatapitfalls.com"

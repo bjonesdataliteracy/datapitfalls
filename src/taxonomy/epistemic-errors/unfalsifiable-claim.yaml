@@ -31,5 +31,5 @@ remediation: >
   failed prediction as a valuable correction rather than a threat to defend
   against.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 1E: Falsifiability and the God Pitfall"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 1E: Falsifiability and the God Pitfall"
   - "https://www.avoidingdatapitfalls.com"

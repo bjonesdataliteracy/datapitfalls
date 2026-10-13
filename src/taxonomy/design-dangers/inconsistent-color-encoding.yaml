@@ -33,5 +33,5 @@ remediation: >
   color encodings, and if two charts genuinely need different color meanings, separate
   them or use clearly distinct schemes.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 7A: Confusing Colors"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 7A: Confusing Colors"
   - "https://www.avoidingdatapitfalls.com"

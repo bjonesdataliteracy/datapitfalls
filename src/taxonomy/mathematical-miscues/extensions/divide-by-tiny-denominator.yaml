@@ -32,6 +32,6 @@ remediation: >
   with caution. Report or smooth the uncertainty of rates built on small counts so
   noisy values don't dominate comparisons.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 3: Mathematical Miscues (domain extension — not a specific sub-pitfall example in the book)"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 3: Mathematical Miscues (domain extension — not a specific sub-pitfall example in the book)"
   - "Gelman & Price (1999), 'All maps of parameter estimates are misleading,' Statistics in Medicine 18 — instability of rates with small denominators"
   - "https://www.avoidingdatapitfalls.com"

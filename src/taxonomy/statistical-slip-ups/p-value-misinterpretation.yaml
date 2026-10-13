@@ -31,5 +31,5 @@ remediation: >
   "no effect," and seek replication rather than a single significant/not-significant
   verdict.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 4B: Inferential Infernos"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 4B: Inferential Infernos"
   - "https://www.avoidingdatapitfalls.com"

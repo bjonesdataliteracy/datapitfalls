@@ -31,5 +31,5 @@ remediation: >
   part-to-part. First confirm the data is a legitimate whole; if it isn't, avoid
   part-to-whole encodings or disclose what's excluded.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6A: Challenging Charts"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 6A: Challenging Charts"
   - "https://www.avoidingdatapitfalls.com"

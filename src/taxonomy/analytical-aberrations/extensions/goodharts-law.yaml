@@ -32,6 +32,6 @@ remediation: >
   whether the proxy still correlates with the true goal once it's targeted, and revise
   metrics as people adapt to them.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 5E: Moronic Measures (domain extension — generalizes the metric-gaming caution in the book)"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 5E: Moronic Measures (domain extension — generalizes the metric-gaming caution in the book)"
   - "Goodhart, C.A.E. (1975); Marilyn Strathern (1997), 'Improving ratings: audit in the British University system,' European Review"
   - "https://www.avoidingdatapitfalls.com"

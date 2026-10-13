@@ -1,10 +1,18 @@
 import { ruleCount } from 'datapitfalls';
 import { SetupTabs } from './components/SetupTabs';
-import { BOOK_URL, DATA_LITERACY_URL, GITHUB_URL, LAB_DETECTOR_URL } from './links';
+import { CodeLine } from './components/CopyButton';
+import { BOOK_URL, DATA_LITERACY_URL, GITHUB_URL, LAB_DETECTOR_URL, NPM_URL } from './links';
 import { domainSummaries, rulePath } from './site';
 
 // The home page: what Data Pitfalls is, and the three ways to use it (the MCP
-// for Claude, the Lab's Pitfalls Detector, and the book).
+// for Claude, the Lab's Pitfalls Detector, and the book), plus the npm CLI.
+
+const CLI_FLAGS: Array<[string, string]> = [
+  ['--all', 'Every finding, including lower-confidence latent ones'],
+  ['--thorough', 'Use the deepest model'],
+  ['--json', 'Machine-readable findings for agents and scripts'],
+  ['--ci', 'Exit non-zero when a blocking pitfall is found'],
+];
 
 const TOOLS: Array<[string, string]> = [
   ['get_checklist', 'The rules for a chart, SQL, dashboard or report'],
@@ -109,7 +117,7 @@ export default function Home() {
                 with data, with the stories behind each one.
               </p>
               <ul>
-                <li>Ben Jones, Wiley, 2020</li>
+                <li>Ben Jones, Wiley, 2019</li>
                 <li>Seven chapters of pitfalls</li>
                 <li>Paperback and ebook</li>
               </ul>
@@ -183,6 +191,49 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="section" id="cli">
+        <div className="wrap">
+          <h2 className="h2">Run the detector from your terminal</h2>
+          <p className="intro">
+            The <a href={NPM_URL}>datapitfalls</a> command-line tool scans a chart image, a code
+            file, a PDF, Word or PowerPoint document, or a plain-English description, and reports
+            what is wrong, why it matters and how to fix it. It runs on your own Claude API key, so
+            it works in scripts, CI pipelines and coding agents too.
+          </p>
+          <div className="split">
+            <ol className="steps">
+              <li>
+                Set your <a href="https://console.anthropic.com/">Anthropic API key</a> (Node.js 18
+                or later):
+                <CodeLine text={'export ANTHROPIC_API_KEY="sk-ant-..."'} />
+              </li>
+              <li>
+                Scan a file:
+                <CodeLine text="npx datapitfalls scan ./chart.png" />
+              </li>
+              <li>
+                Or describe an analysis in words:
+                <CodeLine text={'npx datapitfalls scan --text notes.txt'} />
+              </li>
+            </ol>
+            <div className="tool-grid">
+              {CLI_FLAGS.map(([flag, what]) => (
+                <div className="tool" key={flag}>
+                  <code>{flag}</code>
+                  <br />
+                  {what}
+                </div>
+              ))}
+            </div>
+          </div>
+          <p className="footnote">
+            Run <code>npx datapitfalls --help</code> for every option. Scans send your file to the
+            Claude API under your key. Package on <a href={NPM_URL}>npm</a>, source on{' '}
+            <a href={GITHUB_URL}>GitHub</a>.
+          </p>
+        </div>
+      </section>
+
       <section className="section section-alt" id="library">
         <div className="wrap">
           <h2 className="h2">Eight domains, {total} pitfalls</h2>
@@ -228,7 +279,7 @@ export default function Home() {
                 Avoiding Data Pitfalls: How to Steer Clear of Common Blunders When Working with Data
                 and Presenting Analysis and Visualizations
               </em>{' '}
-              (Wiley, 2020). The taxonomy behind the connector and the Lab detector is built
+              (Wiley, 2019). The taxonomy behind the connector and the Lab detector is built
               directly from its chapters.
             </p>
             <div className="btn-row">

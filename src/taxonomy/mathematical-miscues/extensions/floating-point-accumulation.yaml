@@ -30,6 +30,6 @@ remediation: >
   an explicit tolerance rather than `==`, and be mindful of error accumulation in
   long summations.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 3: Mathematical Miscues (domain extension — not a specific sub-pitfall example in the book)"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 3: Mathematical Miscues (domain extension — not a specific sub-pitfall example in the book)"
   - "David Goldberg (1991), 'What Every Computer Scientist Should Know About Floating-Point Arithmetic,' ACM Computing Surveys 23(1)"
   - "https://www.avoidingdatapitfalls.com"

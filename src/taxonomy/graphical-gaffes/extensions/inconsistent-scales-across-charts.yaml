@@ -31,5 +31,5 @@ remediation: >
   will compare it directly).
 references:
   - "Edward Tufte, The Visual Display of Quantitative Information (2nd ed., Graphics Press, 2001) — small multiples and consistent scales"
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)"
   - "https://www.avoidingdatapitfalls.com"

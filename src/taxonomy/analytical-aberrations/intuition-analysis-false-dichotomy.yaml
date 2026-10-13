@@ -35,5 +35,5 @@ remediation: >
   rather than to abolish it. Document the domain rationale behind what's measured and
   acted on.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 5A: The Intuition/Analysis False Dichotomy"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 5A: The Intuition/Analysis False Dichotomy"
   - "https://www.avoidingdatapitfalls.com"

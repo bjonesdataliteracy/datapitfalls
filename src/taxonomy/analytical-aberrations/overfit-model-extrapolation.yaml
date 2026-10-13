@@ -31,5 +31,5 @@ remediation: >
   model consistent with the data and theory, and reject any model whose extrapolations
   are implausible no matter how high its R².
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 5B: Exuberant Extrapolations"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 5B: Exuberant Extrapolations"
   - "https://www.avoidingdatapitfalls.com"

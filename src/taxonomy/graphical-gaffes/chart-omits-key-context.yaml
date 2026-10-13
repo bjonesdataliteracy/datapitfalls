@@ -31,5 +31,5 @@ remediation: >
   the interpretation. Always present the data's known caveats and exclusions with the
   chart rather than omitting them.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6A: Challenging Charts"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 6A: Challenging Charts"
   - "https://www.avoidingdatapitfalls.com"

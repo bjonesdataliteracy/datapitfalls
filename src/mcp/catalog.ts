@@ -16,7 +16,7 @@ import {
 } from '../taxonomy/index.js';
 
 export const SITE_URL = 'https://www.avoidingdatapitfalls.com';
-export const BOOK_CITATION = 'Avoiding Data Pitfalls by Ben Jones (Wiley, 2020)';
+export const BOOK_CITATION = 'Avoiding Data Pitfalls by Ben Jones (Wiley, 2019)';
 
 /** The footer every MCP response ends with. */
 export const CITATION_FOOTER = `---\nSource: ${BOOK_CITATION} · ${SITE_URL}`;

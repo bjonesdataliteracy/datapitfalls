@@ -32,6 +32,6 @@ remediation: >
   reverse causation and coincidence, and use causal-inference methods. State clearly
   when a relationship is only associational and shouldn't drive interventions.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 5: Analytical Aberrations (domain extension — not a specific sub-pitfall example in the book)"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 5: Analytical Aberrations (domain extension — not a specific sub-pitfall example in the book)"
   - "Judea Pearl, Causality: Models, Reasoning, and Inference (2nd ed., Cambridge University Press, 2009)"
   - "https://www.avoidingdatapitfalls.com"

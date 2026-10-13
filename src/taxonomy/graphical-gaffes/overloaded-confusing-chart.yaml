@@ -30,5 +30,5 @@ remediation: >
   distinctly-colored categories within the palette's size. Ensure the chart conveys
   its point statically, without relying on hover or click.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6A: Challenging Charts"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 6A: Challenging Charts"
   - "https://www.avoidingdatapitfalls.com"

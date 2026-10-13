@@ -33,5 +33,5 @@ remediation: >
   instrument-measured data when the level of precision actually matters to the
   conclusion.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 1B: All Too Human Data"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 1B: All Too Human Data"
   - "https://www.avoidingdatapitfalls.com"

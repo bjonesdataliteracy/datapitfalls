@@ -36,6 +36,6 @@ remediation: >
   or joining on text, and add a check that scans for mojibake markers so corruption
   fails loudly at ingestion rather than surfacing downstream.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 2: Technical Trespasses (domain extension — not a specific sub-pitfall example in the book)"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 2: Technical Trespasses (domain extension — not a specific sub-pitfall example in the book)"
   - "Joel Spolsky (2003), 'The Absolute Minimum Every Software Developer Absolutely, Positively Must Know About Unicode and Character Sets (No Excuses!)'"
   - "https://www.avoidingdatapitfalls.com"

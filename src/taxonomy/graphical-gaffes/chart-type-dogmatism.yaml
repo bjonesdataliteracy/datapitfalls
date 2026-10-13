@@ -29,5 +29,5 @@ remediation: >
   keep less-common types available for the cases where they fit, and avoid blanket
   "good/bad" verdicts when critiquing others' work.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6B: Data Dogmatism"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 6B: Data Dogmatism"
   - "https://www.avoidingdatapitfalls.com"

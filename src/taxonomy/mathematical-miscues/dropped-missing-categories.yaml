@@ -35,5 +35,5 @@ remediation: >
   zeros; for intermittent events, state that gaps are expected. Never let a
   continuous axis interpolate across a period that had no data.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 3B: Missing Values"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 3B: Missing Values"
   - "https://www.avoidingdatapitfalls.com"

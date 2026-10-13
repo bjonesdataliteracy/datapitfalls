@@ -186,9 +186,10 @@ Developer → Edit Config), then restart Claude Desktop:
 }
 ```
 
-**claude.ai (custom connector)**: in Settings → Connectors, choose _Add custom
-connector_, name it `Data Pitfalls`, and use the URL
-`https://www.avoidingdatapitfalls.com/api/mcp`. No authentication is needed.
+**claude.ai and Claude Desktop**: Data Pitfalls is in the Claude connector
+directory. In Settings → Connectors, choose _Discover_, search for `Data Pitfalls`
+and choose _Connect_. No authentication is needed. You can also add it as a custom
+connector with the URL `https://www.avoidingdatapitfalls.com/api/mcp`.
 Setup and usage are also at
 [avoidingdatapitfalls.com/mcp](https://www.avoidingdatapitfalls.com/mcp), and the
 privacy policy is at
@@ -253,7 +254,7 @@ For the full technical picture, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 ## Based on the Book
 
-datapitfalls is the software companion to [**_Avoiding Data Pitfalls: How to Steer Clear of Common Blunders When Working with Data and Presenting Analysis and Visualizations_**](https://www.avoidingdatapitfalls.com) by **Ben Jones** (Wiley, 2020).
+datapitfalls is the software companion to [**_Avoiding Data Pitfalls: How to Steer Clear of Common Blunders When Working with Data and Presenting Analysis and Visualizations_**](https://www.avoidingdatapitfalls.com) by **Ben Jones** (Wiley, 2019).
 
 The book distills two decades of teaching and practice into a map of where data work goes wrong — and that map is the foundation of this tool's pitfall taxonomy. Every rule datapitfalls applies traces back to a pitfall described in the book.
 

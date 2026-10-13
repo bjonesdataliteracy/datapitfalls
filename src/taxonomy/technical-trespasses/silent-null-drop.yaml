@@ -38,5 +38,5 @@ remediation: >
   the population actually observed. Always report the share excluded and the
   assumption that justifies excluding it.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 2A: The Dirty Data Pitfall"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 2A: The Dirty Data Pitfall"
   - "https://www.avoidingdatapitfalls.com"

@@ -41,6 +41,6 @@ remediation: >
   the legend top-to-bottom against the data order and squint-test the chart: the
   values that should dominate visually are the values that dominate numerically.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)"
   - "Munzner (2014), Visualization Analysis and Design, ch. 5 — channel effectiveness for ordered attributes"
   - "https://www.avoidingdatapitfalls.com"

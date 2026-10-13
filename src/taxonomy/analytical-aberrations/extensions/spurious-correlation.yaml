@@ -30,6 +30,6 @@ remediation: >
   on out-of-sample data. A coincidental correlation with no mechanism and no
   replication is not a finding.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 5: Analytical Aberrations (domain extension — not a specific sub-pitfall example in the book)"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 5: Analytical Aberrations (domain extension — not a specific sub-pitfall example in the book)"
   - "Yule, G.U. (1926), 'Why Do We Sometimes Get Nonsense-Correlations between Time-Series?', J. Royal Statistical Society; Tyler Vigen, Spurious Correlations (Hachette, 2015)"
   - "https://www.avoidingdatapitfalls.com"

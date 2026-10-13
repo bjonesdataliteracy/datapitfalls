@@ -37,6 +37,6 @@ remediation: >
   When you do average on the log scale, label it as such — it is the geometric mean
   of the quantity, not its arithmetic mean.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 3: Mathematical Miscues (domain extension — not a specific sub-pitfall example in the book)"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 3: Mathematical Miscues (domain extension — not a specific sub-pitfall example in the book)"
   - "Limpert, Stahel & Abbt (2001), 'Log-normal Distributions across the Sciences,' BioScience 51(5) — the geometric mean and log-scale data"
   - "https://www.avoidingdatapitfalls.com"

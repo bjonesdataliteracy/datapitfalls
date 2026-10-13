@@ -37,5 +37,5 @@ remediation: >
   compare row counts before and after the join, and report the match rate so
   silent drops and null fills surface before you analyze the merged table.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 2B: Bad Blends and Joins"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 2B: Bad Blends and Joins"
   - "https://www.avoidingdatapitfalls.com"

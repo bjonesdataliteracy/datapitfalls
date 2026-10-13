@@ -29,5 +29,5 @@ remediation: >
   be practically important, and interpret statistical significance — especially in
   large samples — separately from real-world significance.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 4B: Inferential Infernos"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 4B: Inferential Infernos"
   - "https://www.avoidingdatapitfalls.com"

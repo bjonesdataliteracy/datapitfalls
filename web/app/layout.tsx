@@ -115,6 +115,7 @@ function SiteFooter() {
           <a href="/#claude">Add to Claude</a>
           <a href={LAB_DETECTOR_URL}>Pitfalls Detector</a>
           <a href="/pitfalls">Pitfall library</a>
+          <a href="/#cli">Command line</a>
         </div>
         <div>
           <h4>Learn</h4>

@@ -32,5 +32,5 @@ remediation: >
   level (a weighted average using each group's denominator as the weight). If the
   denominators aren't available, obtain them — the rate alone cannot be aggregated.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 3D: Preposterous Percents"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 3D: Preposterous Percents"
   - "https://www.avoidingdatapitfalls.com"

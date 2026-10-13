@@ -31,6 +31,6 @@ remediation: >
   necessary, fix the scales on a principled, disclosed basis and don't let arbitrary
   scaling manufacture crossovers or co-movement.
 references:
-  - "Avoiding Data Pitfalls (Wiley, 2020), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)"
+  - "Avoiding Data Pitfalls (Wiley, 2019), Pitfall 6: Graphical Gaffes (domain extension — not a specific sub-pitfall example in the book)"
   - "Alberto Cairo, How Charts Lie (Norton, 2019) — dual axes and scale manipulation"
   - "https://www.avoidingdatapitfalls.com"
