@@ -1,0 +1,67 @@
+/* Styles for the standalone info pages (/mcp, /privacy). Kept separate from
+   globals.css so the site redesign can restyle or replace these pages freely. */
+
+.page h1 {
+  font-size: 2rem;
+  margin: 0 0 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+.page h2 {
+  font-size: 1.2rem;
+  margin: 2.25rem 0 0.5rem;
+}
+
+.page p,
+.page li {
+  color: var(--text);
+}
+
+.page a {
+  color: var(--accent);
+}
+
+.lede {
+  color: var(--muted);
+  margin: 0 0 1.5rem;
+}
+
+.page pre {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  overflow-x: auto;
+  font-size: 0.9rem;
+}
+
+.page code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9em;
+}
+
+.page table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.page th,
+.page td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.5rem 0.75rem 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.back {
+  display: inline-block;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.updated {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin-top: 2.5rem;
+}
