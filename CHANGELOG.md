@@ -34,6 +34,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Book year.** Citations of _Avoiding Data Pitfalls_ now give its publication
   year as 2019 (Wiley), in every rule's source, the MCP server's citation, the
   README and the web pages.
+- **claude.ai setup steps.** The home page, `/mcp` and the README now say to
+  connect Data Pitfalls from the Claude connector directory (Settings →
+  Connectors → Discover), with the custom connector URL as a fallback.
 
 ## [0.11.0] - 2026-10-12
 

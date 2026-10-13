@@ -44,16 +44,20 @@ export function SetupTabs() {
       >
         <ol className="steps">
           <li>
-            In claude.ai, open <b>Settings → Connectors</b> and choose <b>Add custom connector</b>.
+            In claude.ai, open <b>Settings → Connectors</b>, choose <b>Discover</b> and search for{' '}
+            <b>Data Pitfalls</b>.
           </li>
           <li>
-            Name it <b>Data Pitfalls</b> and paste this URL:
-            <CodeLine text={MCP_URL} />
+            Choose <b>Connect</b>. There&rsquo;s no sign-in.
           </li>
           <li>
             In any chat, ask: <i>&ldquo;Check this chart for data pitfalls.&rdquo;</i>
           </li>
         </ol>
+        <div className="footnote">
+          Or add it as a custom connector with this URL:
+          <CodeLine text={MCP_URL} />
+        </div>
       </div>
       <div
         className="setup-panel"
