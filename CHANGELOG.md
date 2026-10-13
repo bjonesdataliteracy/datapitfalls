@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Connector docs and privacy pages.** The web app now serves `/mcp` (how to
+  connect and use the Data Pitfalls MCP connector) and `/privacy` (what the web
+  app and the connector collect and keep), ready for the Claude connector
+  directory listing.
+
 ### Changed
 
 - **Rate limit on the web app's MCP route.** `/api/mcp` now has its own loose

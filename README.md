@@ -188,7 +188,11 @@ Developer → Edit Config), then restart Claude Desktop:
 
 **claude.ai (custom connector)**: in Settings → Connectors, choose _Add custom
 connector_, name it `Data Pitfalls`, and use the URL
-`https://<your-datapitfalls-site>/api/mcp`. No authentication is needed.
+`https://www.avoidingdatapitfalls.com/api/mcp`. No authentication is needed.
+Setup and usage are also at
+[avoidingdatapitfalls.com/mcp](https://www.avoidingdatapitfalls.com/mcp), and the
+privacy policy is at
+[avoidingdatapitfalls.com/privacy](https://www.avoidingdatapitfalls.com/privacy).
 
 ---
 
