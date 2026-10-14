@@ -16,6 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Taxonomy relicensed to CC BY-NC 4.0.** The Avoiding Data Pitfalls rules
+  and their text (`src/taxonomy/`, and everywhere they are served) are now
+  under [CC BY-NC 4.0](LICENSE-TAXONOMY.md): free to use, including at work,
+  and to share with credit, but selling them or building them into a paid
+  product or course needs a license from Data Literacy. The code stays MIT.
+  Releases up to 0.11.0 remain MIT.
+
 - **New avoidingdatapitfalls.com home page.** The site is now the home for Data
   Pitfalls, in the Data Literacy Lab look: what the taxonomy is, and the three ways
   to use it (the free Data Pitfalls MCP for Claude, with setup steps for claude.ai

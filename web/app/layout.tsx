@@ -109,6 +109,10 @@ function SiteFooter() {
             Data Pitfalls is by Ben Jones, author of <em>Avoiding Data Pitfalls</em> and founder of
             Data Literacy, Inc.
           </p>
+          <p>
+            Taxonomy © Ben Jones, <a href={`${GITHUB_URL}/blob/main/LICENSE-TAXONOMY.md`}>CC BY-NC 4.0</a>.
+            Free to use at work; selling it needs a license.
+          </p>
         </div>
         <div>
           <h4>Use it</h4>

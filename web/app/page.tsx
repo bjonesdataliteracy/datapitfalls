@@ -77,7 +77,7 @@ export default function Home() {
               <ul>
                 <li>Works in claude.ai and Claude Code</li>
                 <li>No API key and no sign-up</li>
-                <li>Open source on GitHub and npm</li>
+                <li>Free to use at work; code on GitHub and npm</li>
               </ul>
               <div className="product-cta">
                 <a className="btn btn-primary" href="#claude">
