@@ -14,6 +14,12 @@ Pages:
 - `/pitfalls` and `/pitfalls/<domain>`: the pitfall library, generated from the
   taxonomy at build time. Each rule is an anchor: `/pitfalls/<domain>#<rule-id>`.
 - `/scan` (`app/scan/`): the free scanner, with its own scoped styles.
+- `/checklist`: the printable checklist of every pitfall, the free download behind
+  the email signup (not indexed by search engines).
+- `/training`: Data Pitfalls workshops and reviews from Data Literacy, with an
+  inquiry form.
+- `/api/signup`: receives the checklist signup and training form and forwards
+  each submission to Resend (see below).
 - `/api/mcp`: the Data Pitfalls MCP server for claude.ai custom connectors.
 
 ## Local development
@@ -32,17 +38,41 @@ The build is wired so the engine is compiled first: `vercel-build` runs
 
 ## Environment variables
 
-| Variable                        | Required | Purpose                                                  |
-| ------------------------------- | -------- | -------------------------------------------------------- |
-| `ANTHROPIC_API_KEY`             | yes      | Server-side key the scan route uses to call Claude.      |
-| `ANTHROPIC_MODEL`               | no       | Override the model (defaults to the engine default).     |
-| `RATE_LIMIT_MAX`                | no       | Max scans per window, per IP (default 8).                |
-| `RATE_LIMIT_WINDOW_SECONDS`     | no       | Length of the rate-limit window in seconds (default 60). |
-| `MCP_RATE_LIMIT_MAX`            | no       | Max MCP requests per window, per IP (default 300).       |
-| `MCP_RATE_LIMIT_WINDOW_SECONDS` | no       | MCP rate-limit window in seconds (default 60).           |
+| Variable                           | Required | Purpose                                                          |
+| ---------------------------------- | -------- | ---------------------------------------------------------------- |
+| `ANTHROPIC_API_KEY`                | yes      | Server-side key the scan route uses to call Claude.              |
+| `ANTHROPIC_MODEL`                  | no       | Override the model (defaults to the engine default).             |
+| `RATE_LIMIT_MAX`                   | no       | Max scans per window, per IP (default 8).                        |
+| `RATE_LIMIT_WINDOW_SECONDS`        | no       | Length of the rate-limit window in seconds (default 60).         |
+| `MCP_RATE_LIMIT_MAX`               | no       | Max MCP requests per window, per IP (default 300).               |
+| `MCP_RATE_LIMIT_WINDOW_SECONDS`    | no       | MCP rate-limit window in seconds (default 60).                   |
+| `RESEND_API_KEY`                   | no       | Resend API key for the signup and training forms.                |
+| `RESEND_SEGMENT_ID`                | no       | Resend segment that checklist signups join.                      |
+| `RESEND_FROM`                      | no       | Sender for the welcome and inquiry emails, on a verified domain. |
+| `TRAINING_NOTIFY_EMAIL`            | no       | Where training inquiries are emailed.                            |
+| `SIGNUP_RATE_LIMIT_MAX`            | no       | Max form submissions per window, per IP (default 5).             |
+| `SIGNUP_RATE_LIMIT_WINDOW_SECONDS` | no       | Form rate-limit window in seconds (default 60).                  |
 
 Set these in the Vercel project (Settings → Environment Variables) and redeploy
 for changes to take effect.
+
+## Email signups and training inquiries
+
+The site keeps no mailing list of its own. `/api/signup` checks each submission
+and hands it to Data Literacy's [Resend](https://resend.com) account:
+
+- **Checklist signup** (`kind: "checklist"`): the address is added to the
+  segment in `RESEND_SEGMENT_ID` (an existing contact is added to the segment;
+  an unsubscribed one stays unsubscribed). If `RESEND_FROM` is set, it also gets
+  a short welcome email with the checklist link.
+- **Training inquiry** (`kind: "training"`): the details are emailed from
+  `RESEND_FROM` to `TRAINING_NOTIFY_EMAIL`, with reply-to set to the visitor, so
+  you can answer straight from your inbox. Inquiries are not added to the list.
+
+Until the settings a form needs are present, the route answers 503: the
+checklist form still hands over the checklist link, and the training form points
+people to dataliteracy.com. `RESEND_FROM` must use a domain verified in the same
+Resend account, for example `Data Literacy <hello@dataliteracy.com>`.
 
 ## Pointing avoidingdatapitfalls.com at this app
 

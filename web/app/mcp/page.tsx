@@ -122,8 +122,8 @@ export default function McpPage() {
         >
           CC BY-NC 4.0
         </a>
-        : using it at work is free, and selling it or building it into a paid product needs a license
-        from Data Literacy.
+        : using it at work is free, and selling it or building it into a paid product needs a
+        license from Data Literacy.
       </p>
     </main>
   );

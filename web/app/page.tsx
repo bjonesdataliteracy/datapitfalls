@@ -1,7 +1,8 @@
 import { ruleCount } from 'datapitfalls';
 import { SetupTabs } from './components/SetupTabs';
+import { SignupForm } from './components/SignupForm';
 import { CodeLine } from './components/CopyButton';
-import { BOOK_URL, DATA_LITERACY_URL, GITHUB_URL, LAB_DETECTOR_URL, NPM_URL } from './links';
+import { BOOK_URL, GITHUB_URL, LAB_DETECTOR_URL, NPM_URL } from './links';
 import { domainSummaries, rulePath } from './site';
 
 // The home page: what Data Pitfalls is, and the three ways to use it (the MCP
@@ -128,6 +129,20 @@ export default function Home() {
               </div>
             </article>
           </div>
+        </div>
+      </section>
+
+      <section className="signup-band" id="checklist" aria-label="Free checklist">
+        <div className="wrap signup-band-inner">
+          <div>
+            <span className="eyebrow">Free download</span>
+            <h2 className="h2">Get the free pitfall checklist</h2>
+            <p className="intro">
+              Every pitfall as a one-line check, ready to print and pin next to your monitor. Run
+              down it before you share a chart, a dashboard or a report.
+            </p>
+          </div>
+          <SignupForm kind="checklist" />
         </div>
       </section>
 
@@ -258,6 +273,26 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="section train-band" id="train">
+        <div className="wrap">
+          <span className="eyebrow">For teams</span>
+          <h2 className="h2">Train your team to avoid them</h2>
+          <p className="intro">
+            Claude can catch a pitfall after the fact. A trained team doesn&rsquo;t make it in the
+            first place. Data Literacy runs Data Pitfalls workshops and expert reviews of your
+            dashboards and reports, built on the book.
+          </p>
+          <div className="btn-row">
+            <a className="btn btn-primary" href="/training">
+              Train your team
+            </a>
+            <a className="btn btn-outline" href="/training#contact">
+              Ask about a Pitfall Review
+            </a>
+          </div>
+        </div>
+      </section>
+
       <section className="section" id="book">
         <div className="wrap book">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -286,7 +321,7 @@ export default function Home() {
               <a className="btn btn-primary" href={BOOK_URL}>
                 Get the book
               </a>
-              <a className="btn btn-outline" href={DATA_LITERACY_URL}>
+              <a className="btn btn-outline" href="/training">
                 Training from Data Literacy
               </a>
             </div>

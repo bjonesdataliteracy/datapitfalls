@@ -115,6 +115,20 @@ export default async function DomainPage({ params }: { params: Promise<Params> }
             {rules.map((r) => (
               <Rule rule={r} key={r.id} />
             ))}
+            <aside className="library-cta">
+              <p>
+                <b>Want your team to catch these before they ship?</b> Data Literacy runs Data
+                Pitfalls workshops and expert reviews.
+              </p>
+              <div className="btn-row">
+                <a className="btn btn-primary" href="/training">
+                  Train your team
+                </a>
+                <a className="btn btn-outline" href="/#checklist">
+                  Get the free checklist
+                </a>
+              </div>
+            </aside>
           </div>
         </div>
       </section>

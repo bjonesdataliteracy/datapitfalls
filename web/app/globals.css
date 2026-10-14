@@ -947,3 +947,229 @@ code {
 a.domain-name {
   text-decoration: none;
 }
+
+/* ---------- lead forms: checklist signup and training inquiry ---------- */
+
+.sr-only,
+.signup .hp {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.site-foot p a {
+  display: inline;
+  margin: 0;
+  text-decoration: underline;
+}
+
+.signup-band {
+  background: var(--hero-bg);
+  color: #d7e3ee;
+  padding-block: 48px;
+}
+
+.signup-band .h2 {
+  color: #fff;
+}
+
+.signup-band .eyebrow {
+  color: var(--cyan);
+}
+
+.signup-band-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 40px;
+  align-items: center;
+}
+
+.signup-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.signup input,
+.signup select,
+.signup textarea {
+  font: 400 16px/1.4 var(--font-body);
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--ink);
+  width: 100%;
+}
+
+.signup-row input {
+  flex: 1 1 220px;
+  width: auto;
+}
+
+.signup-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+  max-width: 720px;
+}
+
+.signup-grid label {
+  display: grid;
+  gap: 6px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.signup-wide {
+  grid-column: 1 / -1;
+}
+
+.signup-fine {
+  font-size: 13px;
+  margin: 10px 0 0;
+  opacity: 0.85;
+}
+
+.signup-band .signup-fine a,
+.signup-band .signup-done a:not(.btn) {
+  color: var(--cyan);
+}
+
+.signup-error {
+  color: var(--rose);
+  margin: 10px 0 0;
+}
+
+.signup-done p {
+  margin: 0 0 14px;
+  font-weight: 600;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.offer-grid li {
+  margin-bottom: 4px;
+}
+
+.library-cta {
+  margin-top: 40px;
+  padding: 24px;
+  border: 1px solid var(--tint-border);
+  background: var(--tint);
+  border-radius: 8px;
+}
+
+.library-cta p {
+  margin: 0;
+}
+
+.library-cta .btn-row {
+  margin-top: 16px;
+}
+
+/* ---------- printable checklist ---------- */
+
+.checklist {
+  padding-block: 48px;
+}
+
+.checklist-head .btn {
+  margin-top: 20px;
+}
+
+.checklist-domain h2 {
+  font: 400 18px/1.2 var(--font-head);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin: 36px 0 8px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--ink);
+}
+
+.checklist-domain ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.checklist-domain li {
+  display: flex;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 15px;
+  break-inside: avoid;
+}
+
+.checklist-domain li a {
+  font-weight: 700;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.box {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 3px;
+  border: 2px solid var(--ink);
+  border-radius: 3px;
+}
+
+.checklist-foot {
+  margin-top: 32px;
+  font-size: 14px;
+}
+
+@media (max-width: 860px) {
+  .signup-band-inner {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+}
+
+@media (max-width: 560px) {
+  .signup-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media print {
+  .site-nav,
+  .site-foot,
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    font-size: 12px;
+  }
+
+  .checklist {
+    padding-block: 0;
+  }
+
+  .checklist-domain {
+    break-before: page;
+  }
+
+  .checklist-domain:first-of-type {
+    break-before: auto;
+  }
+
+  .checklist-domain li {
+    font-size: 12px;
+    padding: 5px 0;
+  }
+}
