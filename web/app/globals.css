@@ -226,11 +226,44 @@ code {
   right: 0;
   width: 52%;
   height: 100%;
-  object-fit: cover;
-  object-position: 55% 50%;
   -webkit-mask-image: linear-gradient(to right, transparent, #000 25%);
   mask-image: linear-gradient(to right, transparent, #000 25%);
   pointer-events: none;
+}
+
+.vortex-leader {
+  stroke-width: 1.5;
+}
+
+.vortex-tag rect {
+  fill: rgba(8, 20, 32, 0.92);
+  stroke-width: 1.5;
+}
+
+.vortex-tag text {
+  font: 700 20px var(--font-body);
+  fill: #fff;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.vortex-tag-red rect {
+  stroke: #cf6e66;
+}
+
+.vortex-tag-gold rect {
+  stroke: #c9a85a;
+}
+
+.vortex-tag-status rect {
+  fill: rgba(238, 211, 104, 0.16);
+  stroke: rgba(240, 186, 77, 0.55);
+}
+
+.vortex-tag-status text {
+  font-size: 15px;
+  letter-spacing: 0.2em;
+  fill: #f0ba4d;
 }
 
 .hero .wrap {
