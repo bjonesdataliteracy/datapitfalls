@@ -80,6 +80,7 @@ function SiteNav() {
           <a href="/pitfalls">Pitfall library</a>
           <a href="/#book">The book</a>
           <a href={LAB_DETECTOR_URL}>Pitfalls Detector</a>
+          <a href="/training">Training</a>
         </nav>
         <span className="nav-spacer" />
         <a className="btn btn-primary btn-sm" href="/#claude">
@@ -110,8 +111,9 @@ function SiteFooter() {
             Data Literacy, Inc.
           </p>
           <p>
-            Taxonomy © Ben Jones, <a href={`${GITHUB_URL}/blob/main/LICENSE-TAXONOMY.md`}>CC BY-NC 4.0</a>.
-            Free to use at work; selling it needs a license.
+            Taxonomy © Ben Jones,{' '}
+            <a href={`${GITHUB_URL}/blob/main/LICENSE-TAXONOMY.md`}>CC BY-NC 4.0</a>. Free to use at
+            work; selling it needs a license.
           </p>
         </div>
         <div>
@@ -123,6 +125,8 @@ function SiteFooter() {
         </div>
         <div>
           <h4>Learn</h4>
+          <a href="/training">Train your team</a>
+          <a href="/#checklist">Free checklist</a>
           <a href={BOOK_URL}>Buy the book</a>
           <a href={DATA_LITERACY_URL}>Data Literacy</a>
           <a href="/mcp">Connector setup guide</a>
