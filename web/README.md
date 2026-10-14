@@ -19,7 +19,7 @@ Pages:
 - `/training`: Data Pitfalls workshops and reviews from Data Literacy, with an
   inquiry form.
 - `/api/signup`: receives the checklist signup and training form and forwards
-  each submission to `SIGNUP_WEBHOOK_URL` (see below).
+  each submission to Resend (see below).
 - `/api/mcp`: the Data Pitfalls MCP server for claude.ai custom connectors.
 
 ## Local development
@@ -38,17 +38,20 @@ The build is wired so the engine is compiled first: `vercel-build` runs
 
 ## Environment variables
 
-| Variable                           | Required | Purpose                                                  |
-| ---------------------------------- | -------- | -------------------------------------------------------- |
-| `ANTHROPIC_API_KEY`                | yes      | Server-side key the scan route uses to call Claude.      |
-| `ANTHROPIC_MODEL`                  | no       | Override the model (defaults to the engine default).     |
-| `RATE_LIMIT_MAX`                   | no       | Max scans per window, per IP (default 8).                |
-| `RATE_LIMIT_WINDOW_SECONDS`        | no       | Length of the rate-limit window in seconds (default 60). |
-| `MCP_RATE_LIMIT_MAX`               | no       | Max MCP requests per window, per IP (default 300).       |
-| `MCP_RATE_LIMIT_WINDOW_SECONDS`    | no       | MCP rate-limit window in seconds (default 60).           |
-| `SIGNUP_WEBHOOK_URL`               | no       | Where signups and training inquiries are sent (below).   |
-| `SIGNUP_RATE_LIMIT_MAX`            | no       | Max form submissions per window, per IP (default 5).     |
-| `SIGNUP_RATE_LIMIT_WINDOW_SECONDS` | no       | Form rate-limit window in seconds (default 60).          |
+| Variable                           | Required | Purpose                                                          |
+| ---------------------------------- | -------- | ---------------------------------------------------------------- |
+| `ANTHROPIC_API_KEY`                | yes      | Server-side key the scan route uses to call Claude.              |
+| `ANTHROPIC_MODEL`                  | no       | Override the model (defaults to the engine default).             |
+| `RATE_LIMIT_MAX`                   | no       | Max scans per window, per IP (default 8).                        |
+| `RATE_LIMIT_WINDOW_SECONDS`        | no       | Length of the rate-limit window in seconds (default 60).         |
+| `MCP_RATE_LIMIT_MAX`               | no       | Max MCP requests per window, per IP (default 300).               |
+| `MCP_RATE_LIMIT_WINDOW_SECONDS`    | no       | MCP rate-limit window in seconds (default 60).                   |
+| `RESEND_API_KEY`                   | no       | Resend API key for the signup and training forms.                |
+| `RESEND_SEGMENT_ID`                | no       | Resend segment that checklist signups join.                      |
+| `RESEND_FROM`                      | no       | Sender for the welcome and inquiry emails, on a verified domain. |
+| `TRAINING_NOTIFY_EMAIL`            | no       | Where training inquiries are emailed.                            |
+| `SIGNUP_RATE_LIMIT_MAX`            | no       | Max form submissions per window, per IP (default 5).             |
+| `SIGNUP_RATE_LIMIT_WINDOW_SECONDS` | no       | Form rate-limit window in seconds (default 60).                  |
 
 Set these in the Vercel project (Settings → Environment Variables) and redeploy
 for changes to take effect.
@@ -56,28 +59,20 @@ for changes to take effect.
 ## Email signups and training inquiries
 
 The site keeps no mailing list of its own. `/api/signup` checks each submission
-and sends it as a JSON `POST` to `SIGNUP_WEBHOOK_URL`. Point that at any tool that
-accepts a webhook, for example a Zapier or Make "catch hook" that adds the person
-to Mailchimp, HubSpot, Resend or a spreadsheet and sends the welcome email. The
-JSON looks like:
+and hands it to Data Literacy's [Resend](https://resend.com) account:
 
-```json
-{
-  "kind": "checklist",
-  "email": "pat@example.com",
-  "name": "Pat",
-  "company": "Example Co",
-  "teamSize": "10 to 50",
-  "message": "…",
-  "source": "/",
-  "submittedAt": "2026-10-14T12:00:00.000Z"
-}
-```
+- **Checklist signup** (`kind: "checklist"`): the address is added to the
+  segment in `RESEND_SEGMENT_ID` (an existing contact is added to the segment;
+  an unsubscribed one stays unsubscribed). If `RESEND_FROM` is set, it also gets
+  a short welcome email with the checklist link.
+- **Training inquiry** (`kind: "training"`): the details are emailed from
+  `RESEND_FROM` to `TRAINING_NOTIFY_EMAIL`, with reply-to set to the visitor, so
+  you can answer straight from your inbox. Inquiries are not added to the list.
 
-`kind` is `checklist` for the free checklist signup and `training` for the
-training form; the other fields appear only when filled in. Until
-`SIGNUP_WEBHOOK_URL` is set the route answers 503: the checklist form still hands
-over the checklist link, and the training form points people to dataliteracy.com.
+Until the settings a form needs are present, the route answers 503: the
+checklist form still hands over the checklist link, and the training form points
+people to dataliteracy.com. `RESEND_FROM` must use a domain verified in the same
+Resend account, for example `Data Literacy <hello@dataliteracy.com>`.
 
 ## Pointing avoidingdatapitfalls.com at this app
 

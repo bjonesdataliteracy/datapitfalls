@@ -13,8 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   printable checklist of every pitfall (`/checklist`) in exchange for an email
   address, a `/training` page for Data Pitfalls workshops and reviews with an
   inquiry form, and "Train your team" links on the home page, the pitfall
-  library, the nav and the footer. Submissions go through `/api/signup` to the
-  webhook in `SIGNUP_WEBHOOK_URL`; the privacy policy covers what is collected.
+  library, the nav and the footer. Submissions go through `/api/signup` to
+  Resend: checklist signups join a mailing-list segment and get a welcome email,
+  and training inquiries are emailed to Data Literacy; the privacy policy covers what is collected.
 
 - **Connector docs and privacy pages.** The web app now serves `/mcp` (how to
   connect and use the Data Pitfalls MCP connector) and `/privacy` (what the web

@@ -88,9 +88,13 @@ export default function PrivacyPage() {
           unsubscribe from any email at any time.
         </li>
         <li>
-          <strong>Where it goes:</strong> this site doesn&rsquo;t keep it. Each submission is passed
-          straight to the email and contact tools Data Literacy uses to manage its mailing list and
-          inquiries, and is kept there until you unsubscribe or ask us to delete it.
+          <strong>Where it goes:</strong> this site doesn&rsquo;t keep it. Checklist signups are
+          added to Data Literacy&rsquo;s mailing list in{' '}
+          <a href="https://resend.com/legal/privacy-policy" rel="noreferrer">
+            Resend
+          </a>
+          , the email service we use, and kept there until you unsubscribe or ask us to delete them.
+          Training inquiries are sent to Data Literacy by email through Resend.
         </li>
         <li>
           <strong>Your choices:</strong> to see, correct or delete your details, contact Ben Jones
@@ -106,8 +110,8 @@ export default function PrivacyPage() {
         <a href="https://vercel.com/legal/privacy-policy" rel="noreferrer">
           privacy policy
         </a>
-        . Signup and training details go to Data Literacy&rsquo;s own email and contact tools, as
-        described above. We don&rsquo;t sell or share data with anyone else.
+        . Signup and training details are handled by Resend, our email service, as described above.
+        We don&rsquo;t sell or share data with anyone else.
       </p>
 
       <h2>Retention</h2>

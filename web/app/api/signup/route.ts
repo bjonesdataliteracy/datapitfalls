@@ -1,12 +1,17 @@
 import { clientKey, createRateLimiter } from '../audit/rate-limit';
+import { SITE_URL } from '../../links';
+import { addContact, sendEmail } from './resend';
 
-// Email signups (the free checklist) and training inquiries from the site.
+// Email signups (the free checklist) and training inquiries from the site, both
+// handled through Data Literacy's Resend account. The site keeps nothing itself.
 //
-// The site keeps no list of its own: each valid submission is forwarded as JSON
-// to SIGNUP_WEBHOOK_URL, which can be any tool that accepts a webhook (a Zapier
-// or Make "catch hook" that adds the contact to Mailchimp, HubSpot, Resend, a
-// spreadsheet, and so on). With no webhook set, the route answers 503 and the
-// form says signups aren't open yet; nothing is stored or lost silently.
+// - Checklist: the address is added to the RESEND_SEGMENT_ID segment, and, when
+//   RESEND_FROM is set, gets a welcome email with the checklist link.
+// - Training: the inquiry is emailed from RESEND_FROM to TRAINING_NOTIFY_EMAIL,
+//   with reply-to set to the visitor. It is not added to the mailing list.
+//
+// When the settings a form needs are missing, the route answers 503 and the
+// form says signups aren't open yet, so nothing is lost silently.
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -56,32 +61,78 @@ export async function POST(req: Request): Promise<Response> {
   const email = field(body.email, 254)?.toLowerCase();
   if (!email || !EMAIL_RE.test(email)) return error('Please enter a valid email address.', 400);
 
-  const webhook = process.env.SIGNUP_WEBHOOK_URL;
-  if (!webhook) return error("Signups aren't open yet.", 503);
+  const env = process.env;
+  const ready =
+    kind === 'checklist'
+      ? env.RESEND_API_KEY && env.RESEND_SEGMENT_ID
+      : env.RESEND_API_KEY && env.RESEND_FROM && env.TRAINING_NOTIFY_EMAIL;
+  if (!ready) return error("Signups aren't open yet.", 503);
 
-  const payload = {
-    kind,
-    email,
-    name: field(body.name, 100),
-    company: field(body.company, 150),
-    teamSize: field(body.teamSize, 40),
-    message: field(body.message, 2000),
-    source: field(body.source, 200),
-    submittedAt: new Date().toISOString(),
-  };
-
+  const name = field(body.name, 100);
   try {
-    const res = await fetch(webhook, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!res.ok) throw new Error(`webhook answered ${res.status}`);
+    if (kind === 'checklist') {
+      await addContact(email, env.RESEND_SEGMENT_ID!, name);
+      if (env.RESEND_FROM) {
+        // The signup has succeeded; a failed welcome email is only logged.
+        await sendEmail(welcomeEmail(email)).catch((err) =>
+          console.error('signup: welcome email failed:', err instanceof Error ? err.message : err)
+        );
+      }
+    } else {
+      await sendEmail(
+        inquiryEmail(env.TRAINING_NOTIFY_EMAIL!, {
+          email,
+          name,
+          company: field(body.company, 150),
+          teamSize: field(body.teamSize, 40),
+          message: field(body.message, 2000),
+          source: field(body.source, 200),
+        })
+      );
+    }
   } catch (err) {
-    console.error('signup: forwarding failed:', err instanceof Error ? err.message : err);
+    console.error('signup: Resend call failed:', err instanceof Error ? err.message : err);
     return error('Something went wrong on our side. Please try again later.', 502);
   }
 
   return Response.json({ ok: true });
+}
+
+const CHECKLIST_URL = `${SITE_URL}/checklist`;
+
+function welcomeEmail(to: string) {
+  return {
+    to,
+    subject: 'Your Data Pitfalls checklist',
+    text: [
+      'Thanks for signing up.',
+      '',
+      `Here is your printable checklist of every pitfall from Avoiding Data Pitfalls: ${CHECKLIST_URL}`,
+      '',
+      'Open it and choose "Print or save as PDF" to keep a copy.',
+      '',
+      'Ben Jones, Data Literacy',
+    ].join('\n'),
+  };
+}
+
+function inquiryEmail(
+  to: string,
+  f: Record<'email' | 'name' | 'company' | 'teamSize' | 'message' | 'source', string | undefined>
+) {
+  const lines = [
+    `Name: ${f.name ?? '-'}`,
+    `Email: ${f.email}`,
+    `Company: ${f.company ?? '-'}`,
+    `Team size: ${f.teamSize ?? '-'}`,
+    `Page: ${f.source ?? '-'}`,
+    '',
+    f.message ?? '(no message)',
+  ];
+  return {
+    to,
+    subject: `Training inquiry from ${f.name ?? f.email}${f.company ? ` (${f.company})` : ''}`,
+    text: lines.join('\n'),
+    replyTo: f.email,
+  };
 }
