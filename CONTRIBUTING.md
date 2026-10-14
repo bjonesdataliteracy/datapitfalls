@@ -183,7 +183,7 @@ docs: clarify taxonomy rule format with R example
 
 ## Licensing of contributions
 
-By contributing to datapitfalls, you agree that your contributions will be licensed under the [MIT License](LICENSE), the same license that covers the project. You confirm that you have the right to submit the work under that license.
+By contributing to datapitfalls, you agree that your contributions to the code will be licensed under the [MIT License](LICENSE), and your contributions to the taxonomy (the rule files in `src/taxonomy/` and their text) under [CC BY-NC 4.0](LICENSE-TAXONOMY.md), and that Data Literacy, Inc. may also license your taxonomy contributions commercially as part of the taxonomy. You confirm that you have the right to submit the work under those terms.
 
 ---
 

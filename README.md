@@ -12,7 +12,7 @@
 
 [![CI](https://github.com/bjonesdataliteracy/datapitfalls/actions/workflows/ci.yml/badge.svg)](https://github.com/bjonesdataliteracy/datapitfalls/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/datapitfalls.svg)](https://www.npmjs.com/package/datapitfalls)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Code: MIT](https://img.shields.io/badge/code-MIT-green.svg)](LICENSE) [![Taxonomy: CC BY-NC 4.0](https://img.shields.io/badge/taxonomy-CC%20BY--NC%204.0-lightgrey.svg)](LICENSE-TAXONOMY.md)
 [![GitHub stars](https://img.shields.io/github/stars/bjonesdataliteracy/datapitfalls.svg?style=social)](https://github.com/bjonesdataliteracy/datapitfalls/stargazers)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
@@ -282,7 +282,14 @@ datapitfalls is being built in the open, phase by phase. See the full [**Roadmap
 
 ## License
 
-datapitfalls is released under the [MIT License](LICENSE). © 2026 Ben Jones / Data Literacy, Inc.
+datapitfalls has two licenses:
+
+- **Code** (the engine, CLI, MCP server and web app) is released under the [MIT License](LICENSE).
+- **The Avoiding Data Pitfalls taxonomy** (the pitfall rules and their text) is released under [CC BY-NC 4.0](LICENSE-TAXONOMY.md).
+
+Using the rules at work, in Claude or the CLI, is free. Selling them, or building them into a paid product or course, needs a license from [Data Literacy](https://dataliteracy.com). Releases up to 0.11.0 shipped the taxonomy under MIT, and those copies stay MIT.
+
+© 2026 Ben Jones / Data Literacy, Inc.
 
 ---
 

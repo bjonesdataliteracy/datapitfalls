@@ -111,11 +111,19 @@ export default function McpPage() {
         <a href="https://github.com/bjonesdataliteracy/datapitfalls/issues" rel="noreferrer">
           GitHub
         </a>
-        . The connector is open source:{' '}
+        . The connector&apos;s code is open source (MIT):{' '}
         <a href="https://github.com/bjonesdataliteracy/datapitfalls" rel="noreferrer">
           bjonesdataliteracy/datapitfalls
         </a>
-        .
+        . The taxonomy it serves is licensed under{' '}
+        <a
+          href="https://github.com/bjonesdataliteracy/datapitfalls/blob/main/LICENSE-TAXONOMY.md"
+          rel="noreferrer"
+        >
+          CC BY-NC 4.0
+        </a>
+        : using it at work is free, and selling it or building it into a paid product needs a license
+        from Data Literacy.
       </p>
     </main>
   );

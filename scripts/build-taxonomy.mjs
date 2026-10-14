@@ -62,6 +62,7 @@ rules.sort((a, b) => {
 const header = `// GENERATED FILE — do not edit by hand.
 // Source of truth: the per-rule YAML files in src/taxonomy/.
 // Regenerate with: npm run build:taxonomy
+// The taxonomy is licensed under CC BY-NC 4.0; see LICENSE-TAXONOMY.md.
 
 import type { PitfallRule } from "./types.js";
 `;

@@ -3,7 +3,7 @@
   "version": "0.11.0",
   "description": "Helping you steer clear of common blunders when working with data. Based on Avoiding Data Pitfalls by Ben Jones.",
   "author": "Ben Jones <bjones@dataliteracy.com> (https://dataliteracy.com)",
-  "license": "MIT",
+  "license": "MIT AND CC-BY-NC-4.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bjonesdataliteracy/datapitfalls.git"
@@ -45,7 +45,8 @@
     "datapitfalls": "dist/bin.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "LICENSE-TAXONOMY.md"
   ],
   "scripts": {
     "build": "npm run build:taxonomy && tsc",
