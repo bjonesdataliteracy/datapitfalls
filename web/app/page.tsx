@@ -1,4 +1,5 @@
 import { ruleCount } from 'datapitfalls';
+import { HeroVortex } from './components/HeroVortex';
 import { SetupTabs } from './components/SetupTabs';
 import { SignupForm } from './components/SignupForm';
 import { CodeLine } from './components/CopyButton';
@@ -30,8 +31,7 @@ export default function Home() {
   return (
     <main>
       <div className="hero">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="hero-vortex" src="/vortex.jpg" alt="" width={1200} height={900} />
+        <HeroVortex />
         <div className="wrap">
           <span className="pill">
             From the book by Ben Jones <b>{total} pitfalls</b>
