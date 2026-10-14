@@ -14,6 +14,7 @@ import {
   type RuleInputKind,
   type Severity,
 } from '../taxonomy/index.js';
+import { reportMethod, reviewMethod } from './method.js';
 
 export const SITE_URL = 'https://www.avoidingdatapitfalls.com';
 export const BOOK_CITATION = 'Avoiding Data Pitfalls by Ben Jones (Wiley, 2019)';
@@ -225,15 +226,13 @@ export function buildChecklist(
   const lines = [
     `# Data pitfalls checklist for ${INPUT_LABEL[inputType]}: ${rules.length} rules`,
     '',
-    'Work through every item against the actual work. For each one, decide whether the pitfall is',
-    'active (evident from the work itself), latent (a risky pattern whose impact depends on data you',
-    "can't see; name the condition under which it bites), avoided (the work has a concrete",
-    "countermeasure you can point to), or not applicable. Report findings with the rule id. Don't",
-    'stretch: a short list of real findings beats a long list of speculative ones.',
+    reviewMethod(inputType),
+    '',
+    '## The rules',
   ];
   let n = 0;
   for (const domain of domainOrder) {
-    lines.push('', `## ${domain}`);
+    lines.push('', `### ${domain}`);
     for (const rule of rules.filter((r) => r.domain === domain)) {
       n += 1;
       lines.push(
@@ -244,7 +243,12 @@ export function buildChecklist(
       );
     }
   }
-  lines.push('', 'Call get_pitfall with an id for examples and the book reference.');
+  lines.push(
+    '',
+    'Call get_pitfall with an id for examples and the book reference.',
+    '',
+    reportMethod(rules.length)
+  );
   return { count: rules.length, text: withFooter(lines.join('\n')) };
 }
 

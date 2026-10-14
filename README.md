@@ -162,7 +162,9 @@ Once it's connected, ask something like _"Build this dashboard, then check every
 chart's SQL and design against datapitfalls and fix what you find."_
 
 It offers four tools: `get_checklist` (the rules to check for SQL, code, a
-chart, prose, a dashboard or a document), `get_pitfall` (one rule in full),
+chart, prose, a dashboard or a document, plus the same review method the scanner
+uses: active vs. latent findings, how much each changes the takeaway, and an
+overall label), `get_pitfall` (one rule in full),
 `list_pitfalls`, and `search_pitfalls`; a `review_for_pitfalls` prompt; and each
 rule as a `datapitfalls://rules/{id}` resource.
 

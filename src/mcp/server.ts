@@ -33,7 +33,7 @@ export const SERVER_NAME = 'datapitfalls';
 
 const INSTRUCTIONS = `This server holds the Avoiding Data Pitfalls taxonomy: ${getAllRules().length} rules for common mistakes in data work, from ${BOOK_CITATION} (${SITE_URL}). It does not run checks itself: you do the checking, using its rules.
 
-When asked to check a SQL query, chart, dashboard, analysis write-up or report for data pitfalls (or after building one), call get_checklist for that kind of work, check every item against the actual work, and report findings with their rule ids. Use get_pitfall for a rule's examples and search_pitfalls to find rules by topic. Cite the book and site when you report.`;
+When asked to check a SQL query, chart, dashboard, analysis write-up or report for data pitfalls (or after building one), call get_checklist for that kind of work. It returns the rules plus the review method: check every rule against the actual work as its "How to review" section says, and write up the result as its "How to report" section says (an overall label, a short summary, then findings rated by how much they change the takeaway). Use get_pitfall for a rule's examples and search_pitfalls to find rules by topic. Cite the book and site when you report.`;
 
 const READ_ONLY = {
   readOnlyHint: true,
@@ -97,7 +97,8 @@ export function createDataPitfallsServer(): McpServer {
       description:
         'Call this before reviewing any data work for data pitfalls: a SQL query, code, a chart, a dashboard, ' +
         'a written analysis or a report document. Returns the Avoiding Data Pitfalls rules that apply to that kind of ' +
-        'work as a checklist, each with what to check for and how to fix it. After building a dashboard, call it with ' +
+        'work as a checklist, each with what to check for and how to fix it, plus how to review the work and report ' +
+        'the result (active vs. latent findings, how much each changes the takeaway, the overall label). After building a dashboard, call it with ' +
         'inputType "dashboard" and check every chart\'s SQL and design against it, then fix what you find. ' +
         'Uses the same rule selection as the datapitfalls engine.',
       inputSchema: {
@@ -220,9 +221,9 @@ export function createDataPitfallsServer(): McpServer {
   return server;
 }
 
-/** The review method behind the review_for_pitfalls prompt. It mirrors the
- *  engine's report shape (src/analyze.ts, src/report.ts) so a later
- *  engine-backed tool reads like the same product. */
+/** The text behind the review_for_pitfalls prompt. The method itself lives in
+ *  the get_checklist response (src/mcp/method.ts), so a review reads the same
+ *  whether a person picked this prompt or Claude called get_checklist on its own. */
 export function reviewPrompt(inputType: ChecklistInputType, artifact?: string): string {
   const subject = artifact?.trim()
     ? `the ${inputType} below`
@@ -230,26 +231,7 @@ export function reviewPrompt(inputType: ChecklistInputType, artifact?: string): 
   const lines = [
     `Review ${subject} for data pitfalls, using the Avoiding Data Pitfalls taxonomy.`,
     '',
-    '## Method',
-    `1. Call get_checklist with inputType "${inputType}" and work through every item against the actual work.`,
-    '2. Report a finding only when the work shows real evidence of the pitfall. Be conservative: avoid speculation and false positives.',
-    '3. Classify each finding:',
-    '   - **active**: evident from the work itself.',
-    "   - **latent**: a risky pattern whose impact depends on data you can't see (e.g. a filter that only matters if nulls exist). Phrase it conditionally and state the data condition under which it bites.",
-    '4. Rate how much each finding matters: **changes-takeaway** (fixing it would likely change the conclusion), **weakens-support** (the conclusion may stand but is less supported than presented) or **polish** (clearer or better crafted, same message). Most findings are not changes-takeaway.',
-    '5. Note up to two pitfalls the work visibly avoided, only where it has a concrete countermeasure you can cite (a guard, a stated caveat, a deliberate choice). Zero is common and fine.',
-    '',
-    '## Report',
-    'Start with one or two sentences on the overall state of the work: lead with whether it is fundamentally sound, then the single most important thing to address. If every finding is latent, say plainly that nothing is evidently wrong and frame them as conditions to verify.',
-    '',
-    'Then list findings, most consequential first, active before latent. For each:',
-    '- **Rule**: name and id (e.g. Truncated Y-Axis, `truncated-y-axis`), domain and severity',
-    '- **Nature**: active or latent (with the condition, if latent) · **Consequence**: changes-takeaway, weakens-support or polish',
-    '- **Evidence**: quote the line or phrase, or name the chart element (axis, legend, mark, label)',
-    '- **Why it matters**: one or two sentences',
-    '- **Fix**: the remediation, applied to this work',
-    '',
-    'Then **Avoided** (if any), with the evidence. If nothing was found, say "No pitfalls detected", along with how many rules you checked against: a clean review means none of the cataloged pitfalls were found, not that the work is correct.',
+    `Call get_checklist with inputType "${inputType}". Check every rule against the actual work as its "How to review" section says, then write up the result as its "How to report" section says: an overall label, a one- or two-sentence summary, the findings (active or latent, with confidence and whether each changes the takeaway, weakens support or is polish), and any pitfalls the work avoided.`,
     '',
     `Close by citing ${BOOK_CITATION} and ${SITE_URL}.`,
   ];
