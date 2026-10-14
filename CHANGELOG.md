@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **The connector now carries the scanner's review method.** `get_checklist`
+  wraps the rules in a "How to review" and a "How to report" section, so
+  Claude in any MCP client reviews the way the engine does: active vs. latent
+  findings with a confidence, a consequence rating (changes the takeaway,
+  weakens support, polish), lower-confidence latent findings held back, the
+  same overall labels as the scanner (No pitfalls detected through Serious
+  pitfalls found), a short summary first, up to two avoided pitfalls, and the
+  friendly-guide voice. Chart, dashboard and document checklists add the
+  cross-chart checks, and dashboard and document checklists the cross-stage
+  checks (a SQL filter that skews a later chart or claim). The
+  `review_for_pitfalls` prompt now points at that method instead of carrying
+  its own copy, since MCP prompts only run when a person picks one.
+
 - **Connector docs and privacy pages.** The web app now serves `/mcp` (how to
   connect and use the Data Pitfalls MCP connector) and `/privacy` (what the web
   app and the connector collect and keep), ready for the Claude connector

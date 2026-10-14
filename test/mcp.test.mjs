@@ -10,12 +10,15 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import {
   CHECKLIST_INPUT_TYPES,
+  CONSEQUENCES,
+  OVERALL_LABELS,
   createDataPitfallsServer,
   handleMcpRequest,
   rulesForChecklist,
   suggestIds,
 } from '../dist/mcp/index.js';
 import { getAllRules, getRule, rulesForInput } from '../dist/taxonomy/index.js';
+import { TIER_LABEL } from '../dist/report.js';
 
 const PKG = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
 const BIN = fileURLToPath(new URL('../dist/bin.js', import.meta.url));
@@ -134,6 +137,56 @@ test('get_checklist builds a numbered checklist, and focus narrows it', async ()
   await client.close();
 });
 
+test('get_checklist carries the review and report method', async () => {
+  const client = await connect();
+  const sql = await call(client, 'get_checklist', { inputType: 'sql' });
+  const review = sql.text.indexOf('## How to review');
+  const rules = sql.text.indexOf('## The rules');
+  const report = sql.text.indexOf('## How to report');
+  assert.ok(review > 0 && rules > review && report > rules, 'method, rules, report in order');
+  for (const term of ['active', 'latent', 'avoided', 'Confidence', ...CONSEQUENCES]) {
+    assert.ok(sql.text.includes(term), term);
+  }
+  for (const label of Object.values(OVERALL_LABELS)) assert.ok(sql.text.includes(label), label);
+  assert.ok(sql.text.includes(`checked against ${rulesForChecklist('sql').length} rules`));
+  assert.ok(!sql.text.includes('several charts'));
+  assert.ok(!sql.text.includes('stages of one analysis'));
+
+  const chart = await call(client, 'get_checklist', { inputType: 'chart' });
+  assert.ok(chart.text.includes('several charts'));
+  assert.ok(!chart.text.includes('stages of one analysis'));
+
+  const dashboard = await call(client, 'get_checklist', { inputType: 'dashboard' });
+  assert.ok(dashboard.text.includes('several charts'));
+  assert.ok(dashboard.text.includes('stages of one analysis'));
+
+  const focused = await call(client, 'get_checklist', {
+    inputType: 'sql',
+    focus: ['Technical Trespasses'],
+  });
+  const focusedCount = rulesForChecklist('sql').filter(
+    (r) => r.domain === 'Technical Trespasses'
+  ).length;
+  assert.ok(focused.text.includes(`checked against ${focusedCount} rules`));
+  await client.close();
+});
+
+test("the checklist method uses the engine's ratings and overall labels", () => {
+  assert.deepEqual(OVERALL_LABELS, {
+    serious: TIER_LABEL.serious,
+    attention: TIER_LABEL.attention,
+    verify: TIER_LABEL.verify,
+    clear: TIER_LABEL.clear,
+  });
+  const engine = readFileSync(new URL('../src/analyze.ts', import.meta.url), 'utf8');
+  const type = /export type Consequence = ([^;]+);/.exec(engine);
+  assert.ok(type, 'Consequence type found in src/analyze.ts');
+  assert.deepEqual(
+    [...type[1].matchAll(/'([^']+)'/g)].map((m) => m[1]),
+    [...CONSEQUENCES]
+  );
+});
+
 test('search_pitfalls finds rules by keyword and handles empty and no-hit queries', async () => {
   const client = await connect();
   const hit = await call(client, 'search_pitfalls', { query: 'dual axis' });
@@ -159,7 +212,7 @@ test('review_for_pitfalls prompt carries the review method and the work', async 
   });
   const text = result.messages[0].content.text;
   assert.ok(text.includes('get_checklist with inputType "sql"'));
-  for (const word of ['active', 'latent', 'changes-takeaway', 'Avoided', SITE]) {
+  for (const word of ['How to review', 'How to report', 'active', 'latent', 'avoided', SITE]) {
     assert.ok(text.includes(word), word);
   }
   assert.ok(text.includes('SELECT AVG(rate) FROM regions'));

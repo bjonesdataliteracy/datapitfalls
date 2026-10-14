@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 const TOOLS: Array<[string, string]> = [
   [
     'get_checklist',
-    'The rules that apply to a kind of work (sql, code, chart, image, prose, text, dashboard or document) as a checklist, each with what to check for and how to fix it. Optionally narrowed to some domains.',
+    'The rules that apply to a kind of work (sql, code, chart, image, prose, text, dashboard or document) as a checklist, each with what to check for and how to fix it, plus the review method: how to judge each finding and how to report the result. Optionally narrowed to some domains.',
   ],
   [
     'get_pitfall',

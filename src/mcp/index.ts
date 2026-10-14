@@ -16,3 +16,4 @@ export {
   suggestIds,
   type ChecklistInputType,
 } from './catalog.js';
+export { CONSEQUENCES, OVERALL_LABELS, reportMethod, reviewMethod } from './method.js';

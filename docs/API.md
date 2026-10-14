@@ -603,7 +603,11 @@ Tools (all read-only): `list_pitfalls({ domain?, severity? })`,
 `get_pitfall({ id })`, `get_checklist({ inputType, focus? })` and
 `search_pitfalls({ query })`. `inputType` is one of `sql`, `code`, `chart`,
 `image`, `prose`, `text`, `dashboard` or `document`; `dashboard` is the code
-rules plus the chart rules, de-duplicated, chart rules first. Prompt:
+rules plus the chart rules, de-duplicated, chart rules first. The checklist
+opens with a "How to review" section and closes with a "How to report" section
+(`reviewMethod` and `reportMethod`, also exported): the engine's method written
+out as instructions, with the same consequence ratings (`CONSEQUENCES`) and
+overall labels (`OVERALL_LABELS`, matching `TIER_LABEL`). Prompt:
 `review_for_pitfalls({ inputType, artifact? })`. Resources:
 `datapitfalls://rules/{id}` and `datapitfalls://domains`.
 
