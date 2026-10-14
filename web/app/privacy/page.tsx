@@ -21,8 +21,9 @@ export default function PrivacyPage() {
       <h1>Privacy policy</h1>
       <p className={styles.lede}>
         This covers the datapitfalls web app at www.avoidingdatapitfalls.com and the Data Pitfalls
-        MCP connector at www.avoidingdatapitfalls.com/api/mcp. In short: we don&rsquo;t ask who you
-        are, and we don&rsquo;t store what you send.
+        MCP connector at www.avoidingdatapitfalls.com/api/mcp. In short: the connector and the
+        scanner don&rsquo;t ask who you are and don&rsquo;t store what you send. The only personal
+        data we collect is what you choose to give in the checklist signup or the training form.
       </p>
 
       <h2>The MCP connector</h2>
@@ -74,6 +75,29 @@ export default function PrivacyPage() {
         </li>
       </ul>
 
+      <h2>Checklist signup and training inquiries</h2>
+      <ul>
+        <li>
+          <strong>What we collect:</strong> your email address when you sign up for the free
+          checklist, and, if you use the training form, the name, company, team size and message you
+          enter.
+        </li>
+        <li>
+          <strong>Why:</strong> to send you the checklist and occasional emails about avoiding data
+          pitfalls from Data Literacy, Inc., or to reply to your training inquiry. You can
+          unsubscribe from any email at any time.
+        </li>
+        <li>
+          <strong>Where it goes:</strong> this site doesn&rsquo;t keep it. Each submission is passed
+          straight to the email and contact tools Data Literacy uses to manage its mailing list and
+          inquiries, and is kept there until you unsubscribe or ask us to delete it.
+        </li>
+        <li>
+          <strong>Your choices:</strong> to see, correct or delete your details, contact Ben Jones
+          through dataliteracy.com (below).
+        </li>
+      </ul>
+
       <h2>Hosting and third parties</h2>
       <p>
         The site and connector run on Vercel. Like any web host, Vercel processes standard request
@@ -82,13 +106,16 @@ export default function PrivacyPage() {
         <a href="https://vercel.com/legal/privacy-policy" rel="noreferrer">
           privacy policy
         </a>
-        . We don&rsquo;t sell or share data with anyone else.
+        . Signup and training details go to Data Literacy&rsquo;s own email and contact tools, as
+        described above. We don&rsquo;t sell or share data with anyone else.
       </p>
 
       <h2>Retention</h2>
       <p>
-        We keep no copies of what you send to the web app or the connector. Rate-limit counts last
-        about a minute. Hosting logs are kept by Vercel for its standard retention period.
+        We keep no copies of what you send to the web app or the connector. Signup and inquiry
+        details are kept by Data Literacy until you unsubscribe or ask us to delete them. Rate-limit
+        counts last about a minute. Hosting logs are kept by Vercel for its standard retention
+        period.
       </p>
 
       <h2>Contact</h2>
@@ -104,7 +131,7 @@ export default function PrivacyPage() {
         .
       </p>
 
-      <p className={styles.updated}>Last updated October 13, 2026.</p>
+      <p className={styles.updated}>Last updated October 14, 2026.</p>
     </main>
   );
 }

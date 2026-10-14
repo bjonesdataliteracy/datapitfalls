@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Email signup, free checklist and training pages.** The site now offers a
+  printable checklist of every pitfall (`/checklist`) in exchange for an email
+  address, a `/training` page for Data Pitfalls workshops and reviews with an
+  inquiry form, and "Train your team" links on the home page, the pitfall
+  library, the nav and the footer. Submissions go through `/api/signup` to the
+  webhook in `SIGNUP_WEBHOOK_URL`; the privacy policy covers what is collected.
+
 - **Connector docs and privacy pages.** The web app now serves `/mcp` (how to
   connect and use the Data Pitfalls MCP connector) and `/privacy` (what the web
   app and the connector collect and keep), ready for the Claude connector
