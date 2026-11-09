@@ -34,4 +34,6 @@ export interface PitfallRule {
   example_good: string;
   remediation: string;
   references: string[];
+  /** Former ids of this rule, kept so stored references to a renamed rule still resolve. */
+  aliases?: string[];
 }

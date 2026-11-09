@@ -14,7 +14,7 @@
 import { McpServer, ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { PACKAGE_VERSION } from '../version.js';
-import { DOMAINS, SEVERITIES, getAllRules, getRule } from '../taxonomy/index.js';
+import { DOMAINS, SEVERITIES, getAllRules, getRule, taxonomyVersion } from '../taxonomy/index.js';
 import {
   BOOK_CITATION,
   CHECKLIST_INPUT_TYPES,
@@ -33,7 +33,9 @@ export const SERVER_NAME = 'datapitfalls';
 
 const INSTRUCTIONS = `This server holds the Avoiding Data Pitfalls taxonomy: ${getAllRules().length} rules for common mistakes in data work, from ${BOOK_CITATION} (${SITE_URL}). It does not run checks itself: you do the checking, using its rules.
 
-When asked to check a SQL query, chart, dashboard, analysis write-up or report for data pitfalls (or after building one), call get_checklist for that kind of work. It returns the rules plus the review method: check every rule against the actual work as its "How to review" section says, and write up the result as its "How to report" section says (an overall label, a short summary, then findings rated by how much they change the takeaway). Use get_pitfall for a rule's examples and search_pitfalls to find rules by topic. Cite the book and site when you report.`;
+When asked to check a SQL query, chart, dashboard, analysis write-up or report for data pitfalls (or after building one), call get_checklist for that kind of work. It returns the rules plus the review method: check every rule against the actual work as its "How to review" section says, and write up the result as its "How to report" section says (an overall label, a short summary, then findings rated by how much they change the takeaway). Use get_pitfall for a rule's examples and search_pitfalls to find rules by topic. Cite the book and site when you report.
+
+Taxonomy version: ${taxonomyVersion} (a fingerprint of the rule catalog; record it when you store findings).`;
 
 const READ_ONLY = {
   readOnlyHint: true,

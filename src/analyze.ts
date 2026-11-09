@@ -6,11 +6,12 @@
 // validated against the catalog, so a finding can only ever reference a real rule.
 
 import Anthropic from '@anthropic-ai/sdk';
-import { getRule, rulesForInput } from './taxonomy/index.js';
+import { getRule, rulesForInput, taxonomyVersion } from './taxonomy/index.js';
+import { extractEventRefs, renderTranscript, type Transcript } from './transcript.js';
 import type { Domain, PitfallRule, Severity } from './taxonomy/index.js';
 
 /** The kind of artifact being audited. */
-export type InputKind = 'code' | 'text' | 'image' | 'document' | 'slides' | 'chain';
+export type InputKind = 'code' | 'text' | 'image' | 'document' | 'slides' | 'chain' | 'transcript';
 
 /** Image media types Claude Vision accepts (matches the SDK's base64 image source). */
 export type ImageMediaType = 'image/png' | 'image/jpeg' | 'image/gif' | 'image/webp';
@@ -100,7 +101,15 @@ export interface ChainDetectionInput {
   stages: ChainStage[];
 }
 
-export type DetectionInput = SingleArtifactInput | ChainDetectionInput;
+/** One analytics-agent session, reviewed step by step and across steps. */
+export interface TranscriptDetectionInput {
+  kind: 'transcript';
+  transcript: Transcript;
+  /** Optional source filename, surfaced to the model for context. */
+  filename?: string;
+}
+
+export type DetectionInput = SingleArtifactInput | ChainDetectionInput | TranscriptDetectionInput;
 
 /** Map a file extension (with leading dot, any case) to a Vision media type. */
 export function imageMediaTypeForExtension(ext: string): ImageMediaType | undefined {
@@ -157,6 +166,8 @@ export interface Finding {
   remediation: string;
   /** EXPERIMENTAL — present only when a non-baseline variant is selected. */
   consequence?: Consequence;
+  /** Transcript scans only: the zero-based event numbers the evidence cites. */
+  eventRefs?: number[];
 }
 
 /** EXPERIMENTAL — a pitfall the work visibly avoided ('summary' variant only).
@@ -185,6 +196,8 @@ export interface PitfallReport {
   kind: InputKind;
   model: string;
   rulesConsidered: number;
+  /** Fingerprint of the rule catalog the scan was grounded on (see `taxonomyVersion`). */
+  taxonomyVersion?: string;
   usage?: DetectionUsage;
   /** EXPERIMENTAL — one-to-two-sentence overall assessment ('summary' variant only). */
   summary?: string;
@@ -518,6 +531,20 @@ function rawArtifactBlocks(input: SingleArtifactInput): Anthropic.ContentBlockPa
 }
 
 function buildUserContent(input: DetectionInput): Anthropic.MessageParam['content'] {
+  if (input.kind === 'transcript') {
+    const where = input.filename ? ` (${input.filename})` : '';
+    return (
+      `You are given the transcript of one session between a person and an AI analytics agent${where}. ` +
+      `Each event is numbered. Review the agent's work for data pitfalls from the catalog: its queries, ` +
+      `how it read the results, the charts it described, and the claims and conclusions it gave the ` +
+      `person. Check each step on its own and across steps: a filter in one query that skews a later ` +
+      `claim, a metric computed one way and described another, a conclusion that ignores an earlier ` +
+      `caveat. User messages are context, not work to review, but a user's doubt or correction often ` +
+      `marks where the agent went wrong. In each finding's evidence, cite the events involved as ` +
+      `"[event N]" using the numbers shown. Report all pitfalls via the report_findings tool.\n\n` +
+      `<transcript>\n${renderTranscript(input.transcript)}\n</transcript>`
+    );
+  }
   if (input.kind === 'chain') {
     const content: Anthropic.ContentBlockParam[] = [
       {
@@ -788,12 +815,17 @@ export async function detectPitfalls(
 
   const toolInput = findToolInput(message);
   const findings = extractFindings(toolInput);
+  if (input.kind === 'transcript') {
+    const count = input.transcript.events.length;
+    for (const finding of findings) finding.eventRefs = extractEventRefs(finding.evidence, count);
+  }
 
   return {
     findings,
     kind: input.kind,
     model,
     rulesConsidered: rules.length,
+    taxonomyVersion,
     summary: variant === 'summary' ? nonEmptyString(toolInput?.summary) : undefined,
     avoided: variant === 'summary' ? extractAvoided(toolInput, findings) : undefined,
     usage: message.usage

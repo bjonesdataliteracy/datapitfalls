@@ -1,0 +1,12 @@
+{
+  "id": "partial-latest-month",
+  "kind": "data",
+  "start_month": "2024-12",
+  "pitfall_ids": [
+    "partial-period-aggregation"
+  ],
+  "affected_questions": [
+    "monthly-passengers-trend"
+  ],
+  "ground_truth": "The latest released month is incomplete at release time; carriers file late, so totals rise in later releases."
+}

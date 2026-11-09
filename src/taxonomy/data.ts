@@ -5,6 +5,9 @@
 
 import type { PitfallRule } from "./types.js";
 
+/** Content fingerprint of this catalog (first 12 hex chars of a SHA-256). */
+export const TAXONOMY_VERSION = "8ecba93063d4";
+
 export const rules: PitfallRule[] = [
   {
     "id": "data-reality-gap",

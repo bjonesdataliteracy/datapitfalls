@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://avoidingdatapitfalls.com/schemas/finding.schema.json",
+  "title": "Finding",
+  "description": "One pitfall a datapitfalls review found in a piece of data work. Produced by the datapitfalls engine (detectPitfalls) and the datapitfalls agent's Debrief pass.",
+  "type": "object",
+  "required": [
+    "ruleId",
+    "name",
+    "domain",
+    "severity",
+    "confidence",
+    "nature",
+    "condition",
+    "evidence",
+    "explanation",
+    "remediation"
+  ],
+  "properties": {
+    "ruleId": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "An Avoiding Data Pitfalls rule id (kebab-case slug), e.g. multiple-comparisons."
+    },
+    "name": {
+      "type": "string",
+      "description": "The rule's human-readable name."
+    },
+    "domain": {
+      "type": "string",
+      "enum": [
+        "Epistemic Errors",
+        "Technical Trespasses",
+        "Mathematical Miscues",
+        "Statistical Slip-Ups",
+        "Analytical Aberrations",
+        "Graphical Gaffes",
+        "Design Dangers",
+        "Biased Baseline"
+      ]
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "info",
+        "warning",
+        "error"
+      ]
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "nature": {
+      "type": "string",
+      "enum": [
+        "active",
+        "latent"
+      ],
+      "description": "active: evident from the artifact itself. latent: depends on data the reviewer has not seen."
+    },
+    "condition": {
+      "type": "string",
+      "description": "For latent findings, the data condition under which the pitfall bites. Empty for active findings."
+    },
+    "evidence": {
+      "type": "string",
+      "description": "The specific evidence from the artifact (a quoted line, a chart element, or transcript events cited as [event N])."
+    },
+    "explanation": {
+      "type": "string"
+    },
+    "remediation": {
+      "type": "string"
+    },
+    "consequence": {
+      "type": "string",
+      "enum": [
+        "changes-takeaway",
+        "weakens-support",
+        "polish"
+      ],
+      "description": "Experimental: how much the finding changes the takeaway."
+    },
+    "eventRefs": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "description": "Transcript reviews only: zero-based event numbers the evidence cites."
+    }
+  }
+}

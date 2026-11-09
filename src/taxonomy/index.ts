@@ -4,7 +4,7 @@
 // rules are generated from the per-rule YAML files into data.ts; see
 // scripts/build-taxonomy.mjs.
 
-import { rules } from './data.js';
+import { rules, TAXONOMY_VERSION } from './data.js';
 import { DOMAINS, SEVERITIES, type Domain, type PitfallRule, type Severity } from './types.js';
 
 export { DOMAINS, SEVERITIES };
@@ -20,9 +20,35 @@ export function ruleCount(): number {
   return rules.length;
 }
 
-/** Look up a single rule by its id, or `undefined` if there is no such rule. */
+/**
+ * Content fingerprint of the compiled catalog. It changes whenever any rule
+ * changes, so reports, memories and benchmark runs can record exactly which
+ * taxonomy they were grounded on.
+ */
+export const taxonomyVersion: string = TAXONOMY_VERSION;
+
+// Former ids of renamed rules, mapped to their current id.
+const aliasToId = new Map<string, string>();
+for (const rule of rules) {
+  for (const alias of rule.aliases ?? []) aliasToId.set(alias, rule.id);
+}
+
+/**
+ * Resolve a rule id or a former id (alias) to the rule's current id, or
+ * `undefined` if it names no rule. Use this before storing an id long-term.
+ */
+export function resolveRuleId(id: string): string | undefined {
+  if (rules.some((rule) => rule.id === id)) return id;
+  return aliasToId.get(id);
+}
+
+/**
+ * Look up a single rule by its id, or `undefined` if there is no such rule.
+ * A former id of a renamed rule (an alias) resolves to the rule too.
+ */
 export function getRule(id: string): PitfallRule | undefined {
-  return rules.find((rule) => rule.id === id);
+  const current = resolveRuleId(id);
+  return current === undefined ? undefined : rules.find((rule) => rule.id === current);
 }
 
 /** All rules in a given domain, in catalog order. */

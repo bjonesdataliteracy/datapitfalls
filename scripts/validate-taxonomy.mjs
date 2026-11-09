@@ -61,5 +61,29 @@ for (const file of files) {
   }
 }
 
+// Aliases (former ids of renamed rules) must never collide with a current id or
+// with another rule's alias, or a stored reference would resolve ambiguously.
+const aliasOwners = new Map();
+for (const file of files) {
+  let rule;
+  try {
+    rule = yaml.load(readFileSync(file, "utf8"));
+  } catch {
+    continue; // already reported above
+  }
+  for (const alias of Array.isArray(rule?.aliases) ? rule.aliases : []) {
+    const rel = relative(root, file);
+    if (seenIds.has(alias)) {
+      console.error(`[FAIL] ${rel}\n    - alias "${alias}" is also a current rule id (${seenIds.get(alias)})`);
+      failures++;
+    } else if (aliasOwners.has(alias)) {
+      console.error(`[FAIL] ${rel}\n    - alias "${alias}" is also an alias of ${aliasOwners.get(alias)}`);
+      failures++;
+    } else {
+      aliasOwners.set(alias, rel);
+    }
+  }
+}
+
 console.log(`\n${files.length} rule(s) checked, ${failures} invalid.`);
 process.exit(failures ? 1 : 0);

@@ -31,6 +31,7 @@ Each pitfall rule is an object with the following fields:
 | `example_good`       | string                            | A corrected version that avoids it.                                         |
 | `remediation`        | string                            | Actionable guidance for fixing it.                                          |
 | `references`         | list of strings                   | Sources: book sections, articles, citations.                                |
+| `aliases`            | list of kebab-case strings (optional) | Former ids of a renamed rule, so stored references still resolve. Never reuse one as another rule's id. |
 
 ### Severity guidance
 

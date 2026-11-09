@@ -1,0 +1,29 @@
+{
+  "id": "segment-table-counts-legs",
+  "kind": "quirk",
+  "statement": "t100_segment counts a connecting passenger once per flight leg; use t100_market for passenger totals by origin and destination.",
+  "scope": {
+    "dataset": "bts-t100",
+    "table": "t100_segment",
+    "metric": "passengers"
+  },
+  "evidence": [
+    {
+      "session_id": "demo-2026-11-09-01",
+      "events": [
+        1,
+        4
+      ],
+      "note": "User corrected a passenger total built from the segment table."
+    }
+  ],
+  "pitfall_ids": [
+    "data-reality-gap"
+  ],
+  "half_life_days": 365,
+  "created_at": "2026-11-09",
+  "last_verified": "2026-11-09",
+  "status": "confirmed",
+  "confidence": "high",
+  "source": "debrief"
+}

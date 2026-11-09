@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://avoidingdatapitfalls.com/schemas/memory-record.schema.json",
+  "title": "Memory record",
+  "description": "One entry in a datapitfalls agent Logbook: something worth remembering that a fresh query cannot show.",
+  "type": "object",
+  "required": [
+    "id",
+    "kind",
+    "statement",
+    "evidence",
+    "pitfall_ids",
+    "half_life_days",
+    "status",
+    "confidence",
+    "source"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "lesson",
+        "quirk",
+        "hypothesis",
+        "decision"
+      ]
+    },
+    "statement": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scope": {
+      "type": "object",
+      "properties": {
+        "dataset": {
+          "type": "string"
+        },
+        "table": {
+          "type": "string"
+        },
+        "metric": {
+          "type": "string"
+        }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "session_id": {
+            "type": "string"
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "query": {
+            "type": "string",
+            "description": "A read-only query that re-checks the memory."
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "pitfall_ids": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+        "description": "An Avoiding Data Pitfalls rule id (kebab-case slug), e.g. multiple-comparisons."
+      }
+    },
+    "half_life_days": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "How long the memory stays trustworthy before it must be re-verified."
+    },
+    "created_at": {
+      "type": "string",
+      "description": "ISO 8601 date."
+    },
+    "last_verified": {
+      "type": "string",
+      "description": "ISO 8601 date."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "proposed",
+        "confirmed",
+        "changed",
+        "expired"
+      ]
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "debrief",
+        "human"
+      ],
+      "description": "human-written records are never rewritten by Debrief, only flagged."
+    },
+    "taxonomyVersion": {
+      "type": "string"
+    }
+  }
+}

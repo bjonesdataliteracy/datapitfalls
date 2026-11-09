@@ -39,7 +39,8 @@
     }
   },
   "workspaces": [
-    "web"
+    "web",
+    "packages/schemas"
   ],
   "bin": {
     "datapitfalls": "dist/bin.js"
@@ -49,7 +50,7 @@
     "LICENSE-TAXONOMY.md"
   ],
   "scripts": {
-    "build": "npm run build:taxonomy && tsc",
+    "build": "npm run build:taxonomy && tsc && npm run build -w @datapitfalls/schemas",
     "build:taxonomy": "node scripts/build-taxonomy.mjs",
     "prepack": "npm run build",
     "pretest": "npm run build",

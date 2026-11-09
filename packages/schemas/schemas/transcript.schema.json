@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://avoidingdatapitfalls.com/schemas/transcript.schema.json",
+  "title": "Transcript",
+  "description": "One session between a person and an AI analytics agent: questions, queries, results, charts, claims and corrections. Reviewed by `datapitfalls scan --transcript` and captured by the datapitfalls agent.",
+  "type": "object",
+  "required": [
+    "session_id",
+    "agent",
+    "started_at",
+    "events"
+  ],
+  "properties": {
+    "session_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "agent": {
+      "type": "string",
+      "enum": [
+        "hex",
+        "claude",
+        "claude-code",
+        "generic"
+      ]
+    },
+    "started_at": {
+      "type": "string",
+      "description": "ISO 8601 timestamp."
+    },
+    "events": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "role",
+          "type",
+          "content"
+        ],
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "agent",
+              "tool"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "message",
+              "query",
+              "result",
+              "chart",
+              "correction"
+            ]
+          },
+          "content": {
+            "type": "string"
+          },
+          "sql": {
+            "type": "string",
+            "description": "The query text, for query events."
+          },
+          "at": {
+            "type": "string",
+            "description": "ISO 8601 timestamp."
+          }
+        }
+      }
+    },
+    "signals": {
+      "type": "object",
+      "description": "Counts of signs the user doubted or corrected the agent.",
+      "properties": {
+        "user_doubt": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rerun": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "correction": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}

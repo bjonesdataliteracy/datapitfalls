@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://avoidingdatapitfalls.com/schemas/pitfall-report.schema.json",
+  "title": "Pitfall report",
+  "description": "The result of one datapitfalls review: the findings plus how the review was run.",
+  "type": "object",
+  "required": [
+    "findings",
+    "kind",
+    "model",
+    "rulesConsidered"
+  ],
+  "properties": {
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "finding.schema.json"
+      }
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "code",
+        "text",
+        "image",
+        "document",
+        "slides",
+        "chain",
+        "transcript"
+      ]
+    },
+    "model": {
+      "type": "string"
+    },
+    "rulesConsidered": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "taxonomyVersion": {
+      "type": "string",
+      "description": "Fingerprint of the rule catalog the review was grounded on."
+    },
+    "tier": {
+      "type": "string",
+      "enum": [
+        "clear",
+        "verify",
+        "attention",
+        "serious"
+      ],
+      "description": "Overall rollup; present in CLI JSON output."
+    },
+    "summary": {
+      "type": "string"
+    },
+    "avoided": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "ruleId",
+          "evidence"
+        ],
+        "properties": {
+          "ruleId": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+            "description": "An Avoiding Data Pitfalls rule id (kebab-case slug), e.g. multiple-comparisons."
+          },
+          "name": {
+            "type": "string"
+          },
+          "domain": {
+            "type": "string",
+            "enum": [
+              "Epistemic Errors",
+              "Technical Trespasses",
+              "Mathematical Miscues",
+              "Statistical Slip-Ups",
+              "Analytical Aberrations",
+              "Graphical Gaffes",
+              "Design Dangers",
+              "Biased Baseline"
+            ]
+          },
+          "evidence": {
+            "type": "string"
+          },
+          "explanation": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "properties": {
+        "inputTokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "outputTokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cacheReadInputTokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cacheCreationInputTokens": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}
