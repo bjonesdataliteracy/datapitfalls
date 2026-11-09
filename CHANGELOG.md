@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Shared contracts for the datapitfalls family: `@datapitfalls/schemas`.** A new
+  package in `packages/schemas` ships JSON Schemas (2020-12) and TypeScript types
+  for Finding, Pitfall report, Transcript, Memory record and Trap, with examples.
+  datapitfalls bench and datapitfalls agent build on them (PRD 1, C1).
+- **Review an AI analytics agent session.** `datapitfalls scan --transcript
+  session.json` (and the `transcript` input kind) reviews an agent's queries,
+  results, charts and claims step by step and across steps; findings cite the
+  events involved as `[event N]` and list them in `eventRefs`. New exports:
+  `parseTranscript`, `renderTranscript`, `extractEventRefs` (C5).
+- **Stable rule ids.** Rules may list former ids in an optional `aliases` field;
+  `getRule` resolves them and the new `resolveRuleId` returns the current id. The
+  validator rejects aliases that collide with an id or another alias (C3).
+- **Taxonomy version.** `taxonomyVersion`, a fingerprint of the compiled catalog,
+  is exported, set on every report, and shown by the MCP server, so stored
+  findings and benchmark runs record which rules they used (C4).
 - **The connector now carries the scanner's review method.** `get_checklist`
   wraps the rules in a "How to review" and a "How to report" section, so
   Claude in any MCP client reviews the way the engine does: active vs. latent
@@ -37,6 +52,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The CLI splash labels the machine-readable usage "Automation:" instead of
+  "Agent:", to avoid confusion with datapitfalls agent (C2).
 - **Taxonomy relicensed to CC BY-NC 4.0.** The Avoiding Data Pitfalls rules
   and their text (`src/taxonomy/`, and everywhere they are served) are now
   under [CC BY-NC 4.0](LICENSE-TAXONOMY.md): free to use, including at work,

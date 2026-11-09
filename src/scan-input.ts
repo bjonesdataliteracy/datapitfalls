@@ -8,7 +8,8 @@ import { readFileSync } from 'node:fs';
 import { basename } from 'node:path';
 import { fileToStage, filesToInput } from './file-input.js';
 import type { FileInput, FileInputResult } from './file-input.js';
-import type { ChainDetectionInput, ChainStage } from './analyze.js';
+import type { ChainDetectionInput, ChainStage, TranscriptDetectionInput } from './analyze.js';
+import { parseTranscript } from './transcript.js';
 
 export type ScanInput = FileInputResult;
 
@@ -48,4 +49,23 @@ export async function buildChainInput(
     stages.push(result.stage);
   }
   return { input: { kind: 'chain', stages } };
+}
+
+/** Read one agent-session transcript (JSON) into a transcript DetectionInput. */
+export function buildTranscriptInput(file: string): { input: TranscriptDetectionInput } | { error: string } {
+  let text: string;
+  try {
+    text = readFileSync(file, 'utf8');
+  } catch {
+    return { error: `Could not read file: ${file}` };
+  }
+  let json: unknown;
+  try {
+    json = JSON.parse(text);
+  } catch {
+    return { error: `${file} is not valid JSON. A transcript is a JSON object; see docs/API.md.` };
+  }
+  const parsed = parseTranscript(json);
+  if ('error' in parsed) return { error: `${file}: ${parsed.error}` };
+  return { input: { kind: 'transcript', transcript: parsed.transcript, filename: basename(file) } };
 }

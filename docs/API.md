@@ -218,6 +218,36 @@ interface ChainStage {
 
 See [`fileToStage`](#routing-files-to-inputs) and `textStage` for building stages.
 
+### An AI analytics agent session — `TranscriptDetectionInput`
+
+Review one session between a person and an AI analytics agent: its queries, how
+it read the results, the charts it described and the claims it made, step by
+step and across steps. Each finding's evidence cites the events involved as
+`[event N]` (zero-based positions in `events`), and `eventRefs` lists them.
+
+```ts
+interface TranscriptDetectionInput {
+  kind: 'transcript';
+  transcript: Transcript;
+  filename?: string;
+}
+
+interface Transcript {
+  session_id: string;
+  agent: 'hex' | 'claude' | 'claude-code' | 'generic';
+  started_at: string; // ISO 8601
+  events: { role: 'user' | 'agent' | 'tool'; type: 'message' | 'query' | 'result' | 'chart' | 'correction'; content: string; sql?: string; at?: string }[];
+  signals?: { user_doubt?: number; rerun?: number; correction?: number };
+}
+```
+
+`parseTranscript(json)` checks an untrusted value and returns `{ transcript }`
+or `{ error }`; `renderTranscript` shows the numbered layout the model sees;
+`extractEventRefs(text, eventCount)` pulls `[event N]` references out of text.
+The JSON Schema for this shape ships in
+[`@datapitfalls/schemas`](../packages/schemas) as `transcript.schema.json`. From
+the CLI: `datapitfalls scan --transcript session.json`.
+
 ---
 
 ## Reports
@@ -225,9 +255,10 @@ See [`fileToStage`](#routing-files-to-inputs) and `textStage` for building stage
 ```ts
 interface PitfallReport {
   findings: Finding[];
-  kind: InputKind; // 'code' | 'text' | 'image' | 'document' | 'slides' | 'chain'
+  kind: InputKind; // 'code' | 'text' | 'image' | 'document' | 'slides' | 'chain' | 'transcript'
   model: string; // the model id that produced the report
   rulesConsidered: number; // how many catalog rules were in scope
+  taxonomyVersion?: string; // fingerprint of the rule catalog (always set by detectPitfalls)
   usage?: DetectionUsage; // token counts, when the SDK reports them
   // EXPERIMENTAL — present only with variant: 'summary' (not yet API-stable):
   summary?: string; // at most two sentences: overall state + top priority
@@ -248,6 +279,7 @@ interface Finding {
   remediation: string;
   // EXPERIMENTAL — present only with variant: 'summary' (not yet API-stable):
   consequence?: 'changes-takeaway' | 'weakens-support' | 'polish';
+  eventRefs?: number[]; // transcript scans only: the [event N] numbers the evidence cites
 }
 
 // EXPERIMENTAL — a pitfall the work visibly avoided ('summary' variant only).
@@ -534,7 +566,9 @@ docs, or your own grounding.
 ```ts
 function getAllRules(): readonly PitfallRule[];
 function ruleCount(): number;
-function getRule(id: string): PitfallRule | undefined;
+function getRule(id: string): PitfallRule | undefined; // also resolves former ids (aliases)
+function resolveRuleId(id: string): string | undefined; // current id for an id or alias
+const taxonomyVersion: string; // 12-hex-char fingerprint of the compiled catalog
 function getRulesByDomain(domain: Domain): PitfallRule[];
 function getRulesBySeverity(severity: Severity): PitfallRule[];
 function ruleCountsByDomain(): Record<Domain, number>;
@@ -549,7 +583,12 @@ Design Dangers and `data-reality-gap`; everything else gets the whole catalog.
 `Domain` and `Severity` are exported types, with the runtime arrays `DOMAINS`
 and `SEVERITIES`. A `PitfallRule` carries `id`, `name`, `domain`, `severity`,
 `description`, `detection_strategy`, `example_bad`, `example_good`,
-`remediation`, and `references` (see [`docs/PITFALL_TAXONOMY.md`](PITFALL_TAXONOMY.md)).
+`remediation`, `references`, and optionally `aliases` (see [`docs/PITFALL_TAXONOMY.md`](PITFALL_TAXONOMY.md)).
+
+Rule ids are stable: a renamed rule keeps its former ids in `aliases`, so
+`getRule` and `resolveRuleId` still resolve ids stored in old findings or
+memories. Store `resolveRuleId(id)` and `taxonomyVersion` alongside anything you
+keep long-term.
 
 ```ts
 import { ruleCountsByDomain } from 'datapitfalls';

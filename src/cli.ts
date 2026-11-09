@@ -4,7 +4,7 @@
 import { DOMAINS, TAGLINE, VERSION, ruleCount, ruleCountsByDomain } from './index.js';
 import { EFFORTS, detectPitfalls, type Effort } from './analyze.js';
 import { formatReport, hasBlockingFindings, reportTier } from './report.js';
-import { buildScanInput, buildChainInput } from './scan-input.js';
+import { buildScanInput, buildChainInput, buildTranscriptInput } from './scan-input.js';
 
 const useColor = Boolean(process.stdout.isTTY) && !process.env.NO_COLOR;
 
@@ -105,6 +105,10 @@ function introBox(border: string): string {
   return ['  ' + edge('╭' + horiz + '╮'), ...body, '  ' + edge('╰' + horiz + '╯')].join('\n');
 }
 
+// The splash's two audience labels share one width so their hint lines align.
+const LABEL_WIDTH = 'Automation:'.length;
+const HINT_INDENT = ' '.repeat(4 + LABEL_WIDTH + 2);
+
 function printSplash(theme: Theme): void {
   console.log();
   for (const line of WORDMARK) console.log('  ' + colorizeWordmark(line, theme.face, theme.bevel));
@@ -116,24 +120,23 @@ function printSplash(theme: Theme): void {
   console.log('  ' + paint(theme.heading, 'Getting Started:'));
   console.log(
     '    ' +
-      paint(theme.label, 'Human:') +
+      paint(theme.label, 'Human:'.padEnd(LABEL_WIDTH)) +
       '  ' +
       paint(theme.command, 'datapitfalls scan <file>') +
       '  scan a chart, code, report, or description'
   );
   console.log(
-    '            ' +
-      paint(theme.hint, 'add --all for every finding, --thorough for the deepest model')
+    HINT_INDENT + paint(theme.hint, 'add --all for every finding, --thorough for the deepest model')
   );
   console.log(
     '    ' +
-      paint(theme.label, 'Agent:') +
+      paint(theme.label, 'Automation:'.padEnd(LABEL_WIDTH)) +
       '  ' +
       paint(theme.command, 'datapitfalls scan --json <file>') +
       '  machine-readable findings'
   );
   console.log(
-    '            ' + paint(theme.hint, 'add --ci to exit non-zero when a blocking pitfall is found')
+    HINT_INDENT + paint(theme.hint, 'add --ci to exit non-zero when a blocking pitfall is found')
   );
   console.log();
   console.log(
@@ -215,6 +218,9 @@ function printHelp(): void {
       '  datapitfalls stats               Show the pitfall catalog size by domain\n' +
       '  datapitfalls scan <file>         Scan a code file, analysis description, chart image, or PDF for pitfalls\n' +
       '  datapitfalls scan <a.png> <b.png> …  Scan several charts together (cross-chart pitfalls)\n' +
+      '  datapitfalls scan --transcript <session.json>\n' +
+      '                                   Review an AI analytics agent session (a JSON transcript);\n' +
+      '                                   findings cite the events involved as [event N]\n' +
       '  datapitfalls mcp                 Serve the pitfall taxonomy as an MCP server over stdio (no API key)\n' +
       '    --text                         Treat the file as a plain-English analysis description\n' +
       '    --thorough                     Use Opus 4.7 instead of the default Sonnet 4.6\n' +
@@ -261,6 +267,7 @@ async function scan(args: string[]): Promise<void> {
   let ci = false;
   let forceText = false;
   let chain = false;
+  let transcript = false;
   let summary = false;
   for (const arg of args) {
     if (arg in MODEL_FLAGS) {
@@ -277,6 +284,8 @@ async function scan(args: string[]): Promise<void> {
       forceText = true;
     } else if (arg === '--chain') {
       chain = true;
+    } else if (arg === '--transcript') {
+      transcript = true;
     } else if (arg.startsWith('-')) {
       console.error(`Unknown option: ${arg}`);
       process.exitCode = 1;
@@ -295,7 +304,17 @@ async function scan(args: string[]): Promise<void> {
     return;
   }
 
-  const result = chain ? await buildChainInput(files) : await buildScanInput(files, forceText);
+  if (transcript && (chain || files.length !== 1)) {
+    console.error('Usage: datapitfalls scan --transcript <session.json> (one transcript per scan)');
+    process.exitCode = 1;
+    return;
+  }
+
+  const result = transcript
+    ? buildTranscriptInput(files[0] as string)
+    : chain
+      ? await buildChainInput(files)
+      : await buildScanInput(files, forceText);
   if ('error' in result) {
     console.error(result.error);
     process.exitCode = 1;

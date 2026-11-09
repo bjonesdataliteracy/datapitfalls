@@ -72,6 +72,15 @@
       "description": "Actionable guidance for fixing it.",
       "minLength": 1
     },
+    "aliases": {
+      "type": "array",
+      "description": "Former ids of this rule. A renamed rule keeps its old ids here so stored references (memories, findings, links) still resolve. Never reuse an alias as another rule's id.",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+      }
+    },
     "references": {
       "type": "array",
       "description": "Sources: book sections, articles, citations.",

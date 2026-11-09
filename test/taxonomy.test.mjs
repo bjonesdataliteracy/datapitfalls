@@ -76,3 +76,11 @@ test('rulesForInput: charts get the visual domains plus data-reality-gap, the re
   }
   assert.deepEqual(rulesForInput('image', ['Biased Baseline']), getRulesByDomain('Biased Baseline'));
 });
+
+test('resolveRuleId returns current ids and rejects unknown ones; taxonomyVersion is a fingerprint', async () => {
+  const { resolveRuleId, taxonomyVersion, getAllRules: all } = await import('../dist/index.js');
+  const id = all()[0].id;
+  assert.equal(resolveRuleId(id), id);
+  assert.equal(resolveRuleId('__no_such_rule__'), undefined);
+  assert.match(taxonomyVersion, /^[0-9a-f]{12}$/);
+});

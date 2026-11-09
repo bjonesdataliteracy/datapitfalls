@@ -9,6 +9,7 @@ import {
   getAllRules,
   ruleCountsByDomain,
   rulesForInput,
+  taxonomyVersion,
   type Domain,
   type PitfallRule,
   type RuleInputKind,
@@ -112,7 +113,9 @@ export function listPitfalls(filter: { domain?: Domain; severity?: Severity } = 
     }
     lines.push('');
   }
-  lines.push('Call get_pitfall with an id for the full rule.');
+  lines.push(
+    `Call get_pitfall with an id for the full rule. Taxonomy version: ${taxonomyVersion}.`
+  );
   return withFooter(lines.join('\n'));
 }
 

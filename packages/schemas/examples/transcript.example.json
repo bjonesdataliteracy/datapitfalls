@@ -1,0 +1,38 @@
+{
+  "session_id": "demo-2026-11-09-01",
+  "agent": "claude-code",
+  "started_at": "2026-11-09T17:02:00Z",
+  "events": [
+    {
+      "role": "user",
+      "type": "message",
+      "content": "Which airline grew passengers fastest in Q3 2025?"
+    },
+    {
+      "role": "agent",
+      "type": "query",
+      "sql": "SELECT carrier, SUM(passengers) AS pax FROM t100_segment WHERE year = 2025 AND quarter = 3 GROUP BY carrier ORDER BY pax DESC",
+      "content": "Summing segment passengers by carrier for Q3 2025."
+    },
+    {
+      "role": "tool",
+      "type": "result",
+      "content": "carrier,pax\nWN,41200000\nDL,39800000\nAA,38900000"
+    },
+    {
+      "role": "agent",
+      "type": "message",
+      "content": "Southwest grew fastest: it carried the most passengers in Q3 2025."
+    },
+    {
+      "role": "user",
+      "type": "correction",
+      "content": "That's the most passengers, not the fastest growth. And doesn't the segment table double-count connections?"
+    }
+  ],
+  "signals": {
+    "user_doubt": 1,
+    "rerun": 0,
+    "correction": 1
+  }
+}

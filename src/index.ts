@@ -26,6 +26,9 @@ export * from './taxonomy/index.js';
 export * from './analyze.js';
 export * from './report.js';
 
+// Analytics-agent session transcripts (the `transcript` input kind).
+export * from './transcript.js';
+
 // PowerPoint (.pptx) extraction.
 export * from './pptx.js';
 

@@ -4,6 +4,7 @@
 
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
 
@@ -50,6 +51,9 @@ for (const file of files) {
   // Pick only the known fields, in a stable order, so the output is clean.
   const rule = {};
   for (const field of FIELDS) rule[field] = raw[field];
+  // Optional: former ids of a renamed rule. Emitted only when present, so
+  // existing rules compile exactly as before.
+  if (Array.isArray(raw.aliases) && raw.aliases.length > 0) rule.aliases = raw.aliases;
   rules.push(rule);
 }
 
@@ -67,10 +71,19 @@ const header = `// GENERATED FILE — do not edit by hand.
 import type { PitfallRule } from "./types.js";
 `;
 
-const body = `\nexport const rules: PitfallRule[] = ${JSON.stringify(rules, null, 2)};\n`;
+// A content fingerprint of the compiled catalog: it changes whenever any rule's
+// text, id, alias, domain or severity changes, so a report or benchmark run can
+// record exactly which taxonomy it was grounded on.
+const rulesJson = JSON.stringify(rules, null, 2);
+const taxonomyVersion = createHash('sha256').update(JSON.stringify(rules)).digest('hex').slice(0, 12);
+
+const body =
+  `\n/** Content fingerprint of this catalog (first 12 hex chars of a SHA-256). */\n` +
+  `export const TAXONOMY_VERSION = ${JSON.stringify(taxonomyVersion)};\n` +
+  `\nexport const rules: PitfallRule[] = ${rulesJson};\n`;
 
 writeFileSync(outFile, header + body);
-console.log(`Wrote ${relative(root, outFile)} (${rules.length} rules)`);
+console.log(`Wrote ${relative(root, outFile)} (${rules.length} rules, taxonomy ${taxonomyVersion})`);
 
 // The package version as a constant, for code that must not read package.json at
 // runtime: bundlers (Next.js on Vercel) inline the MCP server, and a relative

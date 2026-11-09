@@ -1,0 +1,45 @@
+{
+  "name": "@datapitfalls/schemas",
+  "version": "0.1.0",
+  "description": "Shared data contracts for the datapitfalls family: Finding, Pitfall report, Transcript, Memory record and Trap, as JSON Schemas and TypeScript types.",
+  "author": "Ben Jones <bjones@dataliteracy.com> (https://dataliteracy.com)",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./schemas/*": "./schemas/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "schemas",
+    "examples"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bjonesdataliteracy/datapitfalls.git",
+    "directory": "packages/schemas"
+  },
+  "homepage": "https://github.com/bjonesdataliteracy/datapitfalls/tree/main/packages/schemas",
+  "keywords": [
+    "datapitfalls",
+    "json-schema",
+    "data-pitfalls",
+    "ai-agents",
+    "analytics"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

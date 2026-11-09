@@ -205,7 +205,9 @@ export function formatReport(report: PitfallReport, options: ReportFormatOptions
           ? 'document'
           : report.kind === 'slides'
             ? 'slide deck'
-            : 'code/description';
+            : report.kind === 'transcript'
+              ? 'agent session'
+              : 'code/description';
     lines.push(`Detected Pitfalls — evident from the ${source}:`);
     lines.push('');
     for (const finding of active) renderFinding(finding, lines);
