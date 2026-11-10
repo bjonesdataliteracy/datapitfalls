@@ -36,6 +36,9 @@ P0 items (C1 to C5) shipped in v0.12.0; P1 in v0.13.0; P2 when the bench or agen
 | C10 | Add a commercial license template and FAQ to LICENSE-TAXONOMY.md covering hosted and OEM use | P1 | Hosted and OEM use |
 | C11 | Add a contributor license agreement check to pull requests | P1 | Clean IP |
 | C12 | ROADMAP Phase 8 "Agents and memory", linking bench and agent | P1 | Audience |
+| C13 | Evaluate moving the default model from `claude-sonnet-4-6` to `claude-sonnet-5-5` or `claude-opus-5-5`, and the `--thorough` and `--fast` models with it; decide on eval results and cost, not recency | P1 | Bench runs (before the pilot) |
+| C14 | A low-confidence finding must not set the overall report label on its own | P1 | Debrief, bench |
+| C15 | Transcript review gives weight to what the user corrects or questions in the session | P1 | Debrief, bench |
 
 ## Interfaces, milestones and open questions
 
@@ -57,8 +60,16 @@ import type { Transcript, MemoryRecord } from '@datapitfalls/schemas';
 | Release | Contents | Target |
 | --- | --- | --- |
 | v0.12.0 | C1 to C5 | Shipped Nov 2026 |
-| v0.13.0 | C6, C8, C10, C11, C12 | Mid Jan 2027, before agent v0.1 |
+| v0.13.0 | C6, C8, C10, C11, C12, C13, C14, C15 | Mid Jan 2027, before agent v0.1 |
 | Later | C7, C9 | When the agent's half-life checks and the bench scoring need them |
+
+### Notes on C13 to C15
+
+These came out of the first live transcript scan, run on `packages/schemas/examples/transcript.example.json` with v0.12.0 on Nov 9, 2026. It is one example session, so treat it as a pointer, not a measurement; the bench will give real numbers.
+
+- **C13, default model.** `DEFAULT_MODEL` in `src/analyze.ts` is `claude-sonnet-4-6`, chosen because it scored best in the eval harness at the time. Run `npm run eval` on the current default and on each candidate (`ANTHROPIC_MODEL=<id> npm run eval`) and compare precision, recall and cost; `evals/score.mjs` already has pricing for the 5.5 models. Confirm the forced tool-choice path in `src/analyze.ts` works on the new model. Update the default, the `--thorough` and `--fast` mappings in `src/cli.ts`, the CLI help text, `evals/run.mjs` and the docs together. Settle this before the bench pilot, because the bench records the model with its results.
+- **C14, overall label.** The scan's only error-severity finding was `unweighted-rate-average` at low confidence, and it did not fit the session (no rates were averaged). It still set the headline to "Serious pitfalls found". The label should not rest on a single low-confidence finding.
+- **C15, user corrections.** In the example the user's correction names two problems: volume reported as growth, and segment-table double counting. The scan caught the first (`misleading-performance-metric`, high confidence) but did not show the second among its detected findings. A `correction` event, and the transcript's `signals`, should steer the review toward what the user flagged.
 
 **Open questions:**
 
