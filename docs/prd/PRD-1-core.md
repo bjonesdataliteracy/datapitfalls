@@ -20,7 +20,7 @@ The existing package needs a small, focused release (v0.12.0) so the bench and a
 
 ## Requirements
 
-P0 items ship in v0.12.0; P1 in v0.13.0; P2 when the bench or agent needs them.
+P0 items (C1 to C5) shipped in v0.12.0; P1 in v0.13.0; P2 when the bench or agent needs them.
 
 | ID | Requirement | Priority | Needed by |
 | --- | --- | --- | --- |
@@ -56,7 +56,7 @@ import type { Transcript, MemoryRecord } from '@datapitfalls/schemas';
 
 | Release | Contents | Target |
 | --- | --- | --- |
-| v0.12.0 | C1 to C5 | Late Nov 2026, before bench harness work |
+| v0.12.0 | C1 to C5 | Shipped Nov 2026 |
 | v0.13.0 | C6, C8, C10, C11, C12 | Mid Jan 2027, before agent v0.1 |
 | Later | C7, C9 | When the agent's half-life checks and the bench scoring need them |
 

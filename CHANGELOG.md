@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-11-10
+
+0.12.0 adds the shared contracts that datapitfalls bench and datapitfalls agent
+build on: a `@datapitfalls/schemas` package, review of AI analytics agent
+sessions (`scan --transcript`), stable rule IDs, and a taxonomy version on every
+report. No existing CLI, library or MCP behavior breaks, so it's a minor
+release.
+
+**License change:** this is the first npm release with the taxonomy (the pitfall
+rules and their text) under [CC BY-NC 4.0](LICENSE-TAXONOMY.md) instead of MIT.
+Using the rules at work stays free; selling them or building them into a paid
+product needs a license. The code stays MIT, and 0.11.0 and earlier keep their
+MIT terms. Details under "Changed" below.
+
 ### Added
 
 - **Shared contracts for the datapitfalls family: `@datapitfalls/schemas`.** A new
@@ -326,7 +340,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Pitfall taxonomy v0.1 structure, organized around the eight audit domains from _Avoiding Data Pitfalls_.
 - Project roadmap outlining the path from foundation through developer tools and community ecosystem.
 
-[Unreleased]: https://github.com/bjonesdataliteracy/datapitfalls/compare/v0.11.0...HEAD
+[Unreleased]: https://github.com/bjonesdataliteracy/datapitfalls/compare/v0.12.0...HEAD
+[0.12.0]: https://github.com/bjonesdataliteracy/datapitfalls/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/bjonesdataliteracy/datapitfalls/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/bjonesdataliteracy/datapitfalls/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/bjonesdataliteracy/datapitfalls/compare/v0.8.0...v0.9.0
