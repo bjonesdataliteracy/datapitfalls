@@ -89,7 +89,8 @@ Reference any related issue in your PR description (e.g. `Closes #42`). A mainta
 _Maintainers only._ Releases are automated: pushing a `vX.Y.Z` tag triggers
 [`.github/workflows/release.yml`](.github/workflows/release.yml), which runs the
 gate, verifies the tag matches `package.json`, publishes the package to
-[npm](https://www.npmjs.com/package/datapitfalls) (with provenance), and creates
+[npm](https://www.npmjs.com/package/datapitfalls) (with provenance, along with
+`@datapitfalls/schemas` when its version is new), and creates
 a [GitHub Release](https://github.com/bjonesdataliteracy/datapitfalls/releases)
 whose notes are pulled straight from `CHANGELOG.md`.
 
@@ -103,7 +104,8 @@ To ship version `X.Y.Z` from an up-to-date `main`:
 1. **Roll the changelog.** Rename `## [Unreleased]` to `## [X.Y.Z] - YYYY-MM-DD`,
    add a fresh empty `[Unreleased]` above it, and update the link references at
    the bottom of the file.
-2. **Bump the version** to match: `npm version X.Y.Z --no-git-tag-version`.
+2. **Bump the version** to match: `npm version X.Y.Z --no-git-tag-version`,
+   then `npm run build` so the generated `src/version.ts` picks it up.
    (The tag must equal `package.json`'s `version`, or the release job fails.)
 3. **Commit** (`chore: release vX.Y.Z`), open a PR, and merge it once green.
 4. **Tag and push** from `main`:
@@ -128,6 +130,15 @@ node scripts/changelog-notes.mjs X.Y.Z
 > permission; npm generates provenance automatically. (No `NPM_TOKEN` secret is
 > needed — if one lingers in repo secrets from the old token-based flow, you can
 > delete it.)
+>
+> **`@datapitfalls/schemas`** (in `packages/schemas`) is versioned on its own:
+> bump `packages/schemas/package.json` only when a contract changes (an added
+> optional field is a minor release; a removed or renamed field is a major one).
+> The release job publishes it when that version isn't on npm yet and skips it
+> otherwise, so most core releases leave it alone. It needs its own trusted
+> publisher on npmjs.com (same repo and workflow, `release.yml`), and npm only
+> lets you register one once the package exists, so its first version was
+> published by hand: `npm publish -w @datapitfalls/schemas`.
 >
 > The `0.1.0` release predates this automation and was never tagged; tag it
 > retroactively if you want its compare link to resolve

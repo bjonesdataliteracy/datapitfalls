@@ -3,7 +3,8 @@ name: Release
 # Cuts a release when a version tag is pushed. The flow:
 #   1. run the same gate as CI,
 #   2. verify the tag matches package.json,
-#   3. publish the package to npm (with provenance),
+#   3. publish the packages to npm (with provenance): datapitfalls, and
+#      @datapitfalls/schemas when its version is new,
 #   4. create a GitHub Release using notes pulled from CHANGELOG.md.
 #
 # To release: bump the version + roll CHANGELOG's [Unreleased] into a dated
@@ -57,12 +58,31 @@ jobs:
 
       # `prepack` rebuilds dist/ before publishing. Auth is via Trusted
       # Publishing (OIDC) — no token: npm verifies this workflow against the
-      # trusted publisher registered for the package on npmjs.com, using the
+      # trusted publisher registered for each package on npmjs.com, using the
       # `id-token: write` permission above. Provenance is generated
       # automatically, so no `--provenance` flag is needed. See CONTRIBUTING.md
       # → "Cutting a release".
-      - name: Publish to npm
-        run: npm publish --access public
+      #
+      # Both publish steps skip a version that is already on npm, so a failed
+      # run can be re-run safely, and @datapitfalls/schemas (which versions
+      # independently) only publishes when its own version was bumped.
+      - name: Publish @datapitfalls/schemas to npm (if its version is new)
+        run: |
+          VER="$(node -p "require('./packages/schemas/package.json').version")"
+          if [ -n "$(npm view "@datapitfalls/schemas@$VER" version 2>/dev/null)" ]; then
+            echo "@datapitfalls/schemas@$VER is already on npm; skipping."
+          else
+            npm publish -w @datapitfalls/schemas --access public
+          fi
+
+      - name: Publish datapitfalls to npm
+        run: |
+          VER="$(node -p "require('./package.json').version")"
+          if [ -n "$(npm view "datapitfalls@$VER" version 2>/dev/null)" ]; then
+            echo "datapitfalls@$VER is already on npm; skipping."
+          else
+            npm publish --access public
+          fi
 
       - name: Extract release notes from CHANGELOG
         run: node scripts/changelog-notes.mjs "$GITHUB_REF_NAME" > RELEASE_NOTES.md
