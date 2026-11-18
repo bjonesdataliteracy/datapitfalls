@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- **Web app: Next.js upgraded from 15.5.18 to 15.5.29.** Fixes critical advisories,
+  including remote code execution through the Image Optimization API. Engine, CLI
+  and MCP behavior are unchanged.
+- **Dependencies refreshed with `npm audit fix`** (no major-version bumps), clearing
+  high-severity advisories in `@xmldom/xmldom`, `body-parser`, `fast-uri`,
+  `form-data`, `js-yaml`, `sharp` and others. One remains: the `postcss` that
+  Next.js 15 pins internally, which only a move to Next.js 16 clears.
+
 ## [0.12.0] - 2026-11-10
 
 0.12.0 adds the shared contracts that datapitfalls bench and datapitfalls agent
